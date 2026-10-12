@@ -42,6 +42,9 @@ WISP — drop-down control panel for Windows 10/11
    Double-click build_exe.bat. You get dist\Wisp.exe, which runs without Python.
 
 7. TROUBLESHOOTING
+   - Errors are written to %APPDATA%\Wisp\wisp.log.
+   - If config.json has a mistake, Wisp starts with defaults and renames the
+     broken file to config.invalid.json so you can fix it.
    - "Hotkey is taken"  : change "hotkey" in config.json.
    - Brightness slider missing : your monitor does not support DDC/CI.
                           This is normal on some desktop monitors.

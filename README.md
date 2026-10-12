@@ -1,1 +1,28 @@
-# wisk
+# Wisp
+
+A drop-down control panel for Windows 10/11: quick toggles, media, calendar and notes,
+system stats, clipboard history, app launcher, wallpaper picker and power actions —
+opened with **Ctrl + Alt + Space** or by pushing the mouse to the top edge of the screen.
+
+## Download
+
+Grab `Wisp.exe` (or `Wisp-windows.zip`) from the
+[latest release](https://github.com/abhi331-ui/wisk/releases/latest). It runs without Python.
+
+## Run from source
+
+1. Install Python 3.11 or 3.12 from python.org (tick "Add python.exe to PATH").
+2. Double-click `run.bat`. The first run installs the dependencies.
+
+`build_exe.bat` builds `dist\Wisp.exe` locally. Every push is also built on Windows by
+GitHub Actions; pushing a `v*` tag publishes a release.
+
+See [README.txt](README.txt) for the full user guide, settings and troubleshooting.
+
+## Development
+
+```
+pip install -r requirements.txt pyflakes
+pyflakes wisp.py tests
+QT_QPA_PLATFORM=offscreen python tests/smoke.py   # opens every tab headlessly
+```
