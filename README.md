@@ -15,7 +15,7 @@ Grab `Wisp.exe` (or `Wisp-windows.zip`) from the
 2. Double-click `run.bat`. The first run installs the dependencies.
 
 `build_exe.bat` builds `dist\Wisp.exe` locally. Every push is also built on Windows by
-GitHub Actions; pushing a `v*` tag publishes a release.
+GitHub Actions. To publish a release, run the Build workflow manually (Actions → Build → Run workflow) with a tag such as `v1.0.1`, or push a `v*` tag.
 
 See [README.txt](README.txt) for the full user guide, settings and troubleshooting.
 
