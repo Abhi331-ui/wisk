@@ -1,0 +1,95 @@
+name: Build
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Publish a release with this tag (e.g. v1.0.0). Leave empty to only build."
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyflakes
+
+      # Antivirus engines often flag PyInstaller's prebuilt bootloader (it is shared
+      # with a lot of malware). Compiling our own avoids most false positives.
+      - name: Install PyInstaller with a locally compiled bootloader
+        env:
+          PYINSTALLER_COMPILE_BOOTLOADER: "1"
+        run: pip install --no-binary pyinstaller pyinstaller
+
+      - name: Lint
+        run: pyflakes wisp.py tests
+
+      - name: Smoke test (opens every tab headlessly)
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python tests/smoke.py
+
+      - name: Build Wisp
+        shell: pwsh
+        run: |
+          $ver = if ("${{ inputs.release_tag }}") { "${{ inputs.release_tag }}" } elseif ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "0.0.0" }
+          python packaging/version_info.py $ver | Out-File -Encoding utf8 packaging/version_info.txt
+          # --onedir (a folder) instead of --onefile: self-extracting single exes are
+          # what antivirus heuristics flag most. No UPX for the same reason.
+          pyinstaller --noconfirm --onedir --windowed --noupx --name Wisp `
+            --icon packaging/wisp.ico --version-file packaging/version_info.txt `
+            --collect-all winrt --collect-submodules screen_brightness_control `
+            --collect-submodules pycaw wisp.py
+
+      - name: Check the built app starts
+        shell: pwsh
+        run: |
+          $env:APPDATA = Join-Path $env:RUNNER_TEMP "wisp-appdata"
+          $p = Start-Process dist\Wisp\Wisp.exe -PassThru
+          Start-Sleep -Seconds 15
+          if ($p.HasExited) { Get-Content "$env:APPDATA\Wisp\wisp.log" -ErrorAction SilentlyContinue; throw "Wisp.exe exited early (code $($p.ExitCode))" }
+          Stop-Process -Id $p.Id -Force
+          $log = "$env:APPDATA\Wisp\wisp.log"
+          if ((Test-Path $log) -and (Select-String -Path $log -Pattern "unhandled error" -Quiet)) { Get-Content $log; throw "errors in wisp.log" }
+          Write-Host "Wisp.exe started fine"
+
+      - name: Package
+        shell: pwsh
+        run: |
+          Copy-Item README.txt dist\Wisp\
+          Compress-Archive -Path dist\Wisp -DestinationPath Wisp-windows.zip -Force
+          (Get-FileHash Wisp-windows.zip -Algorithm SHA256).Hash | Out-File -Encoding ascii Wisp-windows.zip.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Wisp-windows
+          path: dist/Wisp/
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          name: Wisp ${{ inputs.release_tag || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          files: |
+            Wisp-windows.zip
+            Wisp-windows.zip.sha256
+          generate_release_notes: true

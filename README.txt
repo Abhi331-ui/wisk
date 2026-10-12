@@ -39,9 +39,15 @@ WISP — drop-down control panel for Windows 10/11
    Restart Wisp after editing (tray, then Quit, then run.bat).
 
 6. MAKE A STANDALONE .EXE (optional)
-   Double-click build_exe.bat. You get dist\Wisp.exe, which runs without Python.
+   Double-click build_exe.bat. You get the dist\Wisp folder; run Wisp.exe inside it.
+   Ready-made builds: https://github.com/abhi331-ui/wisk/releases/latest
 
 7. TROUBLESHOOTING
+   - "Windows protected your PC" / "may be dangerous": Wisp is not code-signed.
+                          Click More info, then Run anyway.
+   - Errors are written to %APPDATA%\Wisp\wisp.log.
+   - If config.json has a mistake, Wisp starts with defaults and renames the
+     broken file to config.invalid.json so you can fix it.
    - "Hotkey is taken"  : change "hotkey" in config.json.
    - Brightness slider missing : your monitor does not support DDC/CI.
                           This is normal on some desktop monitors.

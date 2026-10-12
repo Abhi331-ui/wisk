@@ -14,6 +14,7 @@ import asyncio
 
 import ctypes
 import datetime as dt
+import getpass
 import hashlib
 import json
 import os
@@ -24,6 +25,7 @@ import subprocess
 import sys
 import threading
 import time
+import traceback
 import urllib.request
 from pathlib import Path
 
@@ -65,13 +67,46 @@ DEFAULT_CONFIG = {
 }
 
 
+def _sanitize_config(cfg: dict) -> dict:
+    """Fall back to the default for any value of the wrong type or out of range."""
+    for key, default in DEFAULT_CONFIG.items():
+        val = cfg.get(key)
+        if isinstance(default, bool):
+            ok = isinstance(val, bool)
+        elif isinstance(default, (int, float)):
+            ok = isinstance(val, (int, float)) and not isinstance(val, bool) and val >= 0
+        else:
+            ok = isinstance(val, str) and bool(val.strip())
+        if not ok:
+            cfg[key] = default
+    cfg["night_light_strength"] = min(1.0, float(cfg["night_light_strength"]))
+    cfg["clipboard_max"] = max(1, int(cfg["clipboard_max"]))
+    cfg["panel_width"] = max(600, int(cfg["panel_width"]))
+    cfg["panel_height"] = max(320, int(cfg["panel_height"]))
+    if not re.fullmatch(r"#[0-9a-fA-F]{6}", cfg["accent"]):
+        cfg["accent"] = DEFAULT_CONFIG["accent"]
+    return cfg
+
+
 def load_config() -> dict:
     cfg = dict(DEFAULT_CONFIG)
+    exists = CONFIG_PATH.exists()
     try:
-        cfg.update(json.loads(CONFIG_PATH.read_text(encoding="utf-8")))
-    except Exception:
-        pass
-    save_config(cfg)
+        data = json.loads(CONFIG_PATH.read_text(encoding="utf-8")) if exists else {}
+        if not isinstance(data, dict):
+            raise ValueError("config.json must contain a JSON object")
+        cfg.update(data)
+    except Exception as e:
+        # keep the user's broken file for reference instead of silently overwriting it
+        print("config.json is invalid, using defaults:", e)
+        try:
+            CONFIG_PATH.replace(CONFIG_PATH.with_name("config.invalid.json"))
+        except Exception:
+            pass
+        exists = False
+    cfg = _sanitize_config(cfg)
+    if not exists:
+        save_config(cfg)
     return cfg
 
 
@@ -81,6 +116,38 @@ def save_config(cfg: dict) -> None:
     except Exception:
         pass
 
+
+LOG_PATH = APP_DIR / "wisp.log"
+
+
+def _setup_logging():
+    """pythonw.exe and the --windowed .exe have no console; send output to a log file."""
+    if sys.stdout is not None and sys.stderr is not None:
+        return
+    try:
+        if LOG_PATH.exists() and LOG_PATH.stat().st_size > 1_000_000:
+            LOG_PATH.replace(LOG_PATH.with_suffix(".old.log"))
+        log = open(LOG_PATH, "a", encoding="utf-8", buffering=1)
+    except Exception:
+        log = open(os.devnull, "w")
+    if sys.stdout is None:
+        sys.stdout = log
+    if sys.stderr is None:
+        sys.stderr = log
+
+
+def _excepthook(etype, value, tb):
+    # Unhandled errors (including ones raised inside Qt slots) are logged, never fatal.
+    try:
+        print(f"[{dt.datetime.now():%Y-%m-%d %H:%M:%S}] unhandled error:", file=sys.stderr)
+        traceback.print_exception(etype, value, tb, file=sys.stderr)
+    except Exception:
+        pass
+
+
+_setup_logging()
+sys.excepthook = _excepthook
+threading.excepthook = lambda a: _excepthook(a.exc_type, a.exc_value, a.exc_traceback)
 
 CFG = load_config()
 ACCENT = CFG.get("accent", "#a6e3a1")
@@ -100,8 +167,8 @@ class Dispatcher(QObject):
     def _run(self, fn, arg):
         try:
             fn(arg)
-        except Exception as e:  # never let a callback kill the app
-            print("callback error:", e)
+        except Exception:  # never let a callback kill the app
+            _excepthook(*sys.exc_info())
 
 
 DISPATCH: Dispatcher | None = None
@@ -1170,14 +1237,19 @@ class TodayPage(Page):
             self.notes.setPlainText(self.notes_path.read_text(encoding="utf-8"))
         except Exception:
             pass
-        self._save_timer = QTimer(self, singleShot=True, interval=600,
-                                  timeout=lambda: self.notes_path.write_text(self.notes.toPlainText(), encoding="utf-8"))
+        self._save_timer = QTimer(self, singleShot=True, interval=600, timeout=self._save_notes)
         self.notes.textChanged.connect(self._save_timer.start)
         nl.addWidget(self.notes)
         root.addWidget(notes, 3)
 
         self.timer = QTimer(self, interval=1000, timeout=self.tick)
         self._weather_at = 0
+
+    def _save_notes(self):
+        try:
+            self.notes_path.write_text(self.notes.toPlainText(), encoding="utf-8")
+        except Exception as e:
+            print("couldn't save notes:", e)
 
     def on_show(self):
         self.tick()
@@ -1339,7 +1411,10 @@ class StatsPage(Page):
 
     def tick(self):
         cpu = psutil.cpu_percent(None)
-        freq = psutil.cpu_freq()
+        try:
+            freq = psutil.cpu_freq()
+        except Exception:
+            freq = None
         self.r_cpu.set_value(cpu)
         short_cpu = re.sub(r"\s*(with|w/).*$|\(R\)|\(TM\)|CPU|Processor|\d+-Core", "", self.cpu_name).strip()
         self.l_cpu.setText(f"{short_cpu}\n{freq.current / 1000:.1f} GHz" if freq else short_cpu)
@@ -1359,11 +1434,12 @@ class StatsPage(Page):
             pass
         now = time.time()
         n = psutil.net_io_counters()
-        dt_ = max(0.1, now - self.last_t)
-        down = (n.bytes_recv - self.last_net.bytes_recv) / dt_
-        up = (n.bytes_sent - self.last_net.bytes_sent) / dt_
+        if n is not None and self.last_net is not None:
+            dt_ = max(0.1, now - self.last_t)
+            down = max(0, n.bytes_recv - self.last_net.bytes_recv) / dt_
+            up = max(0, n.bytes_sent - self.last_net.bytes_sent) / dt_
+            self.net.setText(f"↓ {human_bytes(down)}/s  ↑ {human_bytes(up)}/s")
         self.last_net, self.last_t = n, now
-        self.net.setText(f"↓ {human_bytes(down)}/s  ↑ {human_bytes(up)}/s")
         self.up.setText(human_duration(now - psutil.boot_time()))
 
     def _read_gpu(self):
@@ -1508,7 +1584,6 @@ class ClipboardPage(Page):
         self.list.setIconSize(QSize(44, 32))
         self.list.currentRowChanged.connect(self.preview)
         self.list.itemActivated.connect(lambda _: self.copy_current())
-        self.list.itemDoubleClicked.connect(lambda _: self.copy_current())
         left.addWidget(self.list, 1)
         root.addLayout(left, 3)
 
@@ -1561,7 +1636,9 @@ class ClipboardPage(Page):
     def _load(self):
         try:
             data = json.loads(self.hist_path.read_text(encoding="utf-8"))
-            self.items = [i for i in data if i.get("type") == "text" or Path(i.get("path", "")).exists()]
+            self.items = [i for i in data if isinstance(i, dict) and isinstance(i.get("ts"), (int, float)) and (
+                (i.get("type") == "text" and isinstance(i.get("text"), str)) or
+                (i.get("type") == "image" and i.get("path") and Path(i["path"]).is_file()))]
         except Exception:
             self.items = []
 
@@ -1573,6 +1650,12 @@ class ClipboardPage(Page):
 
     # capture
     def on_clipboard(self):
+        try:
+            self._capture()
+        except Exception:  # the clipboard can be locked by another app for a moment
+            _excepthook(*sys.exc_info())
+
+    def _capture(self):
         md = self.cb.mimeData()
         if md is None:
             return
@@ -1749,6 +1832,7 @@ class AppsPage(Page):
         self.provider = QFileIconProvider()
         self._icon_queue: list[QListWidgetItem] = []
         self._icon_timer = QTimer(self, interval=0, timeout=self._load_icons)
+        self._last_launch = (None, 0.0)
 
     def on_show(self):
         if not self.loaded:
@@ -1860,6 +1944,10 @@ class AppsPage(Page):
         a = it.data(Qt.UserRole)
         if not a:
             return
+        now = time.time()
+        if a is self._last_launch[0] and now - self._last_launch[1] < 1.5:
+            return  # a double-click emits both clicked and activated
+        self._last_launch = (a, now)
         try:
             if a["path"]:
                 os.startfile(a["path"])  # type: ignore[attr-defined]
@@ -1910,7 +1998,13 @@ class WallpaperPage(Page):
             self.load()
 
     def choose_folder(self):
-        f = QFileDialog.getExistingDirectory(self, "Wallpaper folder", self.folder)
+        w = self.window()
+        w.hold_open = True
+        try:
+            f = QFileDialog.getExistingDirectory(self, "Wallpaper folder", self.folder)
+        finally:
+            w.hold_open = False
+            w._shown_at = time.time()
         if f:
             self.folder = f
             CFG["wallpaper_folder"] = f
@@ -2119,6 +2213,7 @@ class Panel(QWidget):
         self.anim.finished.connect(self._anim_done)
         self._hiding = False
         self._shown_at = 0.0
+        self.hold_open = False   # set while a native dialog is open
         self.current = 0
         self.tab_btns[0].setChecked(True)
 
@@ -2190,7 +2285,7 @@ class Panel(QWidget):
             self.stack.currentWidget().on_hide()
 
     def _check_away(self):
-        if time.time() - self._shown_at < 0.6:
+        if self.hold_open or time.time() - self._shown_at < 0.6:
             return
         inside = self.frameGeometry().adjusted(0, 0, 0, 40).contains(QCursor.pos())
         if self.isActiveWindow() or inside or QApplication.activeModalWidget() or QApplication.activePopupWidget():
@@ -2204,7 +2299,7 @@ class Panel(QWidget):
     def changeEvent(self, e):
         from PySide6.QtCore import QEvent
         if e.type() == QEvent.ActivationChange and not self.isActiveWindow():
-            if (time.time() - self._shown_at > 0.4 and not QApplication.activeModalWidget()
+            if (not self.hold_open and time.time() - self._shown_at > 0.4 and not QApplication.activeModalWidget()
                     and not self.frameGeometry().contains(QCursor.pos())):
                 self.hide_panel()
         super().changeEvent(e)
@@ -2253,7 +2348,11 @@ def main():
     app.setQuitOnLastWindowClosed(False)
 
     # single instance: a second launch just toggles the running panel
-    server_name = f"{APP_NAME}-{os.getlogin() if hasattr(os, 'getlogin') else 'user'}"
+    try:
+        user = getpass.getuser()
+    except Exception:
+        user = "user"
+    server_name = f"{APP_NAME}-{re.sub(r'[^A-Za-z0-9_.-]', '_', user)}"
     sock = QLocalSocket()
     sock.connectToServer(server_name)
     if sock.waitForConnected(300):
@@ -2268,10 +2367,13 @@ def main():
 
     server = QLocalServer()
     QLocalServer.removeServer(server_name)
-    server.listen(server_name)
+    if not server.listen(server_name):
+        print("single-instance server failed:", server.errorString())
 
     def on_conn():
         c = server.nextPendingConnection()
+        if c is None:
+            return
         c.readyRead.connect(lambda: (c.readAll(), panel.show_panel()))
     server.newConnection.connect(on_conn)
 
@@ -2282,10 +2384,26 @@ def main():
     menu.addAction("Open panel", panel.show_panel)
     auto = QAction("Start with Windows", menu, checkable=True)
     auto.setChecked(Win.autostart())
-    auto.toggled.connect(Win.set_autostart)
+    def set_autostart(on):
+        try:
+            Win.set_autostart(on)
+        except Exception as e:
+            tray.showMessage(APP_NAME, f"Couldn't change autostart: {e}", QSystemTrayIcon.Warning, 5000)
+            auto.blockSignals(True)
+            auto.setChecked(Win.autostart())
+            auto.blockSignals(False)
+    auto.toggled.connect(set_autostart)
     auto.setEnabled(IS_WIN)
     menu.addAction(auto)
-    menu.addAction("Edit settings (config.json)", lambda: os.startfile(CONFIG_PATH) if IS_WIN else print(CONFIG_PATH))
+    def edit_settings():
+        if not IS_WIN:
+            print(CONFIG_PATH)
+            return
+        try:
+            os.startfile(CONFIG_PATH)  # type: ignore[attr-defined]
+        except OSError:  # no app associated with .json
+            subprocess.Popen(["notepad.exe", str(CONFIG_PATH)])
+    menu.addAction("Edit settings (config.json)", edit_settings)
     menu.addSeparator()
 
     def quit_app():
@@ -2303,14 +2421,26 @@ def main():
                                    f"Change \"hotkey\" in config.json.", QSystemTrayIcon.Warning, 6000)
     hk = HotkeyThread(CFG.get("hotkey", "ctrl+alt+space"), lambda _: panel.toggle(), hotkey_failed)
     hk.start()
-    edge = HotEdge(panel)  # noqa: F841  (kept alive)
+    edge = HotEdge(panel)
 
     if "--show" in sys.argv or not IS_WIN:
         QTimer.singleShot(300, panel.show_panel)
     else:
         tray.showMessage(APP_NAME, f"Running. Press {CFG['hotkey'].title()} or push the mouse to the top edge.",
                          QSystemTrayIcon.Information, 4000)
-    return app.exec()
+    rc = app.exec()
+
+    # Tear down Qt objects in a defined order; leaving it to interpreter shutdown
+    # can crash because widgets may outlive the QApplication.
+    hk.stop()
+    edge.timer.stop()
+    tray.hide()
+    server.close()
+    for obj in (tray, menu, panel, server):
+        obj.deleteLater()
+    app.processEvents()
+    DISPATCH = None
+    return rc
 
 
 if __name__ == "__main__":
