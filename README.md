@@ -6,8 +6,14 @@ opened with **Ctrl + Alt + Space** or by pushing the mouse to the top edge of th
 
 ## Download
 
-Grab `Wisp.exe` (or `Wisp-windows.zip`) from the
-[latest release](https://github.com/abhi331-ui/wisk/releases/latest). It runs without Python.
+1. Download `Wisp-windows.zip` from the
+   [latest release](https://github.com/abhi331-ui/wisk/releases/latest).
+2. Right-click it → **Extract All**, open the `Wisp` folder and run `Wisp.exe`. No Python needed.
+
+Wisp is not code-signed, so Windows SmartScreen or your browser may warn about it
+("unrecognized app" / "may be dangerous"). That is a reputation warning for new, unsigned
+programs, not a virus detection. The release is built from this repository's source by
+GitHub Actions; compare the zip with the `.sha256` file in the release to verify it.
 
 ## Run from source
 

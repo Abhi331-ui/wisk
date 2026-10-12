@@ -5,3 +5,5 @@ dist/
 release/
 *.spec
 *.zip
+*.spec
+packaging/version_info.txt
