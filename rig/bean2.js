@@ -5,12 +5,37 @@ const rad = (d) => (d * Math.PI) / 180;
 const hx = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const mix = (a, b, t) => "#" + hx(a).map((v, i) => Math.round(v + (hx(b)[i] - v) * t).toString(16).padStart(2, "0")).join("");
 
+let RS = 7; const rnd = () => { RS = (RS * 16807) % 2147483647; return RS / 2147483647; };
+function fabric(g, path, bb, base) {
+  g.save(); g.clip(path);
+  g.globalAlpha = 0.07; g.strokeStyle = "#000"; g.lineWidth = 1.5;
+  for (let x = bb.x - bb.h; x < bb.x + bb.w + bb.h; x += 5) { g.beginPath(); g.moveTo(x, bb.y); g.lineTo(x + bb.h * 0.6, bb.y + bb.h); g.stroke(); }
+  g.globalAlpha = 0.05; g.strokeStyle = "#fff";
+  for (let x = bb.x - bb.h; x < bb.x + bb.w + bb.h; x += 5) { g.beginPath(); g.moveTo(x, bb.y + bb.h); g.lineTo(x + bb.h * 0.6, bb.y); g.stroke(); }
+  g.globalAlpha = 1;
+  for (let i = 0; i < 260; i++) { const x = bb.x + rnd() * bb.w, y = bb.y + rnd() * bb.h; g.fillStyle = rnd() < 0.5 ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.05)"; g.fillRect(x, y, 3, 3); }
+  const cx = bb.x + bb.w / 2;   // soft cloth folds
+  g.strokeStyle = "rgba(20,16,24,0.22)"; g.lineWidth = 4; g.lineCap = "round";
+  for (const [dx, y0, y1, bend] of [[-0.3, 0.55, 0.85, -12], [0.28, 0.5, 0.82, 14], [-0.05, 0.12, 0.3, 8]]) { g.beginPath(); g.moveTo(cx + dx * bb.w, bb.y + y0 * bb.h); g.quadraticCurveTo(cx + dx * bb.w + bend, bb.y + (y0 + y1) / 2 * bb.h, cx + dx * bb.w - bend * 0.3, bb.y + y1 * bb.h); g.stroke(); }
+  g.restore();
+}
+function hairStrands(g, path, bb, col) {
+  g.save(); g.clip(path); g.lineCap = "round";
+  const n = Math.round(bb.w / 3.2);
+  for (let i = 0; i < n; i++) { const t = i / n, x = bb.x + t * bb.w + (rnd() - 0.5) * 6, dark = rnd() < 0.4;
+    g.strokeStyle = dark ? mix(col, "#000000", 0.45) : mix(col, "#ffffff", 0.3); g.globalAlpha = dark ? 0.5 : 0.35; g.lineWidth = dark ? 2.6 : 1.8;
+    g.beginPath(); g.moveTo(bb.x + bb.w * 0.5 + (t - 0.5) * bb.w * 0.3, bb.y - 4); g.quadraticCurveTo(x, bb.y + bb.h * 0.35, x + (t - 0.5) * bb.w * 0.35 + (rnd() - 0.5) * 8, bb.y + bb.h + 6); g.stroke(); }
+  g.globalAlpha = 1; g.restore();
+}
 function fillLit(g, path, base, sun, bb, o = {}) {
   const lx = Math.cos(sun.a), ly = Math.sin(sun.a), cx = bb.x + bb.w / 2, cy = bb.y + bb.h / 2, R = Math.max(bb.w, bb.h) * 0.62;
   g.save(); g.fillStyle = base; g.fill(path); g.clip(path);
   const gr = g.createLinearGradient(cx + lx * R, cy + ly * R, cx - lx * R, cy - ly * R);
-  gr.addColorStop(0, mix(base, "#fff3d2", 0.38 * sun.k)); gr.addColorStop(0.5, base); gr.addColorStop(1, mix(base, "#25305e", 0.3 * sun.k));
+  gr.addColorStop(0, mix(base, "#fff1cc", 0.42 * sun.k)); gr.addColorStop(0.42, mix(base, "#fff1cc", 0.08 * sun.k)); gr.addColorStop(0.7, base); gr.addColorStop(1, mix(base, "#25305e", 0.32 * sun.k));
   g.fillStyle = gr; g.fillRect(bb.x - 40, bb.y - 40, bb.w + 80, bb.h + 80);
+  const bo = g.createLinearGradient(0, bb.y + bb.h, 0, bb.y + bb.h * 0.55);   // cool bounce light + occlusion at the bottom
+  bo.addColorStop(0, "rgba(40,50,90,0.22)"); bo.addColorStop(0.35, "rgba(150,180,230,0.10)"); bo.addColorStop(1, "rgba(150,180,230,0)");
+  g.fillStyle = bo; g.fillRect(bb.x - 40, bb.y, bb.w + 80, bb.h + 40);
   if (o.sheen !== false) { // soft vertical sheen like the reference bodies
     const sh = g.createLinearGradient(cx - bb.w * 0.5, 0, cx + bb.w * 0.5, 0);
     sh.addColorStop(0, "rgba(255,255,255,0)"); sh.addColorStop(0.28, "rgba(255,255,255,0.16)"); sh.addColorStop(0.4, "rgba(255,255,255,0)"); sh.addColorStop(1, "rgba(0,0,0,0.06)");
@@ -74,6 +99,8 @@ export function drawBean(g, sp, pose, opt = {}) {
   const body = smooth([at(-bw * 0.92, 14), at(-bw * 1.0, bodyH * 0.3), at(-bw * 0.9, bodyH * 0.62), at(-bw * 0.72, bodyH * 0.9), at(0, bodyH * 1.0), at(bw * 0.72, bodyH * 0.9), at(bw * 0.9, bodyH * 0.62), at(bw * 1.0, bodyH * 0.3), at(bw * 0.92, 14), at(0, -10)]);
   const bb = { x: hip[0] - bw * 1.1, y: hip[1] - bodyH * 1.05, w: bw * 2.2, h: bodyH * 1.1 };
   fillLit(g, body, C.coat, sun, bb);
+  fabric(g, body, bb, C.coat);
+  { g.save(); g.clip(body); const hc0 = at(side ? 10 : 0, bodyH * 0.92 + headR * 0.78), ao = g.createRadialGradient(hc0[0] + 10, hc0[1] + headR * 0.7, headR * 0.3, hc0[0] + 10, hc0[1] + headR * 0.7, headR * 1.3); ao.addColorStop(0, "rgba(20,16,30,0.38)"); ao.addColorStop(1, "rgba(20,16,30,0)"); g.fillStyle = ao; g.fillRect(bb.x - 50, bb.y - 50, bb.w + 100, bb.h + 100); g.restore(); }
   if (sp.dress) { const sk = smooth([at(-bw * 1.25, 0), at(-bw * 0.95, bodyH * 0.42), at(bw * 0.95, bodyH * 0.42), at(bw * 1.25, 0), at(0, -12)]); fillLit(g, sk, C.dress, sun, bb, { ol: 8 }); }
   // coat details
   g.save(); g.clip(body);
@@ -100,23 +127,25 @@ export function drawBean(g, sp, pose, opt = {}) {
 
 function drawHead(g, sp, c, r, sun, side, pose, opt) {
   const C = sp.colors, [x, y] = c, face = sp.face || "#f1f2f6";
-  if (sp.hair && !side) { const hb = ellP(x, y - r * 0.06, r * 1.03, r * 1.0); fillLit(g, hb, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9 }); }
+  if (sp.hair && !side) { const hb = ellP(x, y - r * 0.06, r * 1.03, r * 1.0); fillLit(g, hb, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9 }); hairStrands(g, hb, { x: x - r * 1.05, y: y - r * 1.06, w: r * 2.1, h: r * 2.0 }, C.hair); }
   const fp = side ? smooth([[x - r * 0.98, y], [x - r * 0.7, y - r * 0.72], [x, y - r * 1.0], [x + r * 0.78, y - r * 0.68], [x + r * 1.02, y + r * 0.02], [x + r * 0.76, y + r * 0.7], [x, y + r * 0.98], [x - r * 0.72, y + r * 0.7]]) : ellP(x, y, r, r * 0.97);
   fillLit(g, fp, face, { a: sun.a, k: sun.k * 0.55, shaft: sun.shaft }, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9, sheen: false });
+  g.save(); g.clip(fp); const sp0 = g.createRadialGradient(x - r * 0.35, y - r * 0.45, 2, x - r * 0.35, y - r * 0.45, r * 0.45); sp0.addColorStop(0, "rgba(255,255,255,0.35)"); sp0.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = sp0; g.fillRect(x - r, y - r, 2 * r, 2 * r); g.restore();
   g.save(); g.clip(fp); const rg = g.createRadialGradient(x - r * 0.25, y - r * 0.2, r * 0.3, x, y, r * 1.05); rg.addColorStop(0, "rgba(255,255,255,0)"); rg.addColorStop(1, "rgba(150,165,200,0.30)"); g.fillStyle = rg; g.fillRect(x - r, y - r, 2 * r, 2 * r);
   for (const s of (side ? [1] : [-1, 1])) { g.fillStyle = "rgba(240,130,130,0.10)"; g.beginPath(); g.ellipse(x + (side ? r * 0.35 : s * r * 0.52), y + r * 0.3, r * 0.16, r * 0.09, 0, 0, 7); g.fill(); }
   g.restore();
   // hair cap with grey streak highlights (reference style)
   if (sp.hair) {
-    const hp = side ? smooth([[x - r * 1.0, y + r * 0.1], [x - r * 0.85, y - r * 0.75], [x, y - r * 1.05], [x + r * 0.8, y - r * 0.7], [x + r * 0.62, y - r * 0.32], [x - r * 0.1, y - r * 0.46], [x - r * 0.55, y - r * 0.1]])
+    const hp = side ? smooth([[x - r * 1.0, y + r * 0.25], [x - r * 0.92, y - r * 0.62], [x - r * 0.3, y - r * 1.03], [x + r * 0.45, y - r * 0.95], [x + r * 0.82, y - r * 0.62], [x + r * 0.55, y - r * 0.5], [x + r * 0.05, y - r * 0.58], [x - r * 0.35, y - r * 0.3], [x - r * 0.6, y + r * 0.1]])
       : smooth([[x - r * 1.02, y - r * 0.2], [x - r * 0.8, y - r * 0.82], [x, y - r * 1.05], [x + r * 0.8, y - r * 0.82], [x + r * 1.02, y - r * 0.2], [x + r * 0.7, y - r * 0.55], [x, y - r * 0.64], [x - r * 0.7, y - r * 0.55]]);
     fillLit(g, hp, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: r }, { ol: 9 });
-    g.save(); g.clip(hp); g.strokeStyle = "rgba(255,255,255,0.35)"; g.lineWidth = r * 0.12; g.lineCap = "round";
+    hairStrands(g, hp, { x: x - r * 1.05, y: y - r * 1.06, w: r * 2.1, h: r * 1.0 }, C.hair);
+    g.save(); g.clip(hp); g.strokeStyle = "rgba(255,255,255,0.3)"; g.lineWidth = r * 0.1; g.lineCap = "round";
     g.beginPath(); g.arc(x - r * 0.05, y - r * 0.15, r * 0.78, 1.18 * Math.PI, 1.62 * Math.PI); g.stroke();
     g.strokeStyle = "rgba(0,0,0,0.35)"; g.lineWidth = 5; g.beginPath(); g.moveTo(x + r * 0.28, y - r * 1.0); g.quadraticCurveTo(x + r * 0.22, y - r * 0.7, x + r * 0.3, y - r * 0.46); g.stroke();
     g.restore();
   }
-  if (sp.longHair && !side) { for (const s of [-1, 1]) { const lh = smooth([[x + s * r * 0.85, y - r * 0.5], [x + s * r * 1.12, y + r * 0.2], [x + s * r * 1.0, y + r * 0.95], [x + s * r * 0.72, y + r * 0.85], [x + s * r * 0.8, y + r * 0.1]]); fillLit(g, lh, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 7 }); } }
+  if (sp.longHair && !side) { for (const s of [-1, 1]) { const lh = smooth([[x + s * r * 0.85, y - r * 0.5], [x + s * r * 1.12, y + r * 0.2], [x + s * r * 1.0, y + r * 0.95], [x + s * r * 0.72, y + r * 0.85], [x + s * r * 0.8, y + r * 0.1]]); fillLit(g, lh, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 7 }); hairStrands(g, lh, { x: x + Math.min(s * r * 0.7, s * r * 1.15), y: y - r * 0.55, w: r * 0.45, h: r * 1.55 }, C.hair); } }
   // face: dot eyes, small brows, mouth (reference: simple, bold)
   const e = opt.expr || sp.expr || "smile", eyes = side ? [x + r * 0.45] : [x - r * 0.3, x + r * 0.3], ey = y - r * 0.02;
   g.lineCap = "round"; g.strokeStyle = INK; g.fillStyle = INK;
