@@ -144,7 +144,7 @@ export function drawBean(g, sp, pose, opt = {}) {
 function drawHead(g, sp, c, r, sun, side, pose, opt) {
   const C = sp.colors, [x, y] = c, face = sp.face || "#f1f2f6";
   if (sp.hair && !side) { const hb = ellP(x, y - r * 0.06, r * 1.03, r * 1.0); fillLit(g, hb, mix(C.hair, "#000000", 0.35), sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9 }); hairStrands(g, hb, { x: x - r * 1.05, y: y - r * 1.06, w: r * 2.1, h: r * 2.0 }, C.hair); }
-  const fp = side ? smooth([[x - r * 0.98, y], [x - r * 0.7, y - r * 0.72], [x, y - r * 1.0], [x + r * 0.78, y - r * 0.68], [x + r * 1.02, y + r * 0.02], [x + r * 0.76, y + r * 0.7], [x, y + r * 0.98], [x - r * 0.72, y + r * 0.7]]) : (() => { const pts = []; for (let i = 0; i < 16; i++) { const t = i / 16 * Math.PI * 2, w = 1 + 0.035 * Math.sin(i * 2.7 + 1.3) + 0.025 * Math.cos(i * 4.1); pts.push([x + Math.cos(t) * r * w, y + Math.sin(t) * r * 0.97 * w]); } return smooth(pts); })();
+  const fp = side ? smooth([[x - r * 0.98, y], [x - r * 0.7, y - r * 0.72], [x, y - r * 1.0], [x + r * 0.78, y - r * 0.68], [x + r * 1.02, y + r * 0.02], [x + r * 0.76, y + r * 0.7], [x, y + r * 0.98], [x - r * 0.72, y + r * 0.7]]) : (() => { const pts = []; for (let i = 0; i < 16; i++) { const t = i / 16 * Math.PI * 2, wob = 0.035 * Math.sin(i * 2.7 + 1.3) + 0.025 * Math.cos(i * 4.1), w = 1 + (sp.halfFace ? (Math.cos(t) < 0 ? wob * 2.2 : 0) : wob); pts.push([x + Math.cos(t) * r * w, y + Math.sin(t) * r * 0.97 * w]); } return smooth(pts); })();
   fillLit(g, fp, face, { a: sun.a, k: sun.k * 0.55, shaft: sun.shaft }, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9, sheen: false });
   { // premium soft key light on the left side of the face (picture left)
     g.save(); g.clip(fp);
@@ -245,15 +245,15 @@ export function drawBunny(g, col, opt = {}) {
 }
 
 export const CAST = {
-  napoleon: { wide: 1.9, tall: 0.86, legs: 0.8, name: "Napoleon", hat: "bicorne", hair: true, vest: true, buttons: true, epaulettes: true, head: 1.02, legs: 0.92, expr: "smug",
+  napoleon: { halfFace: true, wide: 1.9, tall: 0.86, legs: 0.8, name: "Napoleon", hat: "bicorne", hair: true, vest: true, buttons: true, epaulettes: true, head: 1.02, legs: 0.92, expr: "smug",
     colors: { coat: "#2f4fa8", vest: "#f6f2ea", shoes: "#1a1616", hair: "#1d1a1c", hat: "#1a171b", gold: "#f0c040", buttons: "#f0c040" } },
-  berthier: { wide: 1.9, tall: 0.86, legs: 0.8, name: "Berthier", hat: "bicorne", plume: true, hair: true, vest: true, buttons: true, epaulettes: true, sash: true, stache: true, expr: "grin",
+  berthier: { halfFace: true, wide: 1.9, tall: 0.86, legs: 0.8, name: "Berthier", hat: "bicorne", plume: true, hair: true, vest: true, buttons: true, epaulettes: true, sash: true, stache: true, expr: "grin",
     colors: { coat: "#2f4fa8", vest: "#f6f2ea", shoes: "#1a1616", hair: "#6a5a52", hat: "#1a171b", gold: "#f0c040", buttons: "#f0c040", sash: "#d6333a" } },
-  hunter: { wide: 1.9, tall: 0.86, legs: 0.8, name: "Hunter", hat: "tricorne", hair: true, buttons: true, belt: true, expr: "smile",
+  hunter: { halfFace: true, wide: 1.9, tall: 0.86, legs: 0.8, name: "Hunter", hat: "tricorne", hair: true, buttons: true, belt: true, expr: "smile",
     colors: { coat: "#2f9a6a", shoes: "#3a2418", hair: "#5a3a26", hat: "#1e1a18", buttons: "#f0c040", belt: "#4a2e1c" } },
-  farmer: { wide: 1.9, tall: 0.86, legs: 0.8, name: "Farmer", hat: "cap", hair: true, buttons: true, stache: true, expr: "grin",
+  farmer: { halfFace: true, wide: 1.9, tall: 0.86, legs: 0.8, name: "Farmer", hat: "cap", hair: true, buttons: true, stache: true, expr: "grin",
     colors: { coat: "#c07a3a", shoes: "#4a3020", hair: "#8a6a44", hat: "#6a5236", buttons: "#5a3a22" } },
-  grenadier: { wide: 1.9, tall: 0.86, legs: 0.8, name: "Grenadier", hat: "bearskin", hair: true, vest: true, buttons: true, sash: true, stache: true, expr: "smile",
+  grenadier: { halfFace: true, wide: 1.9, tall: 0.86, legs: 0.8, name: "Grenadier", hat: "bearskin", hair: true, vest: true, buttons: true, sash: true, stache: true, expr: "smile",
     colors: { coat: "#2f4fa8", vest: "#f6f2ea", shoes: "#1a1616", hair: "#2a2020", hat: "#121012", buttons: "#f0c040", sash: "#f6f2ea" } },
 };
 
