@@ -36,6 +36,7 @@ function hairStrands(g, path, bb, col) {
     g.beginPath(); g.moveTo(bb.x + bb.w * 0.5 + (t - 0.5) * bb.w * 0.3, bb.y - 4); g.quadraticCurveTo(x, bb.y + bb.h * 0.35, x + (t - 0.5) * bb.w * 0.35 + (rnd() - 0.5) * 8, bb.y + bb.h + 6); g.stroke(); }
   g.globalAlpha = 1; g.restore();
 }
+function reink(g, path, ol = 9) { const OW = ol * 1.35; g.save(); g.lineJoin = "round"; g.lineCap = "round"; g.strokeStyle = INK; g.lineWidth = OW; g.stroke(path); g.translate(1.8, 1.4); g.lineWidth = OW * 0.8; g.stroke(path); g.translate(-3.0, -0.6); g.lineWidth = OW * 0.6; g.globalAlpha = 0.85; g.stroke(path); g.restore(); }
 function fillLit(g, path, base, sun, bb, o = {}) {
   const lx = Math.cos(sun.a), ly = Math.sin(sun.a), cx = bb.x + bb.w / 2, cy = bb.y + bb.h / 2, R = Math.max(bb.w, bb.h) * 0.62;
   g.save(); g.fillStyle = base; g.fill(path); g.clip(path);
@@ -111,7 +112,7 @@ export function drawBean(g, sp, pose, opt = {}) {
   fillLit(g, body, C.coat, sun, bb);
   fabric(g, body, bb, C.coat);
   { g.save(); g.clip(body); g.translate(7, 0); g.beginPath(); g.rect(bb.x - bb.w * 0.6, bb.y, bb.w, bb.h); g.clip(); g.lineWidth = 12; g.strokeStyle = "rgba(255,246,228,0.45)"; g.stroke(body);
-    const rg2 = g.createLinearGradient(bb.x, 0, bb.x + bb.w * 0.45, 0); rg2.addColorStop(0, "rgba(255,244,222,0.22)"); rg2.addColorStop(1, "rgba(255,244,222,0)"); g.fillStyle = rg2; g.fillRect(bb.x - 20, bb.y, bb.w + 20, bb.h); g.restore(); }
+    const rg2 = g.createLinearGradient(bb.x, 0, bb.x + bb.w * 0.45, 0); rg2.addColorStop(0, "rgba(255,244,222,0.22)"); rg2.addColorStop(1, "rgba(255,244,222,0)"); g.fillStyle = rg2; g.fillRect(bb.x - 20, bb.y, bb.w + 20, bb.h); g.restore(); reink(g, body, 9); }
   { g.save(); g.clip(body); const hc0 = at(side ? 10 : 0, bodyH * 0.92 + headR * 0.78), ao = g.createRadialGradient(hc0[0] + 10, hc0[1] + headR * 0.7, headR * 0.3, hc0[0] + 10, hc0[1] + headR * 0.7, headR * 1.3); ao.addColorStop(0, "rgba(20,16,30,0.38)"); ao.addColorStop(1, "rgba(20,16,30,0)"); g.fillStyle = ao; g.fillRect(bb.x - 50, bb.y - 50, bb.w + 100, bb.h + 100); g.restore(); }
   if (sp.dress) { const sk = smooth([at(-bw * 1.25, 0), at(-bw * 0.95, bodyH * 0.42), at(bw * 0.95, bodyH * 0.42), at(bw * 1.25, 0), at(0, -12)]); fillLit(g, sk, C.dress, sun, bb, { ol: 8 }); }
   // coat details
@@ -169,6 +170,7 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
     g.restore();
   }
   if (sp.longHair && !side) { for (const s of [-1, 1]) { const lh = smooth([[x + s * r * 0.85, y - r * 0.5], [x + s * r * 1.12, y + r * 0.2], [x + s * r * 1.0, y + r * 0.95], [x + s * r * 0.72, y + r * 0.85], [x + s * r * 0.8, y + r * 0.1]]); fillLit(g, lh, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 7 }); hairStrands(g, lh, { x: x + Math.min(s * r * 0.7, s * r * 1.15), y: y - r * 0.55, w: r * 0.45, h: r * 1.55 }, C.hair); } }
+  reink(g, fp, 9);
   // face: dot eyes, small brows, mouth (reference: simple, bold)
   const e = opt.expr || sp.expr || "smile", eyes = side ? [x + r * 0.45] : [x - r * 0.3, x + r * 0.3], ey = y - r * 0.02;
   g.lineCap = "round"; g.strokeStyle = INK; g.fillStyle = INK;
