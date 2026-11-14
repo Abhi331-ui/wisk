@@ -1,0 +1,41 @@
+<!doctype html><html><body style="margin:0">
+<canvas id="c" width="2400" height="2100"></canvas>
+<script type="module">
+import { drawChar, drawRabbit, POSES, CAST18 } from "./rig2d.js";
+const cv = document.getElementById("c"), g = cv.getContext("2d"), MODE = location.hash.slice(1) || "cast";
+// sunny backdrop: sky gradient, warm ground, sun disc top-left with soft glow
+const sky = g.createLinearGradient(0, 0, 0, 2100); sky.addColorStop(0, "#5f9fe0"); sky.addColorStop(0.55, "#bcd9f2"); sky.addColorStop(0.56, "#9fc06a"); sky.addColorStop(1, "#7aa04a");
+g.fillStyle = sky; g.fillRect(0, 0, 2400, 2100);
+const sg = g.createRadialGradient(140, 120, 10, 140, 120, 420); sg.addColorStop(0, "rgba(255,246,210,1)"); sg.addColorStop(0.15, "rgba(255,236,170,0.9)"); sg.addColorStop(1, "rgba(255,230,160,0)");
+g.fillStyle = sg; g.fillRect(0, 0, 900, 800);
+g.font = "bold 46px Arial"; g.fillStyle = "#1d1418";
+const shadow = (x, y, w) => { g.save(); g.fillStyle = "rgba(30,40,20,0.28)"; g.beginPath(); g.ellipse(x + 40, y + 4, w, 18, 0, 0, 7); g.fill(); g.restore(); };
+const put = (x, y, s, fn) => { g.save(); g.translate(x, y); g.scale(s, s); fn(); g.restore(); };
+const label = (t, x, y) => { g.save(); g.font = "bold 40px Arial"; g.textAlign = "center"; g.lineWidth = 8; g.strokeStyle = "#ffffff"; g.strokeText(t, x, y); g.fillStyle = "#1d1418"; g.fillText(t, x, y); g.restore(); };
+if (MODE === "cast") {
+  const names = Object.keys(CAST18);
+  names.forEach((n, i) => { const x = 230 + i * 470;
+    shadow(x - 40, 1000, 110); put(x - 70, 1000, 1.0, () => drawChar(g, CAST18[n], POSES.stand(), { view: "front" }));
+    shadow(x + 40, 1920, 90); put(x + 10, 1920, 1.0, () => drawChar(g, CAST18[n], n === "napoleon" ? POSES.point() : POSES.stand(), { view: "side", expr: CAST18[n].expr }));
+    label(CAST18[n].name, x - 70, 1080); });
+  const rc = ["#cdb69a", "#f3eee6", "#8a7868", "#d9c2a4", "#6e5c4c"];
+  rc.forEach((c, k) => { shadow(130 + k * 470, 2062, 50); put(150 + k * 470, 2060, 0.55, () => drawRabbit(g, c, {}, {})); });
+  label("Rabbits", 1200, 2085);
+} else {
+  const sp = CAST18.napoleon; let i = 0;
+  const cells = [["walk", [0, 0.25, 0.5, 0.75]], ["run", [0, 0.25, 0.5, 0.75]]];
+  cells.forEach(([m, ts], r) => ts.forEach((t, k) => { const x = 220 + k * 330, y = 900 + r * 0; }));
+  // row 1: walk cycle (4) + run cycle (4)
+  [0, 0.25, 0.5, 0.75].forEach((t, k) => { shadow(160 + k * 290, 860, 80); put(140 + k * 290, 860, 0.85, () => drawChar(g, sp, POSES.walk(t), { view: "side" })); });
+  label("WALK", 580, 920);
+  [0, 0.25, 0.5, 0.75].forEach((t, k) => { shadow(1310 + k * 290, 860, 80); put(1290 + k * 290, 860, 0.85, () => drawChar(g, sp, POSES.run(t), { view: "side", expr: "shock" })); });
+  label("RUN", 1730, 920);
+  // row 2: sit, sleep, wave, point, cheer, scared, shrug
+  const row = [["SIT", "sit", "side", "neutral"], ["WAVE", "wave", "front", "happy"], ["POINT", "point", "side", "angry"], ["CHEER", "cheer", "front", "happy"], ["SCARED", "scared", "front", "shock"], ["SHRUG", "shrug", "front", "neutral"]];
+  row.forEach(([lab, p, v, e], k) => { const x = 170 + k * 290; shadow(x - 30, 1900, 80);
+    if (p === "sit") { g.fillStyle = "#7a5232"; g.fillRect(x - 70, 1900 - 130, 150, 130); g.lineWidth = 6; g.strokeStyle = "#1d1418"; g.strokeRect(x - 70, 1900 - 130, 150, 130); }
+    put(x - 20, 1900, 0.85, () => drawChar(g, sp, POSES[p](0.1), { view: v, expr: e })); label(lab, x - 10, 1960); });
+  shadow(2080, 1900, 230); put(2330, 1905, 0.85, () => drawChar(g, sp, POSES.sleep(), { view: "side" })); label("SLEEP", 2090, 1960);
+}
+window.done = true;
+</script></body></html>
