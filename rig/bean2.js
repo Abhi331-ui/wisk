@@ -110,8 +110,8 @@ export function drawBean(g, sp, pose, opt = {}) {
   const bb = { x: hip[0] - bw * 1.1, y: hip[1] - bodyH * 1.05, w: bw * 2.2, h: bodyH * 1.1 };
   fillLit(g, body, C.coat, sun, bb);
   fabric(g, body, bb, C.coat);
-  { g.save(); g.clip(body); g.translate(-7, 0); g.beginPath(); g.rect(bb.x + bb.w * 0.6, bb.y, bb.w, bb.h); g.clip(); g.lineWidth = 12; g.strokeStyle = "rgba(255,246,228,0.45)"; g.stroke(body);
-    const rg2 = g.createLinearGradient(bb.x + bb.w, 0, bb.x + bb.w * 0.55, 0); rg2.addColorStop(0, "rgba(255,244,222,0.22)"); rg2.addColorStop(1, "rgba(255,244,222,0)"); g.fillStyle = rg2; g.fillRect(bb.x, bb.y, bb.w + 20, bb.h); g.restore(); }
+  { g.save(); g.clip(body); g.translate(7, 0); g.beginPath(); g.rect(bb.x - bb.w * 0.6, bb.y, bb.w, bb.h); g.clip(); g.lineWidth = 12; g.strokeStyle = "rgba(255,246,228,0.45)"; g.stroke(body);
+    const rg2 = g.createLinearGradient(bb.x, 0, bb.x + bb.w * 0.45, 0); rg2.addColorStop(0, "rgba(255,244,222,0.22)"); rg2.addColorStop(1, "rgba(255,244,222,0)"); g.fillStyle = rg2; g.fillRect(bb.x - 20, bb.y, bb.w + 20, bb.h); g.restore(); }
   { g.save(); g.clip(body); const hc0 = at(side ? 10 : 0, bodyH * 0.92 + headR * 0.78), ao = g.createRadialGradient(hc0[0] + 10, hc0[1] + headR * 0.7, headR * 0.3, hc0[0] + 10, hc0[1] + headR * 0.7, headR * 1.3); ao.addColorStop(0, "rgba(20,16,30,0.38)"); ao.addColorStop(1, "rgba(20,16,30,0)"); g.fillStyle = ao; g.fillRect(bb.x - 50, bb.y - 50, bb.w + 100, bb.h + 100); g.restore(); }
   if (sp.dress) { const sk = smooth([at(-bw * 1.25, 0), at(-bw * 0.95, bodyH * 0.42), at(bw * 0.95, bodyH * 0.42), at(bw * 1.25, 0), at(0, -12)]); fillLit(g, sk, C.dress, sun, bb, { ol: 8 }); }
   // coat details
@@ -143,14 +143,14 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
   if (sp.hair && !side) { const hb = ellP(x, y - r * 0.06, r * 1.03, r * 1.0); fillLit(g, hb, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9 }); hairStrands(g, hb, { x: x - r * 1.05, y: y - r * 1.06, w: r * 2.1, h: r * 2.0 }, C.hair); }
   const fp = side ? smooth([[x - r * 0.98, y], [x - r * 0.7, y - r * 0.72], [x, y - r * 1.0], [x + r * 0.78, y - r * 0.68], [x + r * 1.02, y + r * 0.02], [x + r * 0.76, y + r * 0.7], [x, y + r * 0.98], [x - r * 0.72, y + r * 0.7]]) : ellP(x, y, r, r * 0.97);
   fillLit(g, fp, face, { a: sun.a, k: sun.k * 0.55, shaft: sun.shaft }, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9, sheen: false });
-  { // premium soft key light on the right side of the face (picture right)
+  { // premium soft key light on the left side of the face (picture left)
     g.save(); g.clip(fp);
-    const kx = x + r * 0.62, ky = y - r * 0.1, kl = g.createRadialGradient(kx, ky, r * 0.05, kx, ky, r * 1.0);
+    const kx = x - r * 0.62, ky = y - r * 0.1, kl = g.createRadialGradient(kx, ky, r * 0.05, kx, ky, r * 1.0);
     kl.addColorStop(0, "rgba(255,246,228,0.55)"); kl.addColorStop(0.45, "rgba(255,240,215,0.22)"); kl.addColorStop(1, "rgba(255,240,215,0)");
     g.fillStyle = kl; g.fillRect(x - r, y - r, 2 * r, 2 * r);
-    const sh = g.createLinearGradient(x + r * 0.2, 0, x - r, 0); sh.addColorStop(0, "rgba(40,30,60,0)"); sh.addColorStop(1, "rgba(40,30,60,0.14)");
+    const sh = g.createLinearGradient(x - r * 0.2, 0, x + r, 0); sh.addColorStop(0, "rgba(40,30,60,0)"); sh.addColorStop(1, "rgba(40,30,60,0.14)");
     g.fillStyle = sh; g.fillRect(x - r, y - r, 2 * r, 2 * r);
-    g.translate(-6, 0); g.lineWidth = 10; g.strokeStyle = "rgba(255,248,232,0.55)"; g.save(); g.beginPath(); g.rect(x + r * 0.35, y - r, r, 2 * r); g.clip(); g.stroke(fp); g.restore();
+    g.translate(6, 0); g.lineWidth = 10; g.strokeStyle = "rgba(255,248,232,0.55)"; g.save(); g.beginPath(); g.rect(x - r * 1.35, y - r, r, 2 * r); g.clip(); g.stroke(fp); g.restore();
     g.restore();
   }
   g.save(); g.clip(fp); const sp0 = g.createRadialGradient(x - r * 0.35, y - r * 0.45, 2, x - r * 0.35, y - r * 0.45, r * 0.45); sp0.addColorStop(0, "rgba(255,255,255,0.35)"); sp0.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = sp0; g.fillRect(x - r, y - r, 2 * r, 2 * r); g.restore();
