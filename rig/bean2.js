@@ -144,7 +144,7 @@ export function drawBean(g, sp, pose, opt = {}) {
 function drawHead(g, sp, c, r, sun, side, pose, opt) {
   const C = sp.colors, [x, y] = c, face = sp.face || "#f1f2f6";
   if (sp.hair && !side) { const hb = ellP(x, y - r * 0.06, r * 1.03, r * 1.0); fillLit(g, hb, mix(C.hair, "#000000", 0.35), sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9 }); hairStrands(g, hb, { x: x - r * 1.05, y: y - r * 1.06, w: r * 2.1, h: r * 2.0 }, C.hair); }
-  const fp = side ? smooth([[x - r * 0.98, y], [x - r * 0.7, y - r * 0.72], [x, y - r * 1.0], [x + r * 0.78, y - r * 0.68], [x + r * 1.02, y + r * 0.02], [x + r * 0.76, y + r * 0.7], [x, y + r * 0.98], [x - r * 0.72, y + r * 0.7]]) : ellP(x, y, r, r * 0.97);
+  const fp = side ? smooth([[x - r * 0.98, y], [x - r * 0.7, y - r * 0.72], [x, y - r * 1.0], [x + r * 0.78, y - r * 0.68], [x + r * 1.02, y + r * 0.02], [x + r * 0.76, y + r * 0.7], [x, y + r * 0.98], [x - r * 0.72, y + r * 0.7]]) : (() => { const pts = []; for (let i = 0; i < 16; i++) { const t = i / 16 * Math.PI * 2, w = 1 + 0.035 * Math.sin(i * 2.7 + 1.3) + 0.025 * Math.cos(i * 4.1); pts.push([x + Math.cos(t) * r * w, y + Math.sin(t) * r * 0.97 * w]); } return smooth(pts); })();
   fillLit(g, fp, face, { a: sun.a, k: sun.k * 0.55, shaft: sun.shaft }, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9, sheen: false });
   { // premium soft key light on the left side of the face (picture left)
     g.save(); g.clip(fp);
