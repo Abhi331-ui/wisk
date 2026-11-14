@@ -27,7 +27,7 @@ const P = () => new Path2D();
 const ellP = (x, y, rx, ry, r = 0) => { const p = P(); p.ellipse(x, y, rx, ry, r, 0, Math.PI * 2); return p; };
 const smooth = (pts) => { const p = P(), n = pts.length; p.moveTo(...pts[0]); for (let i = 0; i < n; i++) { const a = pts[(i - 1 + n) % n], b = pts[i], c = pts[(i + 1) % n], d = pts[(i + 2) % n]; p.bezierCurveTo(b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6, c[0] - (d[0] - b[0]) / 6, c[1] - (d[1] - b[1]) / 6, c[0], c[1]); } p.closePath(); return p; };
 // noodle limb: smooth curve through 3 points, ink stroke with a thin coloured core (sleeve) at the top
-function noodle(g, a, b, c, w = 10) {
+function noodle(g, a, b, c, w = 8) {
   g.save(); g.lineCap = "round"; g.lineJoin = "round"; g.strokeStyle = INK; g.lineWidth = w;
   g.beginPath(); g.moveTo(...a); g.quadraticCurveTo(b[0] * 2 - (a[0] + c[0]) / 2, b[1] * 2 - (a[1] + c[1]) / 2, ...c); g.stroke(); g.restore();
 }
@@ -51,7 +51,7 @@ export const MOVES = {
 
 export function drawBean(g, sp, pose, opt = {}) {
   const sun = { a: rad(opt.sunDeg ?? 215), k: opt.sunK ?? 1, shaft: opt.shaft }, side = opt.view === "side", C = sp.colors;
-  const W = sp.wide ?? 1.0, legL = 125 * (sp.legs ?? 1), bodyH = 250 * (sp.tall ?? 1), bodyW = 118 * W, headR = 118 * (sp.head ?? 1);
+  const W = sp.wide ?? 1.0, legL = 150 * (sp.legs ?? 1), bodyH = 270 * (sp.tall ?? 1), bodyW = 84 * W, headR = 132 * (sp.head ?? 1);
   g.save(); if (pose.lie) { g.translate(0, -60); g.rotate(-Math.PI / 2); }
   let hipY = -legL * Math.max(Math.cos(rad(pose.hipL)), Math.cos(rad(pose.hipR))) * 1.85 + (pose.bob || 0);
   if (pose.seat) hipY = -legL * 0.95; if (pose.lie) hipY = -legL * 1.85;
@@ -59,23 +59,24 @@ export function drawBean(g, sp, pose, opt = {}) {
   const up = [Math.sin(lean), -Math.cos(lean)];
   const at = (u, v) => [hip[0] + up[0] * v + Math.cos(lean) * u, hip[1] + up[1] * v + Math.sin(lean) * u];
   // legs: noodles to shoes
-  const leg = (s, ha, ka) => { const h = at(side ? s * 6 : s * 40, 30), k = fk(h, side ? ha : s * 4 + ha * 0.2, legL * 0.95), f = fk(k, side ? ha + ka : s * 4, legL * 0.95); return [h, k, f]; };
-  const shoe = (f, far) => { const p = side ? ellP(f[0] + 18, f[1] - 2, 36, 18) : ellP(f[0], f[1] - 4, 30, 18); fillLit(g, p, far ? mix(C.shoes, "#000000", 0.2) : C.shoes, sun, { x: f[0] - 40, y: f[1] - 25, w: 90, h: 30 }, { ol: 7, sheen: false }); };
+  const leg = (s, ha, ka) => { const h = at(side ? s * 6 : s * 28, 26), k = fk(h, side ? ha : s * 4 + ha * 0.2, legL * 0.95), f = fk(k, side ? ha + ka : s * 4, legL * 0.95); return [h, k, f]; };
+  const shoe = (f, far) => { const p = side ? ellP(f[0] + 14, f[1] - 2, 26, 13) : ellP(f[0], f[1] - 4, 20, 13); fillLit(g, p, far ? mix(C.shoes, "#000000", 0.2) : C.shoes, sun, { x: f[0] - 40, y: f[1] - 25, w: 90, h: 30 }, { ol: 7, sheen: false }); };
   const L = leg(side ? 1 : -1, pose.hipL, pose.kneeL), R = leg(1, pose.hipR, pose.kneeR);
-  const sh = (s) => at(side ? 10 : s * bodyW * 0.82, bodyH * 0.78);
-  const arm = (s, sa, ea) => { const o = sh(s), aa = side ? sa : s * (12 + Math.abs(sa) * 0.85), e = fk(o, aa, 88), w = fk(e, side ? sa - ea : aa + s * -Math.min(0, ea) * 0.6, 84); return [o, e, w]; };
+  const sh = (s) => at(side ? 10 : s * bodyW * 0.86, bodyH * 0.66);
+  const arm = (s, sa, ea) => { const o = sh(s), aa = side ? sa : s * (10 + Math.abs(sa) * 0.85), e = fk(o, aa, 82), w = fk(e, side ? sa - ea : aa + s * -Math.min(0, ea) * 0.6, 78); return [o, e, w]; };
   const AL = arm(-1, pose.shL, pose.elL), AR = arm(1, pose.shR, pose.elR);
-  const hand = (p) => { fillLit(g, ellP(p[0], p[1], 15, 15), sp.gloves || "#ffffff", sun, { x: p[0] - 15, y: p[1] - 15, w: 30, h: 30 }, { ol: 6, sheen: false }); };
+  const hand = (p) => { g.fillStyle = INK; g.beginPath(); g.ellipse(p[0], p[1], 11, 12, 0, 0, 7); g.fill(); };
   if (side) { noodle(g, ...AL); hand(AL[2]); }
-  noodle(g, ...L, 11); shoe(L[2], side); noodle(g, ...R, 11); shoe(R[2], false);
+  noodle(g, ...L, 8); shoe(L[2], side); noodle(g, ...R, 8); shoe(R[2], false);
   // peanut body: wider hips, slight waist, rounded shoulders
   const bw = side ? bodyW * 0.72 : bodyW;
-  const body = smooth([at(-bw * 0.95, 10), at(-bw * 1.02, bodyH * 0.35), at(-bw * 0.86, bodyH * 0.7), at(-bw * 0.62, bodyH * 0.95), at(0, bodyH * 1.02), at(bw * 0.62, bodyH * 0.95), at(bw * 0.86, bodyH * 0.7), at(bw * 1.02, bodyH * 0.35), at(bw * 0.95, 10), at(0, -14)]);
+  const body = smooth([at(-bw * 0.92, 14), at(-bw * 1.0, bodyH * 0.3), at(-bw * 0.9, bodyH * 0.62), at(-bw * 0.72, bodyH * 0.9), at(0, bodyH * 1.0), at(bw * 0.72, bodyH * 0.9), at(bw * 0.9, bodyH * 0.62), at(bw * 1.0, bodyH * 0.3), at(bw * 0.92, 14), at(0, -10)]);
   const bb = { x: hip[0] - bw * 1.1, y: hip[1] - bodyH * 1.05, w: bw * 2.2, h: bodyH * 1.1 };
   fillLit(g, body, C.coat, sun, bb);
   // coat details
   g.save(); g.clip(body);
   const fx = side ? bw * 0.35 : 0;
+  if (sp.lapels) for (const s of (side ? [1] : [-1, 1])) { const lp = new Path2D(); const a0 = at(fx + s * bw * 0.05, bodyH * 0.95), a1 = at(fx + s * bw * 0.55, bodyH * 0.9), a2 = at(fx + s * bw * 0.1, bodyH * 0.45); lp.moveTo(...a0); lp.lineTo(...a1); lp.lineTo(...a2); lp.closePath(); g.fillStyle = mix(C.coat, "#000000", 0.25); g.fill(lp); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(lp); }
   if (sp.vest) { const v = smooth([at(fx - bw * 0.34, 18), at(fx - bw * 0.3, bodyH * 0.75), at(fx, bodyH * 0.9), at(fx + bw * 0.3, bodyH * 0.75), at(fx + bw * 0.34, 18)]); fillLit(g, v, C.vest, sun, bb, { ol: 5, sheen: false }); }
   if (sp.tie) { const t = smooth([at(fx - 9, bodyH * 0.8), at(fx + 9, bodyH * 0.8), at(fx + 14, bodyH * 0.36), at(fx, bodyH * 0.28), at(fx - 14, bodyH * 0.36)]); fillLit(g, t, C.tie, sun, bb, { ol: 4, sheen: false }); }
   if (sp.sash) { g.lineWidth = 30; g.strokeStyle = C.sash; g.beginPath(); g.moveTo(...at(-bw, bodyH * 0.85)); g.lineTo(...at(bw, bodyH * 0.2)); g.stroke(); g.lineWidth = 4; g.strokeStyle = INK; }
@@ -86,7 +87,7 @@ export function drawBean(g, sp, pose, opt = {}) {
   if (sp.epaulettes) for (const s of (side ? [1] : [-1, 1])) { const p = sh(s); fillLit(g, ellP(p[0] + (side ? 0 : s * 6), p[1] - 4, 30, 12), C.gold, sun, { x: p[0] - 30, y: p[1] - 16, w: 60, h: 24 }, { ol: 5, sheen: false }); }
   if (!side) { noodle(g, ...AL); hand(AL[2]); }
   // head: big flat face circle sitting on the shoulders
-  const hc = at(side ? 18 : 0, bodyH * 0.9 + headR * 0.82);
+  const hc = at(side ? 10 : 0, bodyH * 0.92 + headR * 0.78);
   drawHead(g, sp, hc, headR, sun, side, pose, opt);
   noodle(g, ...AR); hand(AR[2]);
   if (opt.prop === "musket") { g.save(); g.lineCap = "round"; g.lineWidth = 16; g.strokeStyle = INK; const w = AR[2]; g.beginPath(); g.moveTo(w[0] - 40, w[1] + 120); g.lineTo(w[0] + 60, w[1] - 260); g.stroke(); g.lineWidth = 9; g.strokeStyle = "#6a4426"; g.stroke(); g.restore(); }
@@ -95,27 +96,31 @@ export function drawBean(g, sp, pose, opt = {}) {
 }
 
 function drawHead(g, sp, c, r, sun, side, pose, opt) {
-  const C = sp.colors, [x, y] = c, face = sp.face || "#f8f5ee";
+  const C = sp.colors, [x, y] = c, face = sp.face || "#f7f3ec";
   if (sp.hair && !side) { const hb = ellP(x, y - r * 0.06, r * 1.03, r * 1.0); fillLit(g, hb, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9 }); }
   const fp = side ? smooth([[x - r * 0.98, y], [x - r * 0.7, y - r * 0.72], [x, y - r * 1.0], [x + r * 0.78, y - r * 0.68], [x + r * 1.02, y + r * 0.02], [x + r * 0.76, y + r * 0.7], [x, y + r * 0.98], [x - r * 0.72, y + r * 0.7]]) : ellP(x, y, r, r * 0.97);
-  fillLit(g, fp, face, { a: sun.a, k: sun.k * 0.55, shaft: sun.shaft }, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9 });
+  fillLit(g, fp, face, { a: sun.a, k: sun.k * 0.55, shaft: sun.shaft }, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9, sheen: false });
+  g.save(); g.clip(fp); const rg = g.createRadialGradient(x - r * 0.25, y - r * 0.2, r * 0.3, x, y, r * 1.05); rg.addColorStop(0, "rgba(255,255,255,0)"); rg.addColorStop(1, "rgba(235,170,150,0.28)"); g.fillStyle = rg; g.fillRect(x - r, y - r, 2 * r, 2 * r);
+  for (const s of (side ? [1] : [-1, 1])) { g.fillStyle = "rgba(240,130,130,0.22)"; g.beginPath(); g.ellipse(x + (side ? r * 0.35 : s * r * 0.52), y + r * 0.3, r * 0.16, r * 0.09, 0, 0, 7); g.fill(); }
+  g.restore();
   // hair cap with grey streak highlights (reference style)
   if (sp.hair) {
     const hp = side ? smooth([[x - r * 1.0, y + r * 0.1], [x - r * 0.85, y - r * 0.75], [x, y - r * 1.05], [x + r * 0.8, y - r * 0.7], [x + r * 0.62, y - r * 0.32], [x - r * 0.1, y - r * 0.46], [x - r * 0.55, y - r * 0.1]])
       : smooth([[x - r * 1.02, y - r * 0.05], [x - r * 0.8, y - r * 0.78], [x, y - r * 1.04], [x + r * 0.8, y - r * 0.78], [x + r * 1.02, y - r * 0.05], [x + r * 0.62, y - r * 0.42], [x, y - r * 0.5], [x - r * 0.62, y - r * 0.42]]);
     fillLit(g, hp, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: r }, { ol: 9 });
-    g.save(); g.clip(hp); g.strokeStyle = "rgba(255,255,255,0.32)"; g.lineWidth = 7; g.lineCap = "round";
-    for (let k = -2; k <= 2; k++) { g.beginPath(); g.moveTo(x + k * r * 0.26 - 10, y - r * 0.95); g.quadraticCurveTo(x + k * r * 0.3, y - r * 0.75, x + k * r * 0.36 + 6, y - r * 0.5); g.stroke(); }
+    g.save(); g.clip(hp); g.strokeStyle = "rgba(255,255,255,0.35)"; g.lineWidth = r * 0.12; g.lineCap = "round";
+    g.beginPath(); g.arc(x - r * 0.05, y - r * 0.15, r * 0.78, 1.18 * Math.PI, 1.62 * Math.PI); g.stroke();
+    g.strokeStyle = "rgba(0,0,0,0.35)"; g.lineWidth = 5; g.beginPath(); g.moveTo(x + r * 0.28, y - r * 1.0); g.quadraticCurveTo(x + r * 0.22, y - r * 0.7, x + r * 0.3, y - r * 0.46); g.stroke();
     g.restore();
   }
   // face: dot eyes, small brows, mouth (reference: simple, bold)
-  const e = opt.expr || sp.expr || "smile", eyes = side ? [x + r * 0.45] : [x - r * 0.33, x + r * 0.33], ey = y + r * 0.02;
+  const e = opt.expr || sp.expr || "smile", eyes = side ? [x + r * 0.45] : [x - r * 0.28, x + r * 0.28], ey = y + r * 0.06;
   g.lineCap = "round"; g.strokeStyle = INK; g.fillStyle = INK;
   for (const ex of eyes) {
     if (pose.lie || e === "sleep") { g.lineWidth = 7; g.beginPath(); g.arc(ex, ey, 14, 0.15 * Math.PI, 0.85 * Math.PI); g.stroke(); }
     else if (e === "laugh") { g.lineWidth = 9; g.beginPath(); g.arc(ex, ey + 10, 18, 1.15 * Math.PI, 1.85 * Math.PI); g.stroke(); }
     else if (e === "shock") { g.fillStyle = "#fff"; g.beginPath(); g.ellipse(ex, ey, 20, 24, 0, 0, 7); g.fill(); g.lineWidth = 6; g.stroke(); g.fillStyle = INK; g.beginPath(); g.arc(ex, ey, 8, 0, 7); g.fill(); }
-    else { g.beginPath(); g.ellipse(ex, ey, 13, 19, 0, 0, 7); g.fill(); }
+    else { g.beginPath(); g.ellipse(ex, ey, 11, 16, 0, 0, 7); g.fill(); }
     g.lineWidth = 8; g.beginPath();
     if (e === "angry" || e === "smug") { g.moveTo(ex - 22, ey - 44); g.lineTo(ex + 20, ey - 32); } else if (e === "shock") { g.arc(ex, ey - 30, 20, 1.2 * Math.PI, 1.8 * Math.PI); } else { g.moveTo(ex - 18, ey - 40); g.quadraticCurveTo(ex, ey - 47, ex + 18, ey - 40); }
     g.stroke();

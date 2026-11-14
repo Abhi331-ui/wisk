@@ -18,11 +18,11 @@ const shadow = (x, y, w) => { g.fillStyle = "rgba(20,24,60,0.25)"; g.beginPath()
 const label = (t, x, y) => { g.save(); g.font = "bold 44px Arial"; g.textAlign = "center"; g.lineWidth = 10; g.strokeStyle = "#15110f"; g.strokeText(t, x, y); g.fillStyle = "#ffffff"; g.fillText(t, x, y); g.restore(); };
 if (MODE === "cast") {
   Object.keys(CAST).forEach((n, i) => { const x = 250 + i * 470, sp = CAST[n];
-    shadow(x, 1080, 120); put(x, 1080, 1.05, () => drawBean(g, sp, MOVES.stand(), {}));
-    label(sp.name, x, 1145);
-    shadow(x, 1960, 95); put(x, 1960, 0.9, () => drawBean(g, sp, n === "napoleon" ? MOVES.point() : MOVES.stand(), { view: "side", prop: n === "hunter" || n === "grenadier" ? "musket" : null }));
+    shadow(x, 1010, 110); put(x, 1010, 0.92, () => drawBean(g, sp, MOVES.stand(), {}));
+    label(sp.name, x, 1075);
+    shadow(x - 60, 2080, 85); put(x - 60, 2080, 0.8, () => drawBean(g, sp, n === "napoleon" ? MOVES.point() : MOVES.stand(), { view: "side", prop: n === "hunter" || n === "grenadier" ? "musket" : null }));
   });
-  ["#ffffff", "#d8c0a2", "#9a8574", "#f2e6d8", "#6f5d50"].forEach((c, k) => { shadow(120 + k * 470, 2140, 70); put(180 + k * 470, 2140, 0.6, () => drawBunny(g, c, {})); });
+  ["#ffffff", "#d8c0a2", "#9a8574", "#f2e6d8", "#6f5d50"].forEach((c, k) => { shadow(370 + k * 470, 2140, 55); put(380 + k * 470, 2140, 0.5, () => drawBunny(g, c, {})); });
 } else {
   const sp = CAST.napoleon;
   [0, 0.25, 0.5, 0.75].forEach((t, k) => { shadow(170 + k * 280, 900, 90); put(170 + k * 280, 900, 0.85, () => drawBean(g, sp, MOVES.walk(t), { view: "side" })); }); label("WALK", 590, 980);
