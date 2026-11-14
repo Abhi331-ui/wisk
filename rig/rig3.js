@@ -18,15 +18,21 @@ function shadePath(g, path, base, sun, opts = {}) {
   g.clip(path);
   const b = bb || { x: -400, y: -800, w: 800, h: 900 }, cx = b.x + b.w / 2, cy = b.y + b.h / 2, R = Math.max(b.w, b.h) * 0.6;
   const gr = g.createLinearGradient(cx + lx * R, cy + ly * R, cx - lx * R, cy - ly * R);
-  gr.addColorStop(0, mixHex(base, "#fff0cf", 0.42 * sun.k));     // sunlit side: warm, soft
-  gr.addColorStop(0.45, base);
-  gr.addColorStop(1, mixHex(base, "#2c3768", 0.34 * sun.k));     // shadow side: cool
+  gr.addColorStop(0, mixHex(base, "#fff0cf", 0.3 * sun.k));     // sunlit side: warm, soft
+  gr.addColorStop(0.5, base);
+  gr.addColorStop(1, mixHex(base, "#2c3768", 0.14 * sun.k));     // shadow side: cool
   g.fillStyle = gr; g.fillRect(b.x - 50, b.y - 50, b.w + 100, b.h + 100);
+  { // pencil hatching that fades in toward the shadow side
+    const hg = g.createLinearGradient(cx + lx * R * 0.2, cy + ly * R * 0.2, cx - lx * R, cy - ly * R);
+    hg.addColorStop(0, "rgba(40,30,40,0)"); hg.addColorStop(1, `rgba(40,30,50,${0.42 * sun.k})`);
+    g.strokeStyle = hg; g.lineWidth = 2.2; g.lineCap = "round";
+    for (let t = -b.h - b.w; t < b.w + b.h; t += 9) { g.beginPath(); g.moveTo(b.x + t + jit() * 2, b.y - 20); g.lineTo(b.x + t + b.h * 0.7 + jit() * 3, b.y + b.h + 20); g.stroke(); }
+  }
   if (rim) { // warm rim light on the sun-facing edge
     g.translate(-lx * 7, -ly * 7); g.lineWidth = 14; g.strokeStyle = "rgba(255,236,190," + (0.55 * sun.k) + ")"; g.stroke(path);
   }
   g.restore();
-  if (ol) { g.lineWidth = ol; g.strokeStyle = INK; g.lineJoin = "round"; g.stroke(path); g.save(); g.translate(1.5, 1.1); g.lineWidth = ol * 0.45; g.strokeStyle = "rgba(29,20,24,0.5)"; g.stroke(path); g.restore(); }
+  if (ol) { g.lineWidth = ol; g.strokeStyle = INK; g.lineJoin = "round"; g.stroke(path); g.save(); g.translate(1.8, 1.2); g.lineWidth = ol * 0.4; g.strokeStyle = "rgba(29,20,24,0.55)"; g.stroke(path); g.translate(-3.2, 0.8); g.lineWidth = ol * 0.25; g.strokeStyle = "rgba(29,20,24,0.4)"; g.stroke(path); g.restore(); }
 }
 // cloth texture + fold lines inside a clipped garment
 function cloth(g, path, bb, col, folds = []) {
@@ -70,7 +76,7 @@ const smoothPoly = (pts0) => { // closed Catmull-Rom outline with a slight hand-
 
 // ---------------------------------------------------------------- skeleton
 // proportions (cartoon-human: big head, slim limbs)
-const B = { thigh: 118, shin: 118, upper: 98, fore: 92, torso: 175, neck: 18, head: 92, hipW: 30, shW: 56 };
+const B = { thigh: 124, shin: 124, upper: 100, fore: 94, torso: 185, neck: 22, head: 74, hipW: 30, shW: 56 };
 // pose: angles in degrees measured from straight down (positive = forward, toward facing direction)
 export const POSES = {
   stand: () => ({ lean: 0, hipL: 2, kneeL: 0, hipR: -2, kneeR: 0, shL: 6, elL: -8, shR: -6, elR: -8, head: 0, bob: 0 }),
@@ -177,8 +183,10 @@ function drawHead(g, sp, c, sun, F, pose, opt) {
   // ear (side)
   if (!F) shadePath(g, ell(x - 14, y + 6, 18, 24), C.skin, sun, { bb: { x: x - 40, y: y - 30, w: 60, h: 70 }, ol: 5 });
   // face
-  if (F) { for (const s2 of [-1, 1]) shadePath(g, ell(x + s2 * r * 0.86, y + 8, 16, 24), C.skin, sun, { bb: { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, ol: 5 }); }
-  const face = F ? smoothPoly([[x, y - r * 1.02], [x + r * 0.62, y - r * 0.86], [x + r * 0.86, y - r * 0.3], [x + r * 0.84, y + r * 0.3], [x + r * 0.6, y + r * 0.8], [x + r * 0.2, y + r * 1.06], [x - r * 0.2, y + r * 1.06], [x - r * 0.6, y + r * 0.8], [x - r * 0.84, y + r * 0.3], [x - r * 0.86, y - r * 0.3], [x - r * 0.62, y - r * 0.86]]) : smoothPoly([[x - r, y - 10], [x - r * 0.7, y - r * 0.8], [x + r * 0.25, y - r * 0.98], [x + r * 0.95, y - r * 0.35], [x + r * 1.04, y + r * 0.15], [x + r * 0.8, y + r * 0.7], [x + r * 0.1, y + r * 0.98], [x - r * 0.75, y + r * 0.7]]);
+  if (F) { for (const s2 of [-1, 1]) shadePath(g, ell(x + s2 * r * ({ oval: 0.78, long: 0.7, square: 0.84, angular: 0.8 }[sp.faceShape || "oval"]), y + 8, 14, 22), C.skin, sun, { bb: { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, ol: 5 }); }
+  const FS = { oval: [0.78, 0.62, 0.22, 1.18], long: [0.7, 0.55, 0.18, 1.32], square: [0.84, 0.8, 0.38, 1.12], angular: [0.8, 0.5, 0.12, 1.24] }[sp.faceShape || "oval"];
+  const [fw, jw, cw, fh] = FS;
+  const face = F ? smoothPoly([[x, y - r * 1.05], [x + r * fw * 0.78, y - r * 0.88], [x + r * fw, y - r * 0.25], [x + r * fw * 0.97, y + r * 0.35], [x + r * jw, y + r * fh * 0.72], [x + r * cw, y + r * fh], [x - r * cw, y + r * fh], [x - r * jw, y + r * fh * 0.72], [x - r * fw * 0.97, y + r * 0.35], [x - r * fw, y - r * 0.25], [x - r * fw * 0.78, y - r * 0.88]]) : smoothPoly([[x - r, y - 10], [x - r * 0.7, y - r * 0.8], [x + r * 0.25, y - r * 0.98], [x + r * 0.95, y - r * 0.35], [x + r * 1.04, y + r * 0.15], [x + r * 0.8, y + r * 0.7], [x + r * 0.1, y + r * 0.98], [x - r * 0.75, y + r * 0.7]]);
   shadePath(g, face, C.skin, { a: sun.a, k: sun.k * 0.8 }, { bb: { x: x - r, y: y - r, w: 2 * r, h: 2 * r } });
   // soft bounce light under the chin side and blush
   g.save(); g.clip(face);
@@ -273,20 +281,20 @@ export const CAST18 = {
 };
 
 export const MWC = {
-  percy: { name: "Percy", hair: "fringe", glasses: true, shirt: true, tie: true, lapels: true, pockets: true, pen: true, buttons: false, longCoat: true, expr: "neutral",
+  percy: { faceShape: "long", name: "Percy", hair: "fringe", glasses: true, shirt: true, tie: true, lapels: true, pockets: true, pen: true, buttons: false, longCoat: true, expr: "neutral",
     colors: { coat: "#5b6170", pants: "#4c515e", boots: "#1a1416", skin: "#f3d1b4", hair: "#a29c94", tie: "#9a2e34", buttons: "#2a2a2a" } },
-  kid: { name: "Young Percy", hat: "cap", hair: "fringe", shirt: true, buttons: true, belt: true, expr: "neutral",
+  kid: { faceShape: "oval", name: "Young Percy", hat: "cap", hair: "fringe", shirt: false, buttons: true, belt: true, expr: "neutral",
     colors: { coat: "#6b7a8a", pants: "#4a5a6a", boots: "#3a2a1a", skin: "#f6dcc2", hair: "#6a4a2a", hat: "#5a4a3a", buttons: "#3a2a1a", belt: "#3a2618" } },
-  eng1: { name: "Engineer", hair: "fringe", shirt: true, tie: true, lapels: true, pockets: true, pen: true, longCoat: true, stache: true, expr: "happy",
+  eng1: { faceShape: "square", name: "Engineer", hair: "fringe", shirt: true, tie: true, lapels: true, pockets: true, pen: true, longCoat: true, stache: true, expr: "happy",
     colors: { coat: "#f2f1ec", pants: "#4a4e58", boots: "#1a1416", skin: "#f3d6bc", hair: "#3a2a20", tie: "#2f4f8a" } },
-  eng2: { name: "Engineer", hair: "fringe", glasses: true, shirt: true, tie: true, lapels: true, pockets: true, longCoat: true, expr: "neutral",
+  eng2: { faceShape: "angular", name: "Engineer", hair: "fringe", glasses: true, shirt: true, tie: true, lapels: true, pockets: true, longCoat: true, expr: "neutral",
     colors: { coat: "#f2f1ec", pants: "#5a4e44", boots: "#2a1e16", skin: "#e8c6a4", hair: "#8a5a34", tie: "#3a6a3a" } },
-  eng3: { name: "Engineer", hair: "fringe", shirt: true, tie: true, lapels: true, pockets: true, longCoat: true, stache: true, expr: "happy",
+  eng3: { faceShape: "square", name: "Engineer", hair: "fringe", shirt: true, tie: true, lapels: true, pockets: true, longCoat: true, stache: true, expr: "happy",
     colors: { coat: "#f2f1ec", pants: "#3a3e48", boots: "#1a1416", skin: "#b8835e", hair: "#1a1412", tie: "#8a3a2a" } },
-  engw: { name: "Engineer", hair: "fringe", longHair: true, dress: true, lapels: true, pockets: true, longCoat: true, expr: "happy",
+  engw: { faceShape: "oval", name: "Engineer", hair: "fringe", longHair: true, dress: true, lapels: true, pockets: true, longCoat: true, expr: "happy",
     colors: { coat: "#f2f1ec", pants: "#f3d6bc", boots: "#1a1416", skin: "#f3d6bc", hair: "#7a4a26", dress: "#3f6fb5" } },
-  boss: { name: "Company boss", hair: "fringe", shirt: true, tie: true, lapels: true, pockets: true, longCoat: true, stache: true, expr: "neutral",
+  boss: { faceShape: "square", name: "Company boss", hair: "fringe", shirt: true, tie: true, lapels: true, pockets: true, longCoat: true, stache: true, expr: "neutral",
     colors: { coat: "#2a2c3e", pants: "#2a2c3e", boots: "#141012", skin: "#f6ddc8", hair: "#e2ded6", tie: "#2f4f8a" } },
-  mom: { name: "Mom", hair: "fringe", longHair: true, dress: true, shirt: true, expr: "happy",
+  mom: { faceShape: "long", name: "Mom", hair: "fringe", longHair: true, dress: true, shirt: true, expr: "happy",
     colors: { coat: "#efe4cc", pants: "#b8835e", boots: "#3a2a1a", skin: "#b8835e", hair: "#3a2418", dress: "#3f8a6a" } },
 };
