@@ -1,0 +1,15 @@
+<!doctype html><html><body style="margin:0">
+<canvas id="c" width="2400" height="2200"></canvas>
+<script type="module">
+import { drawBean, MOVES, CAST17 } from "./bean2.js";
+const g = document.getElementById("c").getContext("2d");
+const sk = g.createLinearGradient(0, 0, 0, 1400); sk.addColorStop(0, "#4a92e0"); sk.addColorStop(1, "#cfe6f6"); g.fillStyle = sk; g.fillRect(0, 0, 2400, 1400);
+g.fillStyle = "#e8d6a8"; g.fillRect(0, 1250, 2400, 950); g.fillStyle = "rgba(255,226,120,0.35)"; g.beginPath(); g.moveTo(0, 0); g.lineTo(700, 0); g.lineTo(1900, 2200); g.lineTo(1200, 2200); g.fill();
+const put = (x, y, s, fn) => { g.save(); g.translate(x, y); g.scale(s, s); fn(); g.restore(); };
+const shadow = (x, y, w) => { g.fillStyle = "rgba(60,40,20,0.28)"; g.beginPath(); g.ellipse(x + 20, y + 4, w, 18, 0, 0, 7); g.fill(); };
+const label = (t, x, y) => { g.save(); g.font = "bold 42px Arial"; g.textAlign = "center"; g.lineWidth = 10; g.strokeStyle = "#2a1620"; g.strokeText(t, x, y); g.fillStyle = "#fff"; g.fillText(t, x, y); g.restore(); };
+Object.keys(CAST17).forEach((k, i) => { const x = 250 + i * 475, sp = CAST17[k];
+  shadow(x, 1010, 110); put(x, 1010, 0.95, () => drawBean(g, sp, MOVES.stand(), {})); label(sp.name, x, 1080);
+  shadow(x, 2080, 95); put(x, 2080, 0.85, () => drawBean(g, sp, k === "admiral" ? MOVES.point() : k === "sultan" ? MOVES.run(0.25) : MOVES.stand(), { view: "side", expr: k === "sultan" ? "shock" : undefined })); });
+window.done = true;
+</script></body></html>

@@ -210,6 +210,19 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
   } else if (hat === "cap") {
     const hp = smooth([[x - r * 1.0, y - r * 0.38], [x - r * 0.78, y - r * 1.08], [x + r * 0.2, y - r * 1.16], [x + r * 0.96, y - r * 0.76], [x + r * (side ? 1.5 : 1.0), y - r * 0.4]]);
     fillLit(g, hp, C.hat, sun, { x: x - r, y: y - r * 1.2, w: r * 2.5, h: r }, { ol: 9 });
+  } else if (hat === "turban") {
+    const tp = smooth([[x - r * 1.0, y - r * 0.45], [x - r * 0.92, y - r * 1.1], [x - r * 0.3, y - r * 1.42], [x + r * 0.4, y - r * 1.4], [x + r * 0.95, y - r * 1.05], [x + r * 1.0, y - r * 0.45], [x, y - r * 0.62]]);
+    fillLit(g, tp, C.hat, sun, { x: x - r, y: y - r * 1.45, w: r * 2, h: r }, { ol: 9 });
+    g.save(); g.clip(tp); g.strokeStyle = mix(C.hat, "#000000", 0.25); g.lineWidth = 6; for (let k = 0; k < 4; k++) { g.beginPath(); g.moveTo(x - r, y - r * (0.6 + k * 0.22)); g.quadraticCurveTo(x, y - r * (0.85 + k * 0.22), x + r, y - r * (0.75 + k * 0.2)); g.stroke(); } g.restore();
+    if (C.gem) { g.fillStyle = C.gem; g.beginPath(); g.arc(x, y - r * 0.9, r * 0.11, 0, 7); g.fill(); g.lineWidth = 4; g.strokeStyle = INK; g.stroke(); }
+  } else if (hat === "fez") {
+    const tp = smooth([[x - r * 0.55, y - r * 0.6], [x - r * 0.45, y - r * 1.35], [x + r * 0.45, y - r * 1.35], [x + r * 0.55, y - r * 0.6]]);
+    fillLit(g, tp, C.hat, sun, { x: x - r * 0.6, y: y - r * 1.4, w: r * 1.2, h: r * 0.8 }, { ol: 8 });
+    g.lineWidth = 5; g.strokeStyle = "#1a1416"; g.beginPath(); g.moveTo(x, y - r * 1.35); g.quadraticCurveTo(x + r * 0.5, y - r * 1.3, x + r * 0.55, y - r * 0.85); g.stroke();
+  } else if (hat === "boater") {
+    fillLit(g, ellP(x, y - r * 0.82, r * 1.05, r * 0.16), C.hat, sun, { x: x - r, y: y - r, w: 2 * r, h: r * 0.4 }, { ol: 8, sheen: false });
+    fillLit(g, smooth([[x - r * 0.62, y - r * 0.82], [x - r * 0.6, y - r * 1.12], [x + r * 0.6, y - r * 1.12], [x + r * 0.62, y - r * 0.82]]), C.hat, sun, { x: x - r * 0.7, y: y - r * 1.2, w: r * 1.4, h: r * 0.45 }, { ol: 8, sheen: false });
+    g.fillStyle = C.band || "#1a2a5a"; g.fillRect(x - r * 0.6, y - r * 0.98, r * 1.2, r * 0.12);
   } else if (hat === "bearskin") {
     fillLit(g, ellP(x, y - r * 1.15, r * 0.98, r * 1.05), C.hat, sun, { x: x - r, y: y - r * 2.2, w: r * 2, h: r * 2.1 }, { ol: 9 });
   }
@@ -272,4 +285,17 @@ export const MW = {
     colors: { coat: "#f0e6d0", dress: "#3f8a6a", shoes: "#3a2a1a", hair: "#3a2418" } },
   girl: { name: "Kid", hair: true, longHair: true, dress: true, expr: "laugh", tall: 0.72, legs: 0.7, face: "#fbe8d6",
     colors: { coat: "#f0e6d0", dress: "#c8402e", shoes: "#3a2a1a", hair: "#c9a04a" } },
+};
+
+export const CAST17 = {
+  sultan: { name: "The new sultan", hat: "turban", hair: true, stache: true, dress: true, sash: true, wide: 1.15, expr: "smug", face: "#c99067",
+    colors: { coat: "#f2ece0", dress: "#f2ece0", sash: "#2f6a3a", shoes: "#6a4426", hair: "#1a1412", hat: "#f6f1e6", gem: "#2a8a4a" } },
+  guard: { name: "Palace guard", hat: "fez", hair: true, buttons: true, belt: true, stache: true, expr: "smile", face: "#b8835e",
+    colors: { coat: "#c8a46a", shoes: "#3a2418", hair: "#1a1412", hat: "#b8262c", buttons: "#e0b040", belt: "#4a2e1c" } },
+  admiral: { name: "British admiral", hat: "bicorne", hair: true, vest: true, buttons: true, epaulettes: true, stache: true, wide: 1.1, expr: "smug", face: "#f3d6bc",
+    colors: { coat: "#1f2a52", vest: "#f6f2ea", shoes: "#141012", hair: "#e2ded6", hat: "#141218", gold: "#e8b840", buttons: "#e8b840" } },
+  sailor: { name: "British sailor", hat: "boater", hair: true, shirt: true, lapels: true, expr: "grin", face: "#f3d6bc",
+    colors: { coat: "#f2f2ee", shoes: "#141012", hair: "#6a4a2a", hat: "#f2e6c4", band: "#1a2a5a" } },
+  envoy: { name: "British envoy", hat: "cap", hair: true, shirt: true, lapels: true, tie: true, stache: true, expr: "smile", face: "#f6ddc8",
+    colors: { coat: "#e8e2d2", tie: "#2a3a6a", shoes: "#3a2418", hair: "#8a6a44", hat: "#e8e2d2" } },
 };
