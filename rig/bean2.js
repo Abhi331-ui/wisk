@@ -1,6 +1,6 @@
 // bean2.js: reference-style 2D characters: peanut body, big flat face, thick ink, noodle limbs, soft sun gradient.
 // drawBean(g, spec, pose, opt): origin at the ground between the feet, ~600 px tall.
-const INK = "#15110f";
+const INK = "#2a1620";
 const rad = (d) => (d * Math.PI) / 180;
 const hx = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const mix = (a, b, t) => "#" + hx(a).map((v, i) => Math.round(v + (hx(b)[i] - v) * t).toString(16).padStart(2, "0")).join("");
@@ -8,8 +8,12 @@ const mix = (a, b, t) => "#" + hx(a).map((v, i) => Math.round(v + (hx(b)[i] - v)
 let RS = 7; const rnd = () => { RS = (RS * 16807) % 2147483647; return RS / 2147483647; };
 function fabric(g, path, bb, base) {
   g.save(); g.clip(path);
-  g.globalAlpha = 0.07; g.strokeStyle = "#000"; g.lineWidth = 1.5;
-  for (let x = bb.x - bb.h; x < bb.x + bb.w + bb.h; x += 5) { g.beginPath(); g.moveTo(x, bb.y); g.lineTo(x + bb.h * 0.6, bb.y + bb.h); g.stroke(); }
+  g.globalAlpha = 0.16; g.strokeStyle = mix(base, "#000000", 0.6); g.lineWidth = 2.2; g.lineCap = "round";
+  for (let x = bb.x - bb.h; x < bb.x + bb.w + bb.h; x += 11) { g.beginPath(); g.moveTo(x + (rnd() - 0.5) * 3, bb.y); g.lineTo(x + bb.h * 0.6 + (rnd() - 0.5) * 6, bb.y + bb.h); g.stroke(); }
+  g.globalAlpha = 0.12;
+  for (let x = bb.x - bb.h; x < bb.x + bb.w + bb.h; x += 16) { g.beginPath(); g.moveTo(x, bb.y + bb.h); g.lineTo(x + bb.h * 0.6, bb.y); g.stroke(); }
+  g.globalAlpha = 0.55; g.strokeStyle = mix(base, "#ffffff", 0.55); g.lineWidth = 2.5; g.setLineDash([9, 7]);   // stitched seam
+  g.beginPath(); g.moveTo(bb.x + bb.w * 0.2, bb.y + bb.h * 0.15); g.quadraticCurveTo(bb.x + bb.w * 0.12, bb.y + bb.h * 0.55, bb.x + bb.w * 0.24, bb.y + bb.h * 0.92); g.stroke(); g.setLineDash([]);
   g.globalAlpha = 0.05; g.strokeStyle = "#fff";
   for (let x = bb.x - bb.h; x < bb.x + bb.w + bb.h; x += 5) { g.beginPath(); g.moveTo(x, bb.y + bb.h); g.lineTo(x + bb.h * 0.6, bb.y); g.stroke(); }
   g.globalAlpha = 1;
@@ -20,6 +24,11 @@ function fabric(g, path, bb, base) {
   g.restore();
 }
 function hairStrands(g, path, bb, col) {
+  g.save(); g.clip(path); g.lineCap = "round"; g.strokeStyle = mix(col, "#000000", 0.5); g.globalAlpha = 0.6; g.lineWidth = 3;
+  for (let i = 0; i < Math.round(bb.w / 9); i++) { const x = bb.x + rnd() * bb.w, y = bb.y + rnd() * bb.h; g.beginPath(); g.arc(x, y, 6 + rnd() * 6, Math.PI * (0.9 + rnd() * 0.3), Math.PI * (1.7 + rnd() * 0.3)); g.stroke(); }
+  g.globalAlpha = 0.7; g.strokeStyle = mix(col, "#fff4dc", 0.7); g.lineWidth = 5;
+  g.beginPath(); g.moveTo(bb.x + bb.w * 0.12, bb.y + bb.h * 0.32); g.quadraticCurveTo(bb.x + bb.w * 0.5, bb.y + bb.h * 0.12, bb.x + bb.w * 0.88, bb.y + bb.h * 0.3); g.stroke();
+  g.restore();
   g.save(); g.clip(path); g.lineCap = "round";
   const n = Math.round(bb.w / 3.2);
   for (let i = 0; i < n; i++) { const t = i / n, x = bb.x + t * bb.w + (rnd() - 0.5) * 6, dark = rnd() < 0.4;
@@ -46,14 +55,15 @@ function fillLit(g, path, base, sun, bb, o = {}) {
   }
   g.translate(-lx * 6, -ly * 6); g.lineWidth = 12; g.strokeStyle = `rgba(255,240,200,${0.5 * sun.k})`; g.stroke(path);
   g.restore();
-  g.lineWidth = o.ol ?? 9; g.strokeStyle = INK; g.lineJoin = "round"; g.stroke(path);
-  if ((o.ol ?? 9) > 4) { g.save(); g.translate(1.6, 1.2); g.lineWidth = (o.ol ?? 9) * 0.55; g.strokeStyle = "rgba(21,17,15,0.55)"; g.stroke(path); g.restore(); }
+  const OW = (o.ol ?? 9) * 1.35; g.lineJoin = "round"; g.lineCap = "round"; g.strokeStyle = INK;
+  g.lineWidth = OW; g.stroke(path);
+  if (OW > 5) { g.save(); g.translate(1.8, 1.4); g.lineWidth = OW * 0.8; g.stroke(path); g.translate(-3.0, -0.6); g.lineWidth = OW * 0.6; g.globalAlpha = 0.85; g.stroke(path); g.restore(); }
 }
 const P = () => new Path2D();
 const ellP = (x, y, rx, ry, r = 0) => { const p = P(); p.ellipse(x, y, rx, ry, r, 0, Math.PI * 2); return p; };
 const smooth = (pts) => { const p = P(), n = pts.length; p.moveTo(...pts[0]); for (let i = 0; i < n; i++) { const a = pts[(i - 1 + n) % n], b = pts[i], c = pts[(i + 1) % n], d = pts[(i + 2) % n]; p.bezierCurveTo(b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6, c[0] - (d[0] - b[0]) / 6, c[1] - (d[1] - b[1]) / 6, c[0], c[1]); } p.closePath(); return p; };
 // noodle limb: smooth curve through 3 points, ink stroke with a thin coloured core (sleeve) at the top
-function noodle(g, a, b, c, w = 8) {
+function noodle(g, a, b, c, w = 11) {
   g.save(); g.lineCap = "round"; g.lineJoin = "round"; g.strokeStyle = INK; g.lineWidth = w;
   g.beginPath(); g.moveTo(...a); g.quadraticCurveTo(b[0] * 2 - (a[0] + c[0]) / 2, b[1] * 2 - (a[1] + c[1]) / 2, ...c); g.stroke(); g.restore();
 }
@@ -93,7 +103,7 @@ export function drawBean(g, sp, pose, opt = {}) {
   const AL = arm(-1, pose.shL, pose.elL), AR = arm(1, pose.shR, pose.elR);
   const hand = (p) => { g.fillStyle = INK; g.beginPath(); g.ellipse(p[0], p[1], 11, 12, 0, 0, 7); g.fill(); };
   if (side) { noodle(g, ...AL); hand(AL[2]); }
-  noodle(g, ...L, 8); shoe(L[2], side); noodle(g, ...R, 8); shoe(R[2], false);
+  noodle(g, ...L, 11); shoe(L[2], side); noodle(g, ...R, 11); shoe(R[2], false);
   // peanut body: wider hips, slight waist, rounded shoulders
   const bw = side ? bodyW * 0.72 : bodyW;
   const body = smooth([at(-bw * 0.92, 14), at(-bw * 1.0, bodyH * 0.3), at(-bw * 0.9, bodyH * 0.62), at(-bw * 0.72, bodyH * 0.9), at(0, bodyH * 1.0), at(bw * 0.72, bodyH * 0.9), at(bw * 0.9, bodyH * 0.62), at(bw * 1.0, bodyH * 0.3), at(bw * 0.92, 14), at(0, -10)]);
@@ -137,7 +147,7 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
   // hair cap with grey streak highlights (reference style)
   if (sp.hair) {
     const hp = side ? smooth([[x - r * 1.0, y + r * 0.25], [x - r * 0.92, y - r * 0.62], [x - r * 0.3, y - r * 1.03], [x + r * 0.45, y - r * 0.95], [x + r * 0.82, y - r * 0.62], [x + r * 0.55, y - r * 0.5], [x + r * 0.05, y - r * 0.58], [x - r * 0.35, y - r * 0.3], [x - r * 0.6, y + r * 0.1]])
-      : smooth([[x - r * 1.02, y - r * 0.2], [x - r * 0.8, y - r * 0.82], [x, y - r * 1.05], [x + r * 0.8, y - r * 0.82], [x + r * 1.02, y - r * 0.2], [x + r * 0.7, y - r * 0.55], [x, y - r * 0.64], [x - r * 0.7, y - r * 0.55]]);
+      : (() => { const pts = []; for (let i = 0; i <= 22; i++) { const a = Math.PI * (1.05 + 0.9 * i / 22), bump = 1.04 + (i % 2 ? 0.06 : -0.01); pts.push([x + Math.cos(a) * r * bump, y - r * 0.08 + Math.sin(a) * r * bump]); } pts.push([x + r * 0.72, y - r * 0.52], [x + r * 0.3, y - r * 0.66], [x - r * 0.3, y - r * 0.6], [x - r * 0.72, y - r * 0.5]); return smooth(pts); })();
     fillLit(g, hp, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: r }, { ol: 9 });
     hairStrands(g, hp, { x: x - r * 1.05, y: y - r * 1.06, w: r * 2.1, h: r * 1.0 }, C.hair);
     g.save(); g.clip(hp); g.strokeStyle = "rgba(255,255,255,0.3)"; g.lineWidth = r * 0.1; g.lineCap = "round";
