@@ -16,6 +16,24 @@ def whoosh(dur=0.45):
 def tick(hi=True):
     m = int(0.05 * sr); tt = np.arange(m) / sr
     return np.sin(2 * np.pi * (2400 if hi else 1900) * tt) * np.exp(-tt * 140) + 0.3 * rng.standard_normal(m) * np.exp(-tt * 400)
+def ding():
+    m = int(0.7 * sr); tt = np.arange(m) / sr
+    return (np.sin(2 * np.pi * 1318 * tt) + 0.6 * np.sin(2 * np.pi * 1975 * tt)) * np.exp(-tt * 6)
+def rattle(dur):
+    m = int(dur * sr); tt = np.arange(m) / sr
+    clicks = (np.sin(2 * np.pi * 38 * tt) > 0.6).astype(float)
+    x = rng.standard_normal(m) * (0.4 + 0.6 * clicks)
+    y = np.convolve(x, np.ones(30) / 30, mode="same")
+    return y / (np.abs(y).max() + 1e-9) * np.minimum(1, np.minimum(tt / 0.1, (dur - tt) / 0.2))
+def chaching():
+    m = int(0.9 * sr); tt = np.arange(m) / sr
+    bell = sum(np.sin(2 * np.pi * f * tt) for f in (2093, 2637, 3136)) * np.exp(-tt * 5) / 3
+    hit = rng.standard_normal(m) * np.exp(-tt * 60)
+    sl = int(0.12 * sr); bell[:sl] *= 0.3
+    return bell + 0.4 * hit
+for a in cfg.get("ding", []): place(ding(), a, 0.3)
+for a, dur in cfg.get("rattle", []): place(rattle(dur), a, 0.22)
+for a in cfg.get("chaching", []): place(chaching(), a, 0.35)
 for w in cfg.get("whoosh", []): place(whoosh(), max(0, w - 0.22), 0.35)
 for i, k in enumerate(cfg.get("ticks", [])): place(tick(i % 2 == 0), k, 0.25)
 # music bed: soft minor pad + light pluck, ducked a bit

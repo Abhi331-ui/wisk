@@ -44,6 +44,24 @@ def lin(c):
     """sRGB picker values -> linear so colours render as chosen."""
     return tuple((x / 12.92) if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c)
 
+def tint_group():
+    """Shared RGB multiplier for all toon materials. Animate with set_tint()."""
+    g = bpy.data.node_groups.get("GLOBAL_TINT")
+    if g:
+        return g
+    g = bpy.data.node_groups.new("GLOBAL_TINT", "ShaderNodeTree")
+    g.interface.new_socket("Color", in_out="OUTPUT", socket_type="NodeSocketColor")
+    rgb = g.nodes.new("ShaderNodeRGB"); rgb.name = "TINT"
+    rgb.outputs[0].default_value = (1, 1, 1, 1)
+    out = g.nodes.new("NodeGroupOutput")
+    g.links.new(rgb.outputs[0], out.inputs[0])
+    return g
+
+def set_tint(frame, color):
+    sock = tint_group().nodes["TINT"].outputs[0]
+    sock.default_value = (*lin(color), 1)
+    sock.keyframe_insert("default_value", frame=frame)
+
 def toon(name, color, shade=0.62, mid=0.82, tex=None):
     """Flat cel material: diffuse lighting quantised to 3 hard bands."""
     key = name
@@ -62,6 +80,7 @@ def toon(name, color, shade=0.62, mid=0.82, tex=None):
     el[0].position = 0.0; el[0].color = (shade, shade, shade, 1)
     el[1].position = 0.08; el[1].color = (mid, mid, mid, 1)
     e3 = el.new(0.35); e3.color = (1, 1, 1, 1)
+    e4 = el.new(1.6); e4.color = (1.25, 1.2, 1.1, 1)
     mul = nt.nodes.new("ShaderNodeMix")
     mul.data_type = "RGBA"; mul.blend_type = "MULTIPLY"
     mul.inputs[0].default_value = 1.0
@@ -73,7 +92,12 @@ def toon(name, color, shade=0.62, mid=0.82, tex=None):
         nt.links.new(tex(nt), mul.inputs[7])
     else:
         mul.inputs[7].default_value = (*lin(color), 1)
-    nt.links.new(mul.outputs[2], em.inputs[0])
+    tg = nt.nodes.new("ShaderNodeGroup"); tg.node_tree = tint_group()
+    mul2 = nt.nodes.new("ShaderNodeMix")
+    mul2.data_type = "RGBA"; mul2.blend_type = "MULTIPLY"; mul2.inputs[0].default_value = 1.0
+    nt.links.new(mul.outputs[2], mul2.inputs[6])
+    nt.links.new(tg.outputs[0], mul2.inputs[7])
+    nt.links.new(mul2.outputs[2], em.inputs[0])
     nt.links.new(em.outputs[0], out.inputs[0])
     _mats[key] = m
     return m
@@ -232,67 +256,131 @@ def empty(name, loc=(0, 0, 0), parent=None):
 def ink():
     return flat("INK", (0.02, 0.02, 0.03))
 
-def person(name, loc=(0, 0, 0), rot_z=0.0, skin=(0.98, 0.93, 0.85), shirt=(0.3, 0.6, 0.95),
-           hair=(0.05, 0.05, 0.07), hair_style="bowl", tie=None, badge=True, face="neutral", seated=False):
-    """Bean body + round head + stick limbs. Faces -Y in local space.
-    Returns dict of handles for animation: root, head, eyes, mouths, arms."""
+FACE_EYES = ("open", "tired", "happy", "shut")
+FACE_MOUTHS = ("smile", "flat", "frown", "open", "grin")
+
+def person(name, loc=(0, 0, 0), rot_z=0.0, skin=(0.99, 0.95, 0.87), shirt=(0.3, 0.6, 0.95),
+           hair=(0.05, 0.05, 0.07), hair_style="bowl", tie=None, badge=False, seated=False,
+           cap=None, sunglasses=False, glasses=False, blush=False, pants=None, ol=0.016,
+           eyes="open", mouth="flat", brows="neutral", scale=1.0, face=None):
+    """Bean body + big round head + ink stick limbs. Faces -Y in local space.
+    Every face part exists; switch with set_face(h, frame, ...)."""
+    if face == "happy":
+        eyes, mouth = "happy", "smile"
+    elif face == "worried":
+        mouth, brows = "frown", "worried"
     root = empty(name, loc)
+    root.scale = (scale, scale, scale)
     k = ink()
     hz = 1.62 if not seated else 1.5
     bz = 0.98 if not seated else 0.86
     torso = empty(name + "_torso", (0, 0, 0), root)
-    body = ball(name + "_body", (0.24, 0.2, 0.42), (0, 0, bz), toon(name + "_shirt", shirt), 0.014, torso)
+    ball(name + "_body", (0.24, 0.2, 0.42), (0, 0, bz), toon(name + "_shirt", shirt), ol, torso)
+    if pants:
+        ball(name + "_hips", (0.235, 0.195, 0.16), (0, 0, bz - 0.27), toon(name + "_pants", pants), ol, torso)
     if tie:
         box(name + "_tie", (0.05, 0.02, 0.36), (0, -0.2, bz + 0.05), toon(name + "_tiec", tie), 0.006, torso)
-        box(name + "_collarL", (0.09, 0.02, 0.05), (0.06, -0.19, bz + 0.33), toon("white", (0.97, 0.97, 0.97)), 0.004, torso, rot=(0, 0.6, 0))
-        box(name + "_collarR", (0.09, 0.02, 0.05), (-0.06, -0.19, bz + 0.33), toon("white", (0.97, 0.97, 0.97)), 0.004, torso, rot=(0, -0.6, 0))
+        for sx in (-1, 1):
+            box(f"{name}_collar{sx}", (0.09, 0.02, 0.05), (sx * 0.06, -0.19, bz + 0.33), toon("white", (0.97, 0.97, 0.97)), 0.004, torso, rot=(0, sx * 0.6, 0))
     if badge:
         box(name + "_badge", (0.08, 0.02, 0.1), (0.1, -0.2, bz - 0.05), toon("white", (0.97, 0.97, 0.97)), 0.005, torso)
         stroke(name + "_lanyard", [(0.0, -0.18, bz + 0.33), (0.1, -0.205, bz - 0.0)], flat("lanyard", (0.2, 0.35, 0.8)), 0.006, torso)
-    # neck pivot so the head can bob/tilt independently
     head = empty(name + "_head", (0, 0, hz - 0.12), torso)
-    ball(name + "_skull", (0.34, 0.31, 0.32), (0, 0, 0.12), toon(name + "_skin", skin, shade=0.72, mid=0.88), 0.016, head)
+    ball(name + "_skull", (0.34, 0.31, 0.32), (0, 0, 0.12), toon(name + "_skin", skin, shade=0.74, mid=0.88), ol * 1.1, head)
     hm = toon(name + "_hair", hair, shade=0.7)
-    if hair_style == "bowl":
-        ball(name + "_hairc", (0.355, 0.33, 0.24), (0, 0.03, 0.24), hm, 0.014, head)
+    if cap:
+        cm = toon(name + "_cap", cap)
+        ball(name + "_capdome", (0.355, 0.335, 0.22), (0, 0.01, 0.25), cm, ol, head)
+        ball(name + "_capbrim", (0.22, 0.17, 0.025), (0, -0.31, 0.25), cm, ol * 0.7, head)
+        ball(name + "_hairside", (0.35, 0.3, 0.12), (0, 0.04, 0.17), hm, 0, head)
+    elif hair_style == "bowl":
+        ball(name + "_hairc", (0.355, 0.33, 0.24), (0, 0.03, 0.24), hm, ol, head)
     elif hair_style == "side":
-        ball(name + "_hairc", (0.355, 0.33, 0.22), (0.03, 0.04, 0.27), hm, 0.014, head)
+        ball(name + "_hairc", (0.355, 0.33, 0.22), (0.03, 0.04, 0.27), hm, ol, head)
     elif hair_style == "grey":
-        ball(name + "_hairc", (0.35, 0.33, 0.2), (0, 0.06, 0.28), hm, 0.014, head)
-    fy = -0.305  # face surface plane (approx)
-    eyes = []
-    if face == "happy":  # closed ^^ eyes
+        ball(name + "_hairc", (0.35, 0.33, 0.2), (0, 0.06, 0.28), hm, ol, head)
+    elif hair_style == "bun":
+        ball(name + "_hairc", (0.355, 0.33, 0.24), (0, 0.04, 0.24), hm, ol, head)
+        ball(name + "_bun", (0.12, 0.12, 0.12), (0, 0.18, 0.42), hm, ol, head)
+    elif hair_style == "long":
+        ball(name + "_hairc", (0.36, 0.34, 0.25), (0, 0.04, 0.23), hm, ol, head)
+        ball(name + "_hairback", (0.33, 0.2, 0.36), (0, 0.13, 0.0), hm, ol, head)
+    fy = -0.305
+    F = {"eyes": {}, "mouth": {}, "brows": {}}
+    white = flat("eyehl", (1, 1, 1))
+    grp = []
+    for sx in (-1, 1):
+        e = ball(f"{name}_eyeO{sx}", (0.032, 0.02, 0.048), (sx * 0.1, fy + 0.004, 0.15), k, 0, head, seg=16)
+        ball(f"{name}_eyeHL{sx}", (0.009, 0.006, 0.012), (0.01, -0.017, 0.016), white, 0, e, seg=8)
+        grp.append(e)
+    F["eyes"]["open"] = grp
+    grp = []
+    for sx in (-1, 1):
+        e = ball(f"{name}_eyeT{sx}", (0.032, 0.02, 0.022), (sx * 0.1, fy + 0.004, 0.13), k, 0, head, seg=16)
+        lid = stroke(f"{name}_lid{sx}", [(sx * 0.06, fy - 0.006, 0.148), (sx * 0.14, fy + 0.004, 0.148)], k, 0.008, head)
+        grp += [e, lid]
+    F["eyes"]["tired"] = grp
+    F["eyes"]["happy"] = [stroke(f"{name}_eyeH{sx}", arc(sx * 0.1, 0.12, 0.045, math.radians(20), math.radians(160), fy - 0.01), k, 0.011, head) for sx in (-1, 1)]
+    F["eyes"]["shut"] = [stroke(f"{name}_eyeS{sx}", arc(sx * 0.1, 0.18, 0.045, math.radians(200), math.radians(340), fy - 0.01), k, 0.011, head) for sx in (-1, 1)]
+    F["mouth"]["smile"] = [stroke(name + "_m_smile", arc(0, 0.06, 0.08, math.radians(205), math.radians(335), fy - 0.006), k, 0.01, head)]
+    F["mouth"]["flat"] = [stroke(name + "_m_flat", [(-0.045, fy - 0.01, 0.0), (0.045, fy - 0.01, 0.0)], k, 0.01, head)]
+    F["mouth"]["frown"] = [stroke(name + "_m_frown", arc(0, -0.07, 0.065, math.radians(35), math.radians(145), fy - 0.006), k, 0.01, head)]
+    F["mouth"]["open"] = [ball(name + "_m_open", (0.05, 0.02, 0.07), (0, fy + 0.006, -0.02), flat("mouthin", (0.45, 0.08, 0.1)), 0.007, head, seg=16)]
+    gr = ball(name + "_m_grin", (0.1, 0.02, 0.05), (0, fy + 0.012, 0.0), flat("mouthin", (0.45, 0.08, 0.1)), 0.007, head, seg=24)
+    box(name + "_m_teeth", (0.12, 0.03, 0.03), (0, fy + 0.0, 0.025), flat("teeth", (1, 1, 1)), 0, head)
+    F["mouth"]["grin"] = [gr, bpy.data.objects[name + "_m_teeth"]]
+    F["brows"]["neutral"] = [stroke(f"{name}_browN{sx}", [(sx * 0.05, fy - 0.015, 0.25), (sx * 0.15, fy + 0.01, 0.25)], k, 0.009, head) for sx in (-1, 1)]
+    F["brows"]["worried"] = [stroke(f"{name}_browW{sx}", [(sx * 0.05, fy - 0.012, 0.27), (sx * 0.15, fy + 0.01, 0.225)], k, 0.01, head) for sx in (-1, 1)]
+    F["brows"]["angry"] = [stroke(f"{name}_browA{sx}", [(sx * 0.05, fy - 0.012, 0.22), (sx * 0.15, fy + 0.01, 0.265)], k, 0.011, head) for sx in (-1, 1)]
+    if blush:
         for sx in (-1, 1):
-            eyes.append(stroke(f"{name}_eye{sx}", arc(sx * 0.11, 0.13, 0.05, math.radians(20), math.radians(160), fy - 0.01), k, 0.011, head))
-    else:
+            ball(f"{name}_blush{sx}", (0.045, 0.01, 0.025), (sx * 0.18, fy + 0.03, 0.06), flat("blush", (1.0, 0.6, 0.62)), 0, head, seg=12)
+    if sunglasses:
+        sg = toon("shades", (0.05, 0.05, 0.08), shade=0.9)
         for sx in (-1, 1):
-            e = ball(f"{name}_eye{sx}", (0.03, 0.02, 0.045), (sx * 0.1, fy + 0.005, 0.15), k, 0, head, seg=16)
-            eyes.append(e)
-    mouths = {
-        "smile": stroke(name + "_m_smile", arc(0, 0.06, 0.09, math.radians(200), math.radians(340), fy - 0.005), k, 0.01, head),
-        "flat": stroke(name + "_m_flat", [(-0.05, fy - 0.01, -0.0), (0.05, fy - 0.01, 0.0)], k, 0.01, head),
-        "frown": stroke(name + "_m_frown", arc(0, -0.07, 0.07, math.radians(30), math.radians(150), fy - 0.005), k, 0.01, head),
-    }
-    if face == "worried":  # inner brow ends raised
-        brows = [stroke(f"{name}_brow{sx}", [(sx * 0.05, fy - 0.012, 0.27), (sx * 0.15, fy + 0.01, 0.225)], k, 0.01, head) for sx in (-1, 1)]
-    else:
-        brows = [stroke(f"{name}_brow{sx}", [(sx * 0.05, fy - 0.015, 0.25), (sx * 0.15, fy + 0.01, 0.25)], k, 0.009, head) for sx in (-1, 1)]
-    # limbs (ink strokes)
+            ball(f"{name}_shade{sx}", (0.085, 0.02, 0.06), (sx * 0.1, fy - 0.02, 0.15), sg, 0.006, head, seg=16)
+        stroke(name + "_bridge", [(-0.03, fy - 0.03, 0.17), (0.03, fy - 0.03, 0.17)], k, 0.008, head)
+    if glasses:
+        for sx in (-1, 1):
+            bpy.ops.mesh.primitive_torus_add(major_radius=0.065, minor_radius=0.008, location=(sx * 0.1, fy - 0.02, 0.15), rotation=(math.radians(90), 0, 0))
+            t = bpy.context.object; t.name = f"{name}_glass{sx}"; t.data.materials.append(k); t.parent = head
+    # limbs
     if seated:
-        legs = [stroke(f"{name}_leg{sx}", [(sx * 0.09, -0.05, bz - 0.35), (sx * 0.1, -0.45, bz - 0.33), (sx * 0.1, -0.5, 0.05)], k, 0.022, root) for sx in (-1, 1)]
+        [stroke(f"{name}_leg{sx}", [(sx * 0.09, -0.05, bz - 0.35), (sx * 0.1, -0.45, bz - 0.33), (sx * 0.1, -0.5, 0.05)], k, 0.022, root) for sx in (-1, 1)]
+        feet_y = -0.53
     else:
-        legs = [stroke(f"{name}_leg{sx}", [(sx * 0.09, 0, bz - 0.35), (sx * 0.1, 0, 0.03)], k, 0.022, root) for sx in (-1, 1)]
-    shoes = [ball(f"{name}_shoe{sx}", (0.06, 0.09, 0.035), (sx * 0.1, (-0.53 if seated else -0.03), 0.03), toon("shoe", (0.35, 0.2, 0.1)), 0.008, root) for sx in (-1, 1)]
-    arms = []
+        [stroke(f"{name}_leg{sx}", [(sx * 0.09, 0, bz - 0.35), (sx * 0.1, 0, 0.03)], k, 0.022, root) for sx in (-1, 1)]
+        feet_y = -0.03
+    [ball(f"{name}_shoe{sx}", (0.06, 0.09, 0.035), (sx * 0.1, feet_y, 0.03), toon("shoe", (0.35, 0.2, 0.1)), 0.008, root) for sx in (-1, 1)]
+    arms, hands = [], []
     for sx in (-1, 1):
         sh = empty(f"{name}_shoulder{sx}", (sx * 0.2, 0, bz + 0.2), torso)
         stroke(f"{name}_arm{sx}", [(0, 0, 0), (sx * 0.12, -0.02, -0.25), (sx * 0.14, -0.04, -0.48)], k, 0.02, sh)
+        hands.append(empty(f"{name}_hand{sx}", (sx * 0.14, -0.04, -0.48), sh))
         arms.append(sh)
     root.rotation_euler[2] = rot_z
-    for m in mouths.values():
-        m.hide_render = True
-    mouths["smile" if face == "happy" else ("frown" if face == "worried" else "flat")].hide_render = False
-    return dict(root=root, torso=torso, head=head, eyes=eyes, mouths=mouths, brows=brows, arms=arms)
+    h = dict(root=root, torso=torso, head=head, face=F, arms=arms, hands=hands, eyes=F["eyes"]["open"])
+    set_face(h, None, eyes, mouth, brows)
+    return h
+
+def set_face(h, frame, eyes=None, mouth=None, brows=None):
+    """Switch face parts. frame=None sets static state, else keyframes visibility."""
+    for part, want in (("eyes", eyes), ("mouth", mouth), ("brows", brows)):
+        if want is None:
+            continue
+        for nm, objs in h["face"][part].items():
+            for o in objs:
+                if frame is None:
+                    o.hide_render = nm != want
+                else:
+                    show(o, frame, nm == want)
+
+def phone(name, parent=None, loc=(0, 0, 0), rot=(0, 0, 0), screen=(0.35, 0.6, 1.0), size=1.0):
+    root = empty(name, loc, parent)
+    root.rotation_euler = rot
+    box(name + "_body", (0.075 * size, 0.012 * size, 0.15 * size), (0, 0, 0), toon("phonebody", (0.12, 0.12, 0.15)), 0.004, root)
+    box(name + "_scr", (0.066 * size, 0.004 * size, 0.138 * size), (0, -0.0065 * size, 0), flat(name + "_scrm", screen, 1.6), 0, root)
+    return root
 
 # ---------------------------------------------------------------- props
 def desk(name, loc, w=1.4, d=0.75, h=0.75, color=(0.86, 0.87, 0.9), rot_z=0):
@@ -444,3 +532,61 @@ def light_patch(name, pts, color=(1.0, 0.85, 0.3), alpha=0.45):
     nt.links.new(mix.outputs[0], out.inputs[0])
     o.data.materials.append(m)
     return o
+
+
+def windows_mat(name, lit=(1.0, 0.82, 0.48), dark=(0.1, 0.13, 0.26), scale=1.0, bias=-0.3, strength=1.0):
+    """Window grid overlay: mortar is transparent, 'bricks' are lit/dark windows.
+    Put on a plane just in front of a toon facade. Animate inputs['Strength'] on node 'EM'."""
+    m = bpy.data.materials.new(name)
+    m.use_nodes = True
+    m.blend_method = "CLIP"
+    m.shadow_method = "NONE"
+    nt = m.node_tree; nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    co = _plane_coords(nt, "xz")
+    b = nt.nodes.new("ShaderNodeTexBrick")
+    b.offset = 0.0
+    b.inputs["Color1"].default_value = (*lin(lit), 1)
+    b.inputs["Color2"].default_value = (*lin(dark), 1)
+    b.inputs["Scale"].default_value = scale
+    b.inputs["Mortar Size"].default_value = 0.12
+    b.inputs["Mortar Smooth"].default_value = 0.0
+    b.inputs["Bias"].default_value = bias
+    b.inputs["Brick Width"].default_value = 0.9
+    b.inputs["Row Height"].default_value = 0.8
+    nt.links.new(co.outputs[0], b.inputs[0])
+    em = nt.nodes.new("ShaderNodeEmission"); em.name = "EM"
+    em.inputs[1].default_value = strength
+    nt.links.new(b.outputs[0], em.inputs[0])
+    tr = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(b.outputs[1], mix.inputs[0])
+    nt.links.new(em.outputs[0], mix.inputs[1]); nt.links.new(tr.outputs[0], mix.inputs[2])
+    nt.links.new(mix.outputs[0], out.inputs[0])
+    return m
+
+def plane_xz(name, w, h, loc, mat, parent=None):
+    """Vertical rectangle facing -Y with its own object-space coords (for textures)."""
+    me = bpy.data.meshes.new(name)
+    me.from_pydata([(-w/2, 0, -h/2), (w/2, 0, -h/2), (w/2, 0, h/2), (-w/2, 0, h/2)], [], [[0, 1, 2, 3]])
+    o = bpy.data.objects.new(name, me)
+    o.location = loc
+    bpy.context.collection.objects.link(o)
+    o.data.materials.append(mat)
+    if parent:
+        o.parent = parent
+    return o
+
+def show(obj, frame, visible):
+    """Keyframe render visibility (constant)."""
+    obj.hide_render = not visible
+    obj.keyframe_insert("hide_render", frame=frame)
+    for fc in obj.animation_data.action.fcurves:
+        if fc.data_path == "hide_render":
+            for kp in fc.keyframe_points:
+                kp.interpolation = "CONSTANT"
+
+def anim_value(sock, frames_vals, path="default_value"):
+    for f, v in frames_vals:
+        sock.default_value = v
+        sock.keyframe_insert(path, frame=f)
