@@ -244,11 +244,35 @@ M = dict(
     grass=grassm("grass"), sign=plain("sign", "#1e2a3a", 0.4), gold=plain("gold", "#e0b04a", 0.25, 1.0), water=water("water"),
     roof=plain("roof", "#4a4e56", 0.7), hull=wood("hull", "#2a1e18", 1.5), sail=cloth("sail", "#efe8d8", 0.2), rope=plain("rope", "#8a7a5a", 0.9),
     cloud=cloudm("cloud"), dome=plain("dome", "#f2efe8", 0.45, 0, 2, 0.05), marble=plain("marble", "#ece6da", 0.4, 0, 3, 0.06),
-    path=plain("path", "#b8a88a", 0.9, 0, 6, 0.2), redc=cloth("redc", "#8a2a24"), aw1=cloth("aw1", "#9a2e2a"), aw2=cloth("aw2", "#2e5a3a"),
+    path=None, redc=cloth("redc", "#8a2a24"), aw1=cloth("aw1", "#9a2e2a"), aw2=cloth("aw2", "#2e5a3a"),
     soil=plain("soil", "#5a4630", 0.95, 0, 8, 0.3),
 )
 
-def tree(x, y, z, s=1.0, seed=0, m=None):
+LEAF = {}
+def leaf_obj():
+    if "o" in LEAF: return LEAF["o"]
+    vs = [(0, -0.5, 0), (0.22, -0.1, 0.02), (0.18, 0.25, 0.03), (0, 0.5, 0), (-0.18, 0.25, 0.03), (-0.22, -0.1, 0.02)]
+    o = mesh_obj("leaf", vs, [(0, 1, 2, 3, 4, 5)], M["leaf"], c="src"); o.hide_render = True; o.hide_viewport = True; LEAF["o"] = o; return o
+def dark_leaf(): return leaf("leafdark", "#25401a", "#3e5e26")
+def leaves(emitter, m, count, size):
+    ps = emitter.modifiers.new("lv", "PARTICLE_SYSTEM").particle_system; st = ps.settings
+    st.type = "HAIR"; st.count = count; st.hair_length = 0.1; st.render_type = "OBJECT"; st.instance_object = leaf_obj(); emitter.show_instancer_for_render = True
+    st.particle_size = size; st.size_random = 0.5; st.use_rotations = True; st.rotation_mode = "NOR"; st.rotation_factor_random = 1.0; st.phase_factor_random = 2.0
+    st.use_rotation_instance = True; st.emit_from = "FACE"; st.use_modifier_stack = True
+    ps.seed = count; return ps
+def gravel(name):
+    def b(nt, bsdf, out):
+        v = coord(nt); vo = nt.nodes.new("ShaderNodeTexVoronoi"); vo.inputs["Scale"].default_value = 38; nt.links.new(v, vo.inputs["Vector"])
+        n = noise(nt, v, 3, 6)
+        c = ramp(nt, vo.outputs["Color"], [(0.0, hexc("#8a7c66")), (0.5, hexc("#c8b898")), (1.0, hexc("#a89878"))])
+        m2 = nt.nodes.new("ShaderNodeMix"); m2.data_type = "RGBA"; m2.blend_type = "MULTIPLY"; m2.inputs[0].default_value = 0.5
+        nt.links.new(c, m2.inputs[6]); nt.links.new(ramp(nt, n.outputs["Fac"], [(0.3, (0.7, 0.68, 0.64)), (0.7, (1, 1, 1))]), m2.inputs[7])
+        nt.links.new(m2.outputs[2], bsdf.inputs["Base Color"]); bsdf.inputs["Roughness"].default_value = 0.9
+        bump(nt, bsdf, vo.outputs["Distance"], 0.6, 0.02)
+    return mat(name, b)
+M["path"] = gravel("gravel")
+
+def tree(x, y, z, s=1.0, seed=0, m=None, leafy=False):
     r = random.Random(seed); m = m or (M["leaf"] if seed % 2 else M["leaf2"])
     tr = cyl(0.22 * s, 3.2 * s, x, y, z + 1.6 * s, M["bark"], 10, r2=0.12 * s); displace(tr, 0.05 * s, 0.4, seed)
     for k in range(4):
@@ -258,7 +282,9 @@ def tree(x, y, z, s=1.0, seed=0, m=None):
     blobs = []
     for k in range(r.randint(9, 13)):
         a = r.uniform(0, 6.28); d = r.uniform(0.2, 1.4) * s; h = r.uniform(3.0, 5.6) * s; rr = r.uniform(0.9, 1.5) * s * (1.15 - abs(h / s - 4.2) * 0.18)
-        b = sphere(rr, x + math.cos(a) * d, y + math.sin(a) * d, z + h, m, 3); displace(b, 0.55 * s, 0.55 * s, seed * 31 + k); blobs.append(b)
+        b = sphere(rr * (0.85 if leafy else 1.0), x + math.cos(a) * d, y + math.sin(a) * d, z + h, dark_leaf(), 3, c="foliage"); displace(b, 0.45 * s, 0.55 * s, seed * 31 + k); blobs.append(b)
+        if leafy: leaves(b, m, 900, 0.5 * s)
+        else: b.material_slots[0].material = m
     return blobs
 
 def lamp(x, y):
@@ -312,7 +338,8 @@ def boardwalk(x0, x1, y, wdt):
     box(x1 - x0, wdt, 0.25, (x0 + x1) / 2, y, 0.125, M["walk"])
     box(x1 - x0, 0.2, 0.3, (x0 + x1) / 2, y - wdt / 2 * (1 if y > 0 else -1), 0.15, M["plank"])
 
-def cloud(cx, cy, cz, sz, seed):
+def cloud(*a): return None
+def _cloud_old(cx, cy, cz, sz, seed):
     r = random.Random(seed); bpy.ops.object.metaball_add(type="BALL", location=(cx, cy, cz)); mb = bpy.context.object
     mb.data.resolution = sz * 0.06; mb.data.render_resolution = sz * 0.035; el = mb.data.elements[0]; el.radius = sz * 0.5
     for k in range(18):
@@ -325,11 +352,12 @@ def hill_mesh(x0, x1, y0, y1, fn, res=120, m=None):
 
 def hill_house(x, y, z, s, seed, out=-1):
     r = random.Random(seed); cols = ["#e8d8b8", "#c8d8e0", "#e8c8b0", "#d0e0c8", "#f0e6d6", "#d8c0c8", "#b8c8d8", "#e6d6a8"]
-    wall = clap("hh%d" % (seed % 8), cols[seed % 8]); hw, hd, hh = 5.6 * s, 8 * s, r.choice([7, 8.5, 10]) * s
+    wall = clap("hh%d" % (seed % 8), cols[(seed * 5) % 8]); s = s * r.uniform(0.85, 1.15); hw, hd, hh = 5.6 * s, 8 * s, r.choice([7, 8.5, 10]) * s
     box(hw, hd, hh, x, y, z + hh / 2 - 1, wall)
     pts = [(-hw / 2 - 0.2, 0), (hw / 2 + 0.2, 0), (0, 3.0 * s)]
     vs = [(x + px, y + yy, z + hh - 1 + pz) for yy in (-hd / 2 - 0.3, hd / 2 + 0.3) for (px, pz) in pts]
-    mesh_obj("roof", vs, [(0, 1, 2), (3, 5, 4), (0, 3, 4, 1), (1, 4, 5, 2), (2, 5, 3, 0)], M["roof"], smooth=False)
+    rm = plain("roof%d" % (seed % 4), ["#4a4e56", "#6a3a30", "#3e4a40", "#5a5248"][seed % 4], 0.7)
+    mesh_obj("roof", vs, [(0, 1, 2), (3, 5, 4), (0, 3, 4, 1), (1, 4, 5, 2), (2, 5, 3, 0)], rm, smooth=False)
     fy = y + out * hd / 2
     box(2.2 * s, 1.2 * s, 3.4 * s, x - 1.2 * s, fy + out * 0.6 * s, z + 4.4 * s, wall)  # bay window
     for (wx, wz) in [(-1.2, 4.4), (1.5, 4.4), (1.5, 1.6), (-1.5, 1.6)]:
@@ -340,20 +368,33 @@ def hill_house(x, y, z, s, seed, out=-1):
     cyl(0.35 * s, 2.2 * s, x + 1.6 * s, y - 1 * s, z + hh + 1.4 * s, brick("brc", "#8a3a2a"), 4)
 
 # ---------------------------------------------------------------- world: sky, sun, render
-def world(sun_el=14, sun_az=235, strength=0.9):
+def world(sun_el=30, sun_az=215, strength=1.0):
     w = bpy.data.worlds.new("w"); S.world = w; w.use_nodes = True; nt = w.node_tree; nt.nodes.clear()
     tc = nt.nodes.new("ShaderNodeTexCoord"); sep = nt.nodes.new("ShaderNodeSeparateXYZ"); nt.links.new(tc.outputs["Generated"], sep.inputs[0])
-    sky = ramp(nt, sep.outputs["Z"], [(0.0, hexc("#f8d8b0")), (0.035, hexc("#f0c8a0")), (0.09, hexc("#8cb8e8")), (0.25, hexc("#3c78cc")), (0.6, hexc("#1c4a9c"))])
+    sky = ramp(nt, sep.outputs["Z"], [(0.0, hexc("#e8eef2")), (0.04, hexc("#cfe0f0")), (0.12, hexc("#7fb2ec")), (0.3, hexc("#3a7ad6")), (0.65, hexc("#1a4ea8"))])
     # warm glow toward the sun
     sd = Vector((math.cos(math.radians(sun_az)) * math.cos(math.radians(sun_el)), math.sin(math.radians(sun_az)) * math.cos(math.radians(sun_el)), math.sin(math.radians(sun_el))))
     dp = nt.nodes.new("ShaderNodeVectorMath"); dp.operation = "DOT_PRODUCT"; nt.links.new(tc.outputs["Generated"], dp.inputs[0]); dp.inputs[1].default_value = sd
     gl = ramp(nt, dp.outputs["Value"], [(0.55, (0, 0, 0)), (0.9, (0.6, 0.35, 0.12)), (0.999, (3.0, 2.2, 1.2))])
+    zp = nt.nodes.new("ShaderNodeMath"); zp.operation = "ADD"; zp.inputs[1].default_value = 0.06; nt.links.new(sep.outputs["Z"], zp.inputs[0])
+    dx = nt.nodes.new("ShaderNodeMath"); dx.operation = "DIVIDE"; nt.links.new(sep.outputs["X"], dx.inputs[0]); nt.links.new(zp.outputs[0], dx.inputs[1])
+    dy = nt.nodes.new("ShaderNodeMath"); dy.operation = "DIVIDE"; nt.links.new(sep.outputs["Y"], dy.inputs[0]); nt.links.new(zp.outputs[0], dy.inputs[1])
+    cb = nt.nodes.new("ShaderNodeCombineXYZ"); nt.links.new(dx.outputs[0], cb.inputs["X"]); nt.links.new(dy.outputs[0], cb.inputs["Y"])
+    mp = nt.nodes.new("ShaderNodeMapping"); mp.inputs["Scale"].default_value = (0.55, 1.1, 1); mp.inputs["Location"].default_value = (3.1, 7.7, 0.4); nt.links.new(cb.outputs[0], mp.inputs[0])
+    n1 = noise(nt, mp.outputs[0], 1.1, 10, 0.62); n2 = noise(nt, mp.outputs[0], 4.0, 8, 0.6)
+    wv = nt.nodes.new("ShaderNodeMath"); wv.operation = "MULTIPLY_ADD"; nt.links.new(n2.outputs["Fac"], wv.inputs[0]); wv.inputs[1].default_value = 0.35; nt.links.new(n1.outputs["Fac"], wv.inputs[2])
+    mask = ramp(nt, wv.outputs[0], [(0.62, (0, 0, 0)), (0.86, (1, 1, 1))])
+    fade = ramp(nt, sep.outputs["Z"], [(0.015, (0, 0, 0)), (0.14, (1, 1, 1))])
+    mm = nt.nodes.new("ShaderNodeMix"); mm.data_type = "RGBA"; mm.blend_type = "MULTIPLY"; mm.inputs[0].default_value = 1; nt.links.new(mask, mm.inputs[6]); nt.links.new(fade, mm.inputs[7])
+    sh = ramp(nt, n2.outputs["Fac"], [(0.3, hexc("#9aa6bc")), (0.55, hexc("#e8ecf2")), (0.75, (1.25, 1.2, 1.12))])
+    sw = nt.nodes.new("ShaderNodeSeparateColor"); nt.links.new(mm.outputs[2], sw.inputs[0])
+    cl = nt.nodes.new("ShaderNodeMix"); cl.data_type = "RGBA"; nt.links.new(sw.outputs[0], cl.inputs[0]); nt.links.new(sky, cl.inputs[6]); nt.links.new(sh, cl.inputs[7])
     add = nt.nodes.new("ShaderNodeMix"); add.data_type = "RGBA"; add.blend_type = "ADD"; add.inputs[0].default_value = 1
-    nt.links.new(sky, add.inputs[6]); nt.links.new(gl, add.inputs[7])
+    nt.links.new(cl.outputs[2], add.inputs[6]); nt.links.new(gl, add.inputs[7])
     bg = nt.nodes.new("ShaderNodeBackground"); bg.inputs["Strength"].default_value = strength; o = nt.nodes.new("ShaderNodeOutputWorld")
     nt.links.new(add.outputs[2], bg.inputs[0]); nt.links.new(bg.outputs[0], o.inputs[0])
     w.mist_settings.start = 40; w.mist_settings.depth = 1200; w.mist_settings.falloff = "QUADRATIC"
-    ld = bpy.data.lights.new("sun", "SUN"); ld.energy = 6.5; ld.color = (1.0, 0.8, 0.58); ld.angle = math.radians(2.0)
+    ld = bpy.data.lights.new("sun", "SUN"); ld.energy = 5.5; ld.color = (1.0, 0.9, 0.76); ld.angle = math.radians(2.0)
     so = bpy.data.objects.new("sun", ld); S.collection.objects.link(so)
     so.rotation_euler = (-sd).to_track_quat("-Z", "Y").to_euler()
 
@@ -372,16 +413,16 @@ def render_setup():
     S.view_settings.view_transform = "AgX"
     try: S.view_settings.look = "AgX - Punchy"
     except Exception: pass
-    S.view_settings.exposure = 0.35
+    S.view_settings.exposure = 0.45
     S.render.image_settings.file_format = "PNG"; S.render.filepath = OUT
     vl = S.view_layers[0]; vl.use_pass_mist = True
     # freestyle ink lines, thin warm-brown, on silhouettes and creases
     S.render.use_freestyle = True; S.render.line_thickness_mode = "ABSOLUTE"; S.render.line_thickness = 1.3 * W / 1080
     fs = vl.freestyle_settings; ls = fs.linesets[0] if fs.linesets else fs.linesets.new("ink")
-    ls.select_by_visibility = True; ls.select_silhouette = True; ls.select_border = True; ls.select_crease = True
+    ls.select_by_visibility = True; ls.select_silhouette = True; ls.select_border = False; ls.select_crease = False
     ls.select_by_collection = True; ls.collection = coll("main"); ls.collection_negation = "INCLUSIVE"
     if ls.linestyle is None: ls.linestyle = bpy.data.linestyles.new("ink")
-    ls.linestyle.color = (0.16, 0.1, 0.07); ls.linestyle.alpha = 0.75; fs.crease_angle = math.radians(120)
+    ls.linestyle.color = (0.16, 0.1, 0.07); ls.linestyle.alpha = 0.35; fs.crease_angle = math.radians(120)
     comp()
 
 def comp():
@@ -406,12 +447,17 @@ def comp():
     except Exception as e: print("kw type", e)
     kw.inputs["Sharpness"].default_value = 0.6; kw.inputs["Uniformity"].default_value = 4; kw.inputs["Eccentricity"].default_value = 1.0
     L.new(hz, kw.inputs[0])
-    mx = mixc(0.7, hz, kw.outputs[0])
+    mx = mixc(0.4, hz, kw.outputs[0])
     gl = ng.nodes.new("CompositorNodeGlare")
     try: gl.inputs["Type"].default_value = "Bloom"
     except Exception as e: print("glare type", e)
-    gl.inputs["Threshold"].default_value = 0.85; gl.inputs["Strength"].default_value = 0.35; gl.inputs["Size"].default_value = 0.6
+    gl.inputs["Threshold"].default_value = 0.75; gl.inputs["Strength"].default_value = 0.45; gl.inputs["Size"].default_value = 0.75
     L.new(mx, gl.inputs[0])
+    fg = ng.nodes.new("CompositorNodeGlare")
+    try: fg.inputs["Type"].default_value = "Fog Glow"
+    except Exception as e: print("fog type", e)
+    fg.inputs["Threshold"].default_value = 0.6; fg.inputs["Strength"].default_value = 0.22; fg.inputs["Size"].default_value = 0.9
+    L.new(gl.outputs[0], fg.inputs[0]); gl = fg
     cc = ng.nodes.new("CompositorNodeHueSat"); cc.inputs["Saturation"].default_value = 1.12
     L.new(gl.outputs[0], cc.inputs["Image"]); L.new(cc.outputs[0], oin)
 
@@ -444,7 +490,7 @@ def street_world(hillside=True, far=True):
     for i in range(6): cloud(-200 + i * 90, 600 + (i % 2) * 120, 160 + (i % 3) * 40, 70 + (i % 3) * 20, i)
 
 def table_scene():
-    tx, ty = 2.0, 5.0
+    tx, ty = 2.0, 3.6
     top = box(2.0, 1.1, 0.08, tx, ty, 0.95, wood("tab", "#5a3a22", 1.5), 0.02)
     for sx in (-0.9, 0.9):
         for sy in (-0.45, 0.45):
@@ -530,27 +576,30 @@ def capitol_world():
     rr = random.Random(5)
     for row, y in enumerate(range(10, 130, 14)):
         for side in (-1, 1):
-            tree(side * (8 + rr.uniform(-0.5, 0.5)), y, 0, 1.25 + rr.uniform(-0.1, 0.15), row * 2 + (side > 0))
+            tree(side * (8 + rr.uniform(-0.5, 0.5)), y, 0, 1.25 + rr.uniform(-0.1, 0.15), row * 2 + (side > 0), leafy=y < 70)
     for k in range(40): tree(rr.uniform(-160, 160), rr.uniform(170, 260), 0, rr.uniform(1.2, 1.8), 100 + k)
     for side in (-1, 1):
         for y in range(5, 130, 9): lamp(side * 4.5, y)
     for k in range(-6, 7):  # flower beds along the path
         for side in (-1, 1):
-            for j in range(6): sphere(0.18, side * 3.6 + rr.uniform(-0.3, 0.3), 12 + k * 9 + j * 0.5, 0.15, plain("fl%d" % (j % 3), ["#d83a4a", "#f0c040", "#e8e0f0"][j % 3], 0.5), 2)
+            bb = sphere(0.45, side * 3.9, 12 + k * 9, 0.25, M["leaf2"], 3); bb.scale = (0.5, 1.4, 0.45); displace(bb, 0.12, 0.25, k * 7 + side)
+            for j in range(9): sphere(0.06, side * 3.9 + rr.uniform(-0.2, 0.2), 12 + k * 9 + rr.uniform(-0.55, 0.55), 0.42 + rr.uniform(-0.05, 0.05), plain("fl%d" % (j % 3), ["#d83a4a", "#f0c040", "#f4f0f8"][j % 3], 0.5), 2)
     for i in range(7): cloud(-260 + i * 90, 520 + (i % 2) * 120, 150 + (i % 3) * 40, 60 + (i % 3) * 22, i + 30)
     grass_hair()
 
 def grass_hair():
-    bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 6, 0.02)); g = bpy.context.object; g.scale = (60, 26, 1); bpy.ops.object.transform_apply(scale=True)
-    g.data.materials.append(M["grass"]); link(g, "grass")
-    ps = g.modifiers.new("hair", "PARTICLE_SYSTEM").particle_system.settings
-    ps.type = "HAIR"; ps.count = 260000; ps.hair_length = 0.16; ps.use_advanced_hair = True; ps.child_type = "NONE"
-    ps.root_radius = 0.6; ps.tip_radius = 0.0; ps.radius_scale = 0.012; ps.use_rotations = True; ps.rotation_factor_random = 0.3; ps.phase_factor_random = 1.0
-    ps.brownian_factor = 0.02; ps.length_random = 0.6; ps.material_slot = g.material_slots[0].name
+    for side in (-1, 1):
+        g = grid(side * 3.4, side * 14, -8, 16, 1, 1, lambda x, y: 0.02, M["grass"], c="grass")
+        if side < 0:
+            for p in g.data.polygons: p.flip()
+        ps = g.modifiers.new("hair", "PARTICLE_SYSTEM").particle_system; st = ps.settings; ps.seed = side + 5
+        st.type = "HAIR"; st.count = 140000; st.hair_length = 0.28; st.use_advanced_hair = False; st.child_type = "NONE"
+        st.root_radius = 1.0; st.tip_radius = 0.0; st.radius_scale = 0.008; st.length_random = 0.7; st.brownian_factor = 0.03
+        st.material_slot = g.material_slots[0].name
 
 SHOTS = {
-    "trees": lambda: (capitol_world(), camera((0, -6, 1.6), (0, 60, 6), 22, dof=(14, 6.0))),
-    "table": lambda: (street_world(False), table_scene(), camera((5.2, 1.4, 1.6), (2.0, 5.5, 1.1), 30, dof=(5.0, 2.8))),
+    "trees": lambda: (capitol_world(), camera((2.6, -6, 1.1), (-1.0, 60, 7), 22, dof=(12, 6.0))),
+    "table": lambda: (street_world(False), table_scene(), camera((5.0, -0.4, 1.55), (2.0, 3.8, 0.9), 30, dof=(5.2, 2.8))),
     "sky": lambda: (bay_world(), camera((4, -16, 1.6), (16, 30, 26), 20)),
     "water": lambda: (bay_world(), camera((1.5, -12, 3.2), (40, 40, -1.5), 22)),
     "road": lambda: (street_world(True), camera((60, 0.6, 1.0), (0, -0.4, 2.4), 24)),
