@@ -22,6 +22,7 @@ function fillLit(g, path, base, sun, bb, o = {}) {
   g.translate(-lx * 6, -ly * 6); g.lineWidth = 12; g.strokeStyle = `rgba(255,240,200,${0.5 * sun.k})`; g.stroke(path);
   g.restore();
   g.lineWidth = o.ol ?? 9; g.strokeStyle = INK; g.lineJoin = "round"; g.stroke(path);
+  if ((o.ol ?? 9) > 4) { g.save(); g.translate(1.6, 1.2); g.lineWidth = (o.ol ?? 9) * 0.55; g.strokeStyle = "rgba(21,17,15,0.55)"; g.stroke(path); g.restore(); }
 }
 const P = () => new Path2D();
 const ellP = (x, y, rx, ry, r = 0) => { const p = P(); p.ellipse(x, y, rx, ry, r, 0, Math.PI * 2); return p; };

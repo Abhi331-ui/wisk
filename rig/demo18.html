@@ -1,0 +1,51 @@
+<!doctype html><html><body style="margin:0">
+<canvas id="c" width="1080" height="1920"></canvas>
+<script type="module">
+import { drawBean, drawBunny, MOVES, CAST } from "./bean2.js";
+const g = document.getElementById("c").getContext("2d"), INK = "#15110f";
+const R = (s) => { let x = Math.sin(s * 127.1) * 43758.5; return x - Math.floor(x); };
+const inkP = (p, w = 7) => { g.lineWidth = w; g.strokeStyle = INK; g.lineJoin = "round"; g.stroke(p); g.save(); g.translate(1.4, 1); g.lineWidth = w * 0.5; g.strokeStyle = "rgba(21,17,15,.5)"; g.stroke(p); g.restore(); };
+const shape = (pts) => { const p = new Path2D(); p.moveTo(...pts[0]); for (const q of pts.slice(1)) p.lineTo(...q); p.closePath(); return p; };
+const blob = (cx, cy, r, n, seed) => { const p = new Path2D(); for (let i = 0; i <= n; i++) { const a = i / n * 6.283, rr = r * (0.82 + 0.25 * R(seed + i)); const x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr * 0.85; i ? p.lineTo(x, y) : p.moveTo(x, y); } p.closePath(); return p; };
+const lit = (p, c1, c2, x0, y0, x1, y1) => { const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, c1); gr.addColorStop(1, c2); g.fillStyle = gr; g.fill(p); };
+// sky
+const sk = g.createLinearGradient(0, 0, 0, 900); sk.addColorStop(0, "#3d86e0"); sk.addColorStop(0.6, "#8cc4f2"); sk.addColorStop(1, "#d9eefa"); g.fillStyle = sk; g.fillRect(0, 0, 1080, 1920);
+// soft clouds
+for (let i = 0; i < 6; i++) { const cx = 120 + i * 190 + R(i) * 60, cy = 160 + R(i + 9) * 260; for (let k = 0; k < 5; k++) { g.fillStyle = "rgba(255,255,255,0.75)"; g.beginPath(); g.ellipse(cx + (k - 2) * 46, cy + Math.abs(k - 2) * 10, 70, 38, 0, 0, 7); g.fill(); } }
+// far mountains + hills
+const mt = shape([[0, 720], [160, 560], [300, 650], [470, 500], [640, 640], [820, 520], [1080, 660], [1080, 820], [0, 820]]); lit(mt, "#9fb3d6", "#7f95c4", 0, 500, 0, 820); inkP(mt, 5);
+const h1 = new Path2D(); h1.moveTo(0, 800); h1.bezierCurveTo(300, 690, 600, 760, 1080, 700); h1.lineTo(1080, 1000); h1.lineTo(0, 1000); h1.closePath(); lit(h1, "#7fc25a", "#5aa040", 0, 700, 0, 1000); inkP(h1, 6);
+// forest line on the hill
+for (let i = 0; i < 16; i++) { const x = 30 + i * 70 + R(i + 3) * 30, y = 790 - 60 * Math.sin(i * 0.4) + R(i) * 20; const t = blob(x, y, 42, 10, i * 7); lit(t, "#4f9a3e", "#2f6e2c", x - 40, y - 40, x + 40, y + 40); inkP(t, 5); }
+// field
+const fd = new Path2D(); fd.moveTo(0, 940); fd.bezierCurveTo(400, 900, 700, 930, 1080, 900); fd.lineTo(1080, 1920); fd.lineTo(0, 1920); fd.closePath(); lit(fd, "#9ad35e", "#5fa83c", 0, 900, 0, 1920); inkP(fd, 6);
+// grass tufts
+g.strokeStyle = "#3e8a2c"; g.lineWidth = 5; g.lineCap = "round";
+for (let i = 0; i < 260; i++) { const x = R(i * 3.1) * 1080, y = 960 + Math.pow(R(i * 7.7), 0.8) * 960, s = 0.5 + (y - 960) / 900; for (let k = -1; k <= 1; k++) { g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + k * 6 * s, y - 14 * s, x + k * 12 * s, y - 26 * s); g.stroke(); } }
+// big tree left
+const tr = shape([[60, 1240], [90, 960], [120, 960], [150, 1240]]); lit(tr, "#8a5a36", "#5a3a22", 60, 0, 150, 0); inkP(tr, 7);
+for (const [cx, cy, r, s] of [[60, 860, 140, 1], [190, 800, 120, 2], [110, 720, 110, 3], [-20, 760, 100, 4]]) { const b = blob(cx, cy, r, 14, s * 11); lit(b, "#6fc04e", "#2f7a2e", cx - r, cy - r, cx + r, cy + r); inkP(b, 7); }
+// rabbit cages (wooden crates with bars), open doors
+const cage = (x, y, w, h, open) => { const p = shape([[x, y], [x + w, y], [x + w, y + h], [x, y + h]]); lit(p, "#c89058", "#8a5a30", x, y, x + w, y + h); inkP(p, 6); g.strokeStyle = INK; g.lineWidth = 5; for (let k = 1; k < 5; k++) { g.beginPath(); g.moveTo(x + k * w / 5, y + 10); g.lineTo(x + k * w / 5, y + h - 10); g.stroke(); } if (open) { const d = shape([[x + w, y + 8], [x + w + w * 0.45, y - 20], [x + w + w * 0.45, y + h - 30], [x + w, y + h - 8]]); lit(d, "#d8a068", "#9a6a3a", x + w, y, x + w * 1.4, y + h); inkP(d, 5); } };
+cage(720, 1020, 150, 100, true); cage(880, 1050, 150, 100, true); cage(640, 1100, 160, 110, true);
+// carriage in the distance
+const cb = shape([[820, 930], [990, 930], [1000, 1000], [810, 1000]]); lit(cb, "#2c3e7a", "#1b2652", 810, 930, 1000, 1000); inkP(cb, 5);
+for (const wx of [840, 970]) { g.beginPath(); g.arc(wx, 1010, 26, 0, 7); g.fillStyle = "#c8a050"; g.fill(); inkP((() => { const p = new Path2D(); p.arc(wx, 1010, 26, 0, 7); return p; })(), 5); }
+// sun shaft: soft warm diagonal light across the field and characters
+const sh = g.createLinearGradient(0, 0, 1080, 1920); sh.addColorStop(0, "rgba(255,230,90,0)"); sh.addColorStop(0.45, "rgba(255,226,70,0.32)"); sh.addColorStop(0.6, "rgba(255,226,70,0.0)");
+g.fillStyle = sh; g.beginPath(); g.moveTo(-200, 0); g.lineTo(500, 0); g.lineTo(1300, 1920); g.lineTo(600, 1920); g.fill();
+// characters (hunters behind, Berthier left, Napoleon front, rabbits swarming)
+const put = (x, y, s, fn) => { g.save(); g.translate(x, y); g.scale(s, s); fn(); g.restore(); };
+const shadow = (x, y, w) => { g.fillStyle = "rgba(30,60,20,0.3)"; g.beginPath(); g.ellipse(x + 20, y + 4, w, w * 0.18, 0, 0, 7); g.fill(); };
+shadow(830, 1230, 50); put(830, 1230, 0.42, () => drawBean(g, CAST.hunter, MOVES.scared(), { expr: "shock", prop: "musket" }));
+shadow(960, 1250, 50); put(960, 1250, 0.42, () => drawBean(g, CAST.hunter, MOVES.shrug(), { expr: "shock" }));
+shadow(230, 1500, 80); put(230, 1500, 0.68, () => drawBean(g, CAST.berthier, MOVES.point(), { view: "side", expr: "grin" }));
+shadow(560, 1700, 120); put(560, 1700, 0.95, () => drawBean(g, CAST.napoleon, MOVES.scared(), { expr: "shock" }));
+const cols = ["#ffffff", "#d9c2a4", "#9a8574", "#f2e6d8", "#6f5d50", "#ffffff", "#cdb69a"];
+for (let i = 0; i < 22; i++) { const a = R(i * 5.3) * 6.283, d = 140 + R(i * 2.1) * 330, x = 560 + Math.cos(a) * d * 1.2, y = 1730 + Math.sin(a) * d * 0.32 + (i % 3) * 20; const s = 0.2 + (y - 1500) / 1800; shadow(x, y, 26); put(x, y, s, () => drawBunny(g, cols[i % 7], { flip: x > 560, hop: i % 4 === 0, t: R(i) })); }
+for (let i = 0; i < 9; i++) { const x = 600 + i * 50, y = 1150 + (i % 3) * 30; put(x, y, 0.16, () => drawBunny(g, cols[i % 7], { flip: true })); }
+// paper grain over everything (hand-drawn feel)
+const im = g.getImageData(0, 0, 1080, 1920), d = im.data; for (let i = 0; i < d.length; i += 4) { const n = (R(i * 0.37) - 0.5) * 14; d[i] += n; d[i + 1] += n; d[i + 2] += n; } g.putImageData(im, 0, 0);
+const vg = g.createRadialGradient(540, 1000, 500, 540, 1000, 1250); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(20,20,40,0.28)"); g.fillStyle = vg; g.fillRect(0, 0, 1080, 1920);
+window.done = true;
+</script></body></html>
