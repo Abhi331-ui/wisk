@@ -1,0 +1,15 @@
+<!doctype html><html><body style="margin:0">
+<canvas id="c" width="2400" height="2000"></canvas>
+<script type="module">
+import { drawChar, POSES, MWC } from "./rig3.js";
+const g = document.getElementById("c").getContext("2d");
+const bg = g.createLinearGradient(0, 0, 0, 2000); bg.addColorStop(0, "#d9d3c3"); bg.addColorStop(1, "#bdb5a2"); g.fillStyle = bg; g.fillRect(0, 0, 2400, 2000);
+g.fillStyle = "rgba(255,220,130,0.3)"; g.beginPath(); g.moveTo(150, 0); g.lineTo(850, 0); g.lineTo(1900, 2000); g.lineTo(1200, 2000); g.fill();
+const put = (x, y, s, fn) => { g.save(); g.translate(x, y); g.scale(s, s); fn(); g.restore(); };
+const sh = (x, y, w) => { g.fillStyle = "rgba(20,16,10,0.25)"; g.beginPath(); g.ellipse(x + 20, y + 6, w, 18, 0, 0, 7); g.fill(); };
+const label = (t, x, y) => { g.save(); g.font = "bold 40px Arial"; g.textAlign = "center"; g.lineWidth = 10; g.strokeStyle = "#1d1418"; g.strokeText(t, x, y); g.fillStyle = "#fff"; g.fillText(t, x, y); g.restore(); };
+const keys = Object.keys(MWC);
+keys.slice(0, 4).forEach((k, i) => { const x = 300 + i * 600; sh(x, 900, 120); put(x, 900, 1.15, () => drawChar(g, MWC[k], POSES.stand(), { view: "front" })); label(MWC[k].name, x, 970); });
+keys.slice(4).forEach((k, i) => { const x = 300 + i * 600; sh(x, 1880, 120); put(x, 1880, 1.15, () => drawChar(g, MWC[k], k === "boss" ? POSES.point() : POSES.stand(), { view: k === "boss" ? "side" : "front" })); label(MWC[k].name, x, 1950); });
+window.done = true;
+</script></body></html>
