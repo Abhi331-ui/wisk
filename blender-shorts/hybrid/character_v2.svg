@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+<defs>
+  <linearGradient id="shirt" x1="0" x2="1"><stop offset="0" stop-color="#4fb5ac"/><stop offset="0.6" stop-color="#3fa59c"/><stop offset="1" stop-color="#2d8079"/></linearGradient>
+  <radialGradient id="skin" cx="0.35" cy="0.4" r="0.8"><stop offset="0" stop-color="#fdf7f5"/><stop offset="0.65" stop-color="#f6ebe8"/><stop offset="1" stop-color="#e3cbc6"/></radialGradient>
+  <linearGradient id="hat" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ddaa3c"/><stop offset="1" stop-color="#c08a26"/></linearGradient>
+  <linearGradient id="bread" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#efe0c4"/><stop offset="1" stop-color="#dcc6a0"/></linearGradient>
+  <clipPath id="dome"><path d="M118,150 C130,70 260,40 340,52 C430,66 500,130 506,215 L118,150 Z"/></clipPath>
+  <clipPath id="cuff"><path d="M100,135 L508,208 C516,236 514,258 506,276 L96,198 C88,176 90,152 100,135 Z"/></clipPath>
+  <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="16"/></filter>
+</defs>
+<g transform="translate(312.3,445.0) scale(0.8466)">
+  <ellipse cx="250" cy="830" rx="230" ry="26" fill="#000" opacity="0.38" filter="url(#soft)"/>
+  <ellipse cx="290" cy="1242" rx="110" ry="18" fill="#000" opacity="0.4" filter="url(#soft)"/>
+
+  <!-- legs: left nearly straight down, right crossed: thigh out to the knee then shin back down -->
+  <path d="M188,826 C196,950 206,1100 214,1232" fill="none" stroke="#1f1418" stroke-width="15" stroke-linecap="round"/>
+  <path d="M276,820 C320,840 370,858 398,874 C392,980 360,1110 334,1232" fill="none" stroke="#1f1418" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="206" cy="1238" rx="30" ry="13" fill="#1f1418"/>
+  <ellipse cx="342" cy="1238" rx="30" ry="13" fill="#1f1418"/>
+
+  <!-- body: tall teal bean -->
+  <path d="M60,640 C58,540 120,470 250,462 C380,456 444,520 446,620 L446,740 C446,800 410,822 330,824 L160,826 C90,826 60,800 60,740 Z"
+        fill="url(#shirt)" stroke="#1f1418" stroke-width="13" stroke-linejoin="round"/>
+  <!-- hanging arm (character's left, screen right) down to the seat -->
+  <path d="M432,520 C462,600 466,700 444,780 C436,806 418,822 400,834" fill="none" stroke="#1f1418" stroke-width="13" stroke-linecap="round"/>
+  <circle cx="396" cy="836" r="17" fill="#1f1418"/>
+
+  <!-- head: rounded oval, slightly tilted -->
+  <g transform="rotate(6 290 330)">
+    <ellipse cx="290" cy="330" rx="214" ry="150" fill="url(#skin)" stroke="#1f1418" stroke-width="13"/>
+  </g>
+  <!-- ear on the right -->
+  <path d="M440,420 C478,404 500,446 478,476 C464,496 438,494 424,480" fill="#f4e6e2" stroke="#1f1418" stroke-width="11" stroke-linecap="round"/>
+  <path d="M452,438 C470,440 474,462 460,470" fill="none" stroke="#1f1418" stroke-width="7" stroke-linecap="round"/>
+  <!-- hair: cap under the beanie + jagged fringe; longer on the left side -->
+  <path d="M84,330 C70,250 100,180 150,160 L500,232 C510,252 506,272 498,286
+           L478,272 L466,288 L448,270 L432,290 L414,268 L398,286 L380,264 L362,282 L346,258 L328,276 L312,252 L294,270 L278,248 L260,264 L244,242 L226,258 L210,238 L192,252 L176,236 L160,252 L144,244 C124,258 110,284 106,320 C100,334 92,340 84,330 Z"
+        fill="#1d1519" stroke="#1f1418" stroke-width="6" stroke-linejoin="round"/>
+  <!-- beanie: ribbed dome + thick ribbed folded cuff, worn tilted back -->
+  <path d="M118,150 C130,70 260,40 340,52 C430,66 500,130 506,215 Z" fill="url(#hat)" stroke="#1f1418" stroke-width="12" stroke-linejoin="round"/>
+  <g clip-path="url(#dome)" stroke="#a7781c" stroke-width="7" opacity="0.75"><line x1="120" y1="92" x2="88" y2="200"/><line x1="146" y1="88" x2="117" y2="204"/><line x1="172" y1="84" x2="146" y2="208"/><line x1="198" y1="80" x2="175" y2="212"/><line x1="224" y1="76" x2="204" y2="216"/><line x1="250" y1="72" x2="233" y2="220"/><line x1="276" y1="68" x2="262" y2="224"/><line x1="302" y1="64" x2="291" y2="228"/><line x1="328" y1="60" x2="320" y2="232"/><line x1="354" y1="64" x2="349" y2="236"/><line x1="380" y1="68" x2="378" y2="240"/><line x1="406" y1="72" x2="407" y2="244"/><line x1="432" y1="76" x2="436" y2="248"/><line x1="458" y1="80" x2="465" y2="252"/><line x1="484" y1="84" x2="494" y2="256"/><line x1="510" y1="88" x2="523" y2="260"/><line x1="536" y1="92" x2="552" y2="264"/></g>
+  <path d="M100,135 L508,208 C516,236 514,258 506,276 L96,198 C88,176 90,152 100,135 Z" fill="#d7a234" stroke="#1f1418" stroke-width="12" stroke-linejoin="round"/>
+  <g clip-path="url(#cuff)" stroke="#9e6f18" stroke-width="7" opacity="0.8"><line x1="98" y1="120.0" x2="100" y2="200.0"/><line x1="120" y1="124.3" x2="122" y2="204.3"/><line x1="142" y1="128.6" x2="144" y2="208.6"/><line x1="164" y1="132.9" x2="166" y2="212.9"/><line x1="186" y1="137.2" x2="188" y2="217.2"/><line x1="208" y1="141.5" x2="210" y2="221.5"/><line x1="230" y1="145.8" x2="232" y2="225.8"/><line x1="252" y1="150.1" x2="254" y2="230.1"/><line x1="274" y1="154.4" x2="276" y2="234.4"/><line x1="296" y1="158.7" x2="298" y2="238.7"/><line x1="318" y1="163.0" x2="320" y2="243.0"/><line x1="340" y1="167.3" x2="342" y2="247.3"/><line x1="362" y1="171.6" x2="364" y2="251.6"/><line x1="384" y1="175.9" x2="386" y2="255.9"/><line x1="406" y1="180.2" x2="408" y2="260.2"/><line x1="428" y1="184.5" x2="430" y2="264.5"/><line x1="450" y1="188.8" x2="452" y2="268.8"/><line x1="472" y1="193.1" x2="474" y2="273.1"/><line x1="494" y1="197.39999999999998" x2="496" y2="277.4"/><line x1="516" y1="201.7" x2="518" y2="281.7"/></g>
+
+  <!-- sleepy, suspicious eyes: heavy flat lids over small dark almond pupils -->
+  <path d="M232,300 C236,322 278,324 282,300 Z" fill="#1f1418"/>
+  <path d="M352,330 C356,354 400,356 404,332 Z" fill="#1f1418"/>
+  <path d="M218,296 C240,288 270,290 292,298" fill="none" stroke="#1f1418" stroke-width="11" stroke-linecap="round"/>
+  <path d="M338,326 C362,320 392,322 414,330" fill="none" stroke="#1f1418" stroke-width="11" stroke-linecap="round"/>
+  <!-- tiny 'o' mouth -->
+  <ellipse cx="296" cy="402" rx="13" ry="10" fill="#3a1216" stroke="#1f1418" stroke-width="5"/>
+
+  <!-- arm bending up from the chest to the bread (character's right, screen left) -->
+  <path d="M138,522 C146,580 150,630 170,656 C196,674 250,630 300,586" fill="none" stroke="#1f1418" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- bread under the chin: bite on top, lettuce peeking out both sides -->
+  <path d="M232,500 C222,482 240,470 252,480 C262,470 278,476 282,488 Z" fill="#c9d64a" stroke="#1f1418" stroke-width="4"/>
+  <path d="M372,500 C392,494 400,516 388,530 C398,540 392,560 376,556 Z" fill="#b9cc3e" stroke="#1f1418" stroke-width="4"/>
+  <g transform="rotate(4 312 520)">
+    <path d="M246,470 C252,462 266,460 276,466 C288,486 330,488 344,464 C356,458 376,462 382,474 L384,570 C384,582 376,588 366,588 L262,588 C252,588 244,582 244,572 Z"
+          fill="url(#bread)" stroke="#b78044" stroke-width="7" stroke-linejoin="round"/>
+    <circle cx="262" cy="486" r="2.2" fill="#cbb48c"/><circle cx="299" cy="515" r="2.2" fill="#cbb48c"/><circle cx="336" cy="544" r="2.2" fill="#cbb48c"/><circle cx="263" cy="573" r="2.2" fill="#cbb48c"/><circle cx="300" cy="512" r="2.2" fill="#cbb48c"/><circle cx="337" cy="541" r="2.2" fill="#cbb48c"/><circle cx="264" cy="570" r="2.2" fill="#cbb48c"/><circle cx="301" cy="509" r="2.2" fill="#cbb48c"/><circle cx="338" cy="538" r="2.2" fill="#cbb48c"/><circle cx="265" cy="567" r="2.2" fill="#cbb48c"/><circle cx="302" cy="506" r="2.2" fill="#cbb48c"/><circle cx="339" cy="535" r="2.2" fill="#cbb48c"/><circle cx="266" cy="564" r="2.2" fill="#cbb48c"/><circle cx="303" cy="503" r="2.2" fill="#cbb48c"/><circle cx="340" cy="532" r="2.2" fill="#cbb48c"/><circle cx="267" cy="561" r="2.2" fill="#cbb48c"/>
+  </g>
+  <circle cx="302" cy="588" r="15" fill="#1f1418"/>
+</g>
+</svg>

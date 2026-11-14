@@ -55,7 +55,7 @@ def rock_mat():
     nt = m.node_tree; b = nt.nodes["Principled BSDF"]
     co = nt.nodes.new("ShaderNodeTexCoord").outputs["Object"]
     wv = nt.nodes.new("ShaderNodeTexWave"); wv.wave_type = "BANDS"; wv.bands_direction = "Z"
-    wv.inputs["Scale"].default_value = 1.6; wv.inputs["Distortion"].default_value = 4.0; wv.inputs["Detail"].default_value = 4
+    wv.inputs["Scale"].default_value = 0.5; wv.inputs["Distortion"].default_value = 1.2; wv.inputs["Detail"].default_value = 1
     nt.links.new(co, wv.inputs[0])
     strata = ramp(nt, [(0.0, "#6a4c38"), (0.4, "#94735a"), (0.7, "#b08e70"), (1.0, "#7c5e48")])
     nt.links.new(wv.outputs["Fac"], strata.inputs[0])
@@ -68,17 +68,17 @@ def rock_mat():
     mix = nt.nodes.new("ShaderNodeMix"); mix.data_type = "RGBA"
     nt.links.new(crack, mix.inputs[0]); nt.links.new(mul.outputs[2], mix.inputs[6]); mix.inputs[7].default_value = hexc("#2a170a")
     nt.links.new(mix.outputs[2], b.inputs["Base Color"]); b.inputs["Roughness"].default_value = 0.9
-    bump = nt.nodes.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.4
+    bump = nt.nodes.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.12
     nt.links.new(noise(nt, co, 7).outputs["Fac"], bump.inputs["Height"]); nt.links.new(bump.outputs[0], b.inputs["Normal"])
     return m
 ROCK = rock_mat()
-vtex = bpy.data.textures.new("facets", "VORONOI"); vtex.noise_scale = 0.9; vtex.distance_metric = "DISTANCE"
+vtex = bpy.data.textures.new("facets", "VORONOI"); vtex.noise_scale = 1.6; vtex.distance_metric = "DISTANCE"
 ctex = bpy.data.textures.new("clouds", "CLOUDS"); ctex.noise_scale = 1.4
 
-def rock_surface(name, loc, rot, size, strength=0.6, subdiv=90, flat=True):
+def rock_surface(name, loc, rot, size, strength=0.6, subdiv=90, flat=False):
     bpy.ops.mesh.primitive_grid_add(x_subdivisions=subdiv, y_subdivisions=subdiv, size=1, location=loc, rotation=rot)
     o = bpy.context.object; o.name = name; o.scale = (size[0], size[1], 1); bpy.ops.object.transform_apply(scale=True)
-    for t, st in ((vtex, strength), (ctex, strength * 0.6)):
+    for t, st in ((vtex, strength * 0.35), (ctex, strength * 0.35)):
         d = o.modifiers.new("d", "DISPLACE"); d.texture = t; d.strength = st; d.texture_coords = "GLOBAL"
     o.data.materials.append(ROCK)
     for p in o.data.polygons: p.use_smooth = not flat
@@ -92,8 +92,10 @@ rock_surface("ceiling", (0.3, 0.8, 4.3), (math.radians(8), 0, 0), (8, 7), 0.9)
 for nm, loc, sc_ in (("outcrop", (1.2, 1.6, 3.55), (1.6, 1.0, 0.55)), ("lump_r", (2.1, 0.2, 1.6), (0.6, 0.7, 1.1))):
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=3, radius=1, location=loc)
     o = bpy.context.object; o.name = nm; o.scale = sc_; bpy.ops.object.transform_apply(scale=True)
-    d = o.modifiers.new("d", "DISPLACE"); d.texture = vtex; d.strength = 0.3; d.texture_coords = "GLOBAL"
+    d = o.modifiers.new("d", "DISPLACE"); d.texture = ctex; d.strength = 0.12; d.texture_coords = "GLOBAL"
     o.data.materials.append(ROCK)
+    for p_ in o.data.polygons: p_.use_smooth = True
+    o.modifiers.new("s", "SUBSURF").levels = 1
 
 # dusty floor
 fm = bpy.data.materials.new("floor"); fm.use_nodes = True; fnt = fm.node_tree; fb = fnt.nodes["Principled BSDF"]
@@ -145,20 +147,26 @@ for k in range(4):
     bpy.ops.mesh.primitive_cylinder_add(radius=0.015, depth=0.42, location=(LX + 0.13 * math.cos(a), LY + 0.13 * math.sin(a), LZ)); bpy.context.object.data.materials.append(RED)
 bpy.ops.object.light_add(type="POINT", location=(LX, LY - 0.05, LZ)); L = bpy.context.object; L.data.energy = 70; L.data.color = (1, 0.65, 0.3); L.data.shadow_soft_size = 0.1
 
+# smooth right wall slab that carries the candle and the crystal
+bpy.ops.mesh.primitive_uv_sphere_add(segments=48, ring_count=24, radius=1, location=(1.75, 0.7, 1.7))
+slab = bpy.context.object; slab.scale = (0.75, 1.3, 1.9); bpy.ops.object.transform_apply(scale=True)
+d = slab.modifiers.new("d", "DISPLACE"); d.texture = ctex; d.strength = 0.1; d.texture_coords = "GLOBAL"
+slab.data.materials.append(ROCK)
+for p_ in slab.data.polygons: p_.use_smooth = True
 # wall candle with small iron sconce (right wall) + glowing crystal vein below it
-CX, CY, CZ = 1.5, 0.15, 2.3
+CX, CY, CZ = 0.98, 0.35, 2.05
 cube("sconce", (CX, CY + 0.05, CZ - 0.05), (0.12, 0.12, 0.03), IRON, 0)
 bpy.ops.mesh.primitive_cylinder_add(radius=0.035, depth=0.18, location=(CX, CY, CZ + 0.05)); bpy.context.object.data.materials.append(mat("wax", "#f3ead8", 0.5, emit="#ffd9a0", strength=0.4))
 bpy.ops.mesh.primitive_uv_sphere_add(radius=0.025, location=(CX, CY, CZ + 0.18)); o = bpy.context.object; o.scale.z = 1.8
-o.data.materials.append(mat("flame", "#fff2c0", 0.5, emit="#ffd070", strength=30))
-bpy.ops.object.light_add(type="POINT", location=(CX - 0.1, CY - 0.15, CZ + 0.2)); L = bpy.context.object; L.data.energy = 220; L.data.color = (1, 0.7, 0.35); L.data.shadow_soft_size = 0.05
-GOLD = mat("crystal", "#ffd36a", 0.2, emit="#ffc23a", strength=12)
+o.data.materials.append(mat("flame", "#fff2c0", 0.5, emit="#ffd070", strength=12))
+bpy.ops.object.light_add(type="POINT", location=(CX - 0.1, CY - 0.15, CZ + 0.2)); L = bpy.context.object; L.data.energy = 45; L.data.color = (1, 0.7, 0.35); L.data.shadow_soft_size = 0.05
+GOLD = mat("crystal", "#ffd36a", 0.2, emit="#ffc23a", strength=5)
 for i in range(9):
     bpy.ops.mesh.primitive_cone_add(vertices=5, radius1=0.035, depth=random.uniform(0.08, 0.2),
-        location=(CX - 0.02 + random.uniform(-0.08, 0.08), CY - 0.15 + random.uniform(-0.05, 0.05), 1.75 + random.uniform(-0.12, 0.12)),
+        location=(CX + 0.02 + random.uniform(-0.07, 0.07), CY - 0.05 + random.uniform(-0.04, 0.04), 1.55 + random.uniform(-0.1, 0.1)),
         rotation=(random.uniform(0.5, 1.6), random.uniform(-0.8, 0.8), random.uniform(0, 3)))
     bpy.context.object.data.materials.append(GOLD)
-bpy.ops.object.light_add(type="POINT", location=(CX - 0.1, CY - 0.3, 1.75)); L = bpy.context.object; L.data.energy = 90; L.data.color = (1, 0.8, 0.3)
+bpy.ops.object.light_add(type="POINT", location=(CX - 0.1, CY - 0.3, 1.55)); L = bpy.context.object; L.data.energy = 20; L.data.color = (1, 0.8, 0.3)
 
 # ---------------- crates (two, side by side) + props ----------------
 CR = wood("crate", "#e2c48e", "#b08c58", 2.5, "X")
