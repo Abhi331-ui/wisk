@@ -23,10 +23,11 @@ function fabric(g, path, bb, base) {
   for (const [dx, y0, y1, bend] of [[-0.3, 0.55, 0.85, -12], [0.28, 0.5, 0.82, 14], [-0.05, 0.12, 0.3, 8]]) { g.beginPath(); g.moveTo(cx + dx * bb.w, bb.y + y0 * bb.h); g.quadraticCurveTo(cx + dx * bb.w + bend, bb.y + (y0 + y1) / 2 * bb.h, cx + dx * bb.w - bend * 0.3, bb.y + y1 * bb.h); g.stroke(); }
   g.restore();
 }
-function hairStrands(g, path, bb, col) {
+function hairStrands(g, path, bb, col0) {
+  const col = mix(col0, "#000000", 0.35);
   g.save(); g.clip(path); g.lineCap = "round"; g.strokeStyle = mix(col, "#000000", 0.5); g.globalAlpha = 0.6; g.lineWidth = 3;
   for (let i = 0; i < Math.round(bb.w / 9); i++) { const x = bb.x + rnd() * bb.w, y = bb.y + rnd() * bb.h; g.beginPath(); g.arc(x, y, 6 + rnd() * 6, Math.PI * (0.9 + rnd() * 0.3), Math.PI * (1.7 + rnd() * 0.3)); g.stroke(); }
-  g.globalAlpha = 0.7; g.strokeStyle = mix(col, "#fff4dc", 0.7); g.lineWidth = 5;
+  g.globalAlpha = 0.85; g.strokeStyle = "rgba(255,255,255,0.9)"; g.lineWidth = 7;
   g.beginPath(); g.moveTo(bb.x + bb.w * 0.12, bb.y + bb.h * 0.32); g.quadraticCurveTo(bb.x + bb.w * 0.5, bb.y + bb.h * 0.12, bb.x + bb.w * 0.88, bb.y + bb.h * 0.3); g.stroke();
   g.restore();
   g.save(); g.clip(path); g.lineCap = "round";
@@ -87,6 +88,7 @@ export const MOVES = {
 };
 
 export function drawBean(g, sp, pose, opt = {}) {
+  RS = 7; for (const ch of (sp.name || "x") + (sp.colors.hair || "")) RS = (RS * 31 + ch.charCodeAt(0)) % 2147483647; if (RS <= 0) RS = 7;
   const sun = { a: rad(opt.sunDeg ?? 215), k: opt.sunK ?? 1, shaft: opt.shaft }, side = opt.view === "side", C = sp.colors;
   const W = sp.wide ?? 1.0, legL = 150 * (sp.legs ?? 1), bodyH = 330 * (sp.tall ?? 1), bodyW = 82 * W, headR = 128 * (sp.head ?? 1);
   g.save(); if (pose.lie) { g.translate(0, -60); g.rotate(-Math.PI / 2); }
@@ -141,7 +143,7 @@ export function drawBean(g, sp, pose, opt = {}) {
 
 function drawHead(g, sp, c, r, sun, side, pose, opt) {
   const C = sp.colors, [x, y] = c, face = sp.face || "#f1f2f6";
-  if (sp.hair && !side) { const hb = ellP(x, y - r * 0.06, r * 1.03, r * 1.0); fillLit(g, hb, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9 }); hairStrands(g, hb, { x: x - r * 1.05, y: y - r * 1.06, w: r * 2.1, h: r * 2.0 }, C.hair); }
+  if (sp.hair && !side) { const hb = ellP(x, y - r * 0.06, r * 1.03, r * 1.0); fillLit(g, hb, mix(C.hair, "#000000", 0.35), sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9 }); hairStrands(g, hb, { x: x - r * 1.05, y: y - r * 1.06, w: r * 2.1, h: r * 2.0 }, C.hair); }
   const fp = side ? smooth([[x - r * 0.98, y], [x - r * 0.7, y - r * 0.72], [x, y - r * 1.0], [x + r * 0.78, y - r * 0.68], [x + r * 1.02, y + r * 0.02], [x + r * 0.76, y + r * 0.7], [x, y + r * 0.98], [x - r * 0.72, y + r * 0.7]]) : ellP(x, y, r, r * 0.97);
   fillLit(g, fp, face, { a: sun.a, k: sun.k * 0.55, shaft: sun.shaft }, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 9, sheen: false });
   { // premium soft key light on the left side of the face (picture left)
@@ -161,15 +163,15 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
   // hair cap with grey streak highlights (reference style)
   if (sp.hair) {
     const hp = side ? smooth([[x - r * 1.0, y + r * 0.25], [x - r * 0.92, y - r * 0.62], [x - r * 0.3, y - r * 1.03], [x + r * 0.45, y - r * 0.95], [x + r * 0.82, y - r * 0.62], [x + r * 0.55, y - r * 0.5], [x + r * 0.05, y - r * 0.58], [x - r * 0.35, y - r * 0.3], [x - r * 0.6, y + r * 0.1]])
-      : (() => { const pts = []; for (let i = 0; i <= 22; i++) { const a = Math.PI * (1.05 + 0.9 * i / 22), bump = 1.04 + (i % 2 ? 0.06 : -0.01); pts.push([x + Math.cos(a) * r * bump, y - r * 0.08 + Math.sin(a) * r * bump]); } pts.push([x + r * 0.72, y - r * 0.52], [x + r * 0.3, y - r * 0.66], [x - r * 0.3, y - r * 0.6], [x - r * 0.72, y - r * 0.5]); return smooth(pts); })();
-    fillLit(g, hp, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: r }, { ol: 9 });
+      : (() => { const pts = []; for (let i = 0; i <= 22; i++) { const a = Math.PI * (1.05 + 0.9 * i / 22), bump = 1.025 + (i % 2 ? 0.025 : 0); pts.push([x + Math.cos(a) * r * bump, y - r * 0.08 + Math.sin(a) * r * bump]); } pts.push([x + r * 0.72, y - r * 0.52], [x + r * 0.3, y - r * 0.66], [x - r * 0.3, y - r * 0.6], [x - r * 0.72, y - r * 0.5]); return smooth(pts); })();
+    fillLit(g, hp, mix(C.hair, "#000000", 0.35), sun, { x: x - r, y: y - r, w: 2 * r, h: r }, { ol: 9 });
     hairStrands(g, hp, { x: x - r * 1.05, y: y - r * 1.06, w: r * 2.1, h: r * 1.0 }, C.hair);
     g.save(); g.clip(hp); g.strokeStyle = "rgba(255,255,255,0.3)"; g.lineWidth = r * 0.1; g.lineCap = "round";
     g.beginPath(); g.arc(x - r * 0.05, y - r * 0.15, r * 0.78, 1.18 * Math.PI, 1.62 * Math.PI); g.stroke();
     g.strokeStyle = "rgba(0,0,0,0.35)"; g.lineWidth = 5; g.beginPath(); g.moveTo(x + r * 0.28, y - r * 1.0); g.quadraticCurveTo(x + r * 0.22, y - r * 0.7, x + r * 0.3, y - r * 0.46); g.stroke();
     g.restore();
   }
-  if (sp.longHair && !side) { for (const s of [-1, 1]) { const lh = smooth([[x + s * r * 0.85, y - r * 0.5], [x + s * r * 1.12, y + r * 0.2], [x + s * r * 1.0, y + r * 0.95], [x + s * r * 0.72, y + r * 0.85], [x + s * r * 0.8, y + r * 0.1]]); fillLit(g, lh, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 7 }); hairStrands(g, lh, { x: x + Math.min(s * r * 0.7, s * r * 1.15), y: y - r * 0.55, w: r * 0.45, h: r * 1.55 }, C.hair); } }
+  if (sp.longHair && !side) { for (const s of [-1, 1]) { const lh = smooth([[x + s * r * 0.85, y - r * 0.5], [x + s * r * 1.12, y + r * 0.2], [x + s * r * 1.0, y + r * 0.95], [x + s * r * 0.72, y + r * 0.85], [x + s * r * 0.8, y + r * 0.1]]); fillLit(g, lh, mix(C.hair, "#000000", 0.35), sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 7 }); hairStrands(g, lh, { x: x + Math.min(s * r * 0.7, s * r * 1.15), y: y - r * 0.55, w: r * 0.45, h: r * 1.55 }, C.hair); } }
   reink(g, fp, 9);
   // face: dot eyes, small brows, mouth (reference: simple, bold)
   const e = opt.expr || sp.expr || "smile", eyes = side ? [x + r * 0.45] : [x - r * 0.3, x + r * 0.3], ey = y - r * 0.02;
@@ -230,15 +232,15 @@ export function drawBunny(g, col, opt = {}) {
 }
 
 export const CAST = {
-  napoleon: { name: "Napoleon", hat: "bicorne", hair: true, vest: true, buttons: true, epaulettes: true, head: 1.02, legs: 0.92, expr: "smug",
+  napoleon: { wide: 1.9, tall: 0.86, legs: 0.8, name: "Napoleon", hat: "bicorne", hair: true, vest: true, buttons: true, epaulettes: true, head: 1.02, legs: 0.92, expr: "smug",
     colors: { coat: "#2f4fa8", vest: "#f6f2ea", shoes: "#1a1616", hair: "#1d1a1c", hat: "#1a171b", gold: "#f0c040", buttons: "#f0c040" } },
-  berthier: { name: "Berthier", hat: "bicorne", plume: true, hair: true, vest: true, buttons: true, epaulettes: true, sash: true, stache: true, expr: "grin",
+  berthier: { wide: 1.9, tall: 0.86, legs: 0.8, name: "Berthier", hat: "bicorne", plume: true, hair: true, vest: true, buttons: true, epaulettes: true, sash: true, stache: true, expr: "grin",
     colors: { coat: "#2f4fa8", vest: "#f6f2ea", shoes: "#1a1616", hair: "#6a5a52", hat: "#1a171b", gold: "#f0c040", buttons: "#f0c040", sash: "#d6333a" } },
-  hunter: { name: "Hunter", hat: "tricorne", hair: true, buttons: true, belt: true, expr: "smile",
+  hunter: { wide: 1.9, tall: 0.86, legs: 0.8, name: "Hunter", hat: "tricorne", hair: true, buttons: true, belt: true, expr: "smile",
     colors: { coat: "#2f9a6a", shoes: "#3a2418", hair: "#5a3a26", hat: "#1e1a18", buttons: "#f0c040", belt: "#4a2e1c" } },
-  farmer: { name: "Farmer", hat: "cap", hair: true, buttons: true, stache: true, wide: 1.12, expr: "grin",
+  farmer: { wide: 1.9, tall: 0.86, legs: 0.8, name: "Farmer", hat: "cap", hair: true, buttons: true, stache: true, expr: "grin",
     colors: { coat: "#c07a3a", shoes: "#4a3020", hair: "#8a6a44", hat: "#6a5236", buttons: "#5a3a22" } },
-  grenadier: { name: "Grenadier", hat: "bearskin", hair: true, vest: true, buttons: true, sash: true, stache: true, tall: 1.06, expr: "smile",
+  grenadier: { wide: 1.9, tall: 0.86, legs: 0.8, name: "Grenadier", hat: "bearskin", hair: true, vest: true, buttons: true, sash: true, stache: true, expr: "smile",
     colors: { coat: "#2f4fa8", vest: "#f6f2ea", shoes: "#1a1616", hair: "#2a2020", hat: "#121012", buttons: "#f0c040", sash: "#f6f2ea" } },
 };
 
