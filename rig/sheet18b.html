@@ -1,0 +1,37 @@
+<!doctype html><html><body style="margin:0">
+<canvas id="c" width="2400" height="2200"></canvas>
+<script type="module">
+import { drawBean, drawBunny, MOVES, CAST } from "./bean2.js";
+const g = document.getElementById("c").getContext("2d"), MODE = location.hash.slice(1) || "cast";
+// room like the reference look: green brick wall, blue floor, warm yellow sun shaft
+g.fillStyle = "#8fd18f"; g.fillRect(0, 0, 2400, 2200);
+g.strokeStyle = "#6fb47a"; g.lineWidth = 6;
+for (let y = 0; y < 1500; y += 70) { g.beginPath(); g.moveTo(0, y); g.lineTo(2400, y); g.stroke(); for (let x = ((y / 70) % 2) * 90; x < 2400; x += 180) { g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + 70); g.stroke(); } }
+const fl = g.createLinearGradient(0, 1500, 0, 2200); fl.addColorStop(0, "#7d8fd8"); fl.addColorStop(1, "#5b6cc4"); g.fillStyle = fl; g.fillRect(0, 1500, 2400, 700);
+g.strokeStyle = "rgba(255,255,255,0.18)"; g.lineWidth = 4; for (let x = -1200; x < 3600; x += 220) { g.beginPath(); g.moveTo(1200 + (x - 1200) * 0.4, 1500); g.lineTo(x, 2200); g.stroke(); }
+g.lineWidth = 9; g.strokeStyle = "#15110f"; g.beginPath(); g.moveTo(0, 1500); g.lineTo(2400, 1500); g.stroke();
+// sun shaft on the wall
+g.fillStyle = "rgba(255,226,60,0.55)"; g.beginPath(); g.moveTo(300, 0); g.lineTo(1150, 0); g.lineTo(2300, 1500); g.lineTo(1450, 1500); g.fill();
+g.fillStyle = "rgba(255,226,60,0.35)"; g.beginPath(); g.moveTo(1450, 1500); g.lineTo(2300, 1500); g.lineTo(2400, 1640); g.lineTo(1560, 1640); g.fill();
+const put = (x, y, s, fn) => { g.save(); g.translate(x, y); g.scale(s, s); fn(); g.restore(); };
+const shadow = (x, y, w) => { g.fillStyle = "rgba(20,24,60,0.25)"; g.beginPath(); g.ellipse(x + 30, y + 4, w, 20, 0, 0, 7); g.fill(); };
+const label = (t, x, y) => { g.save(); g.font = "bold 44px Arial"; g.textAlign = "center"; g.lineWidth = 10; g.strokeStyle = "#15110f"; g.strokeText(t, x, y); g.fillStyle = "#ffffff"; g.fillText(t, x, y); g.restore(); };
+if (MODE === "cast") {
+  Object.keys(CAST).forEach((n, i) => { const x = 250 + i * 470, sp = CAST[n];
+    shadow(x, 1080, 120); put(x, 1080, 1.05, () => drawBean(g, sp, MOVES.stand(), {}));
+    label(sp.name, x, 1145);
+    shadow(x, 1960, 95); put(x, 1960, 0.9, () => drawBean(g, sp, n === "napoleon" ? MOVES.point() : MOVES.stand(), { view: "side", prop: n === "hunter" || n === "grenadier" ? "musket" : null }));
+  });
+  ["#ffffff", "#d8c0a2", "#9a8574", "#f2e6d8", "#6f5d50"].forEach((c, k) => { shadow(120 + k * 470, 2140, 70); put(180 + k * 470, 2140, 0.6, () => drawBunny(g, c, {})); });
+} else {
+  const sp = CAST.napoleon;
+  [0, 0.25, 0.5, 0.75].forEach((t, k) => { shadow(170 + k * 280, 900, 90); put(170 + k * 280, 900, 0.85, () => drawBean(g, sp, MOVES.walk(t), { view: "side" })); }); label("WALK", 590, 980);
+  [0, 0.25, 0.5, 0.75].forEach((t, k) => { shadow(1330 + k * 280, 900, 90); put(1330 + k * 280, 900, 0.85, () => drawBean(g, sp, MOVES.run(t), { view: "side", expr: "shock" })); }); label("RUN", 1750, 980);
+  const row = [["SIT", "sit", "side", "smile"], ["FEET UP", "feetUp", "side", "grin"], ["WAVE", "wave", null, "grin"], ["POINT", "point", "side", "angry"], ["CHEER", "cheer", null, "laugh"], ["SCARED", "scared", null, "shock"]];
+  row.forEach(([lab, m, v, e], k) => { const x = 170 + k * 300;
+    if (m === "sit" || m === "feetUp") { g.fillStyle = "#7a7f8c"; g.fillRect(x - 70, 1900 - 120, 150, 120); g.lineWidth = 7; g.strokeStyle = "#15110f"; g.strokeRect(x - 70, 1900 - 120, 150, 120); }
+    shadow(x, 1900, 90); put(x, 1900, 0.85, () => drawBean(g, sp, MOVES[m](0.1), { view: v, expr: e })); label(lab, x, 1990); });
+  shadow(2080, 1900, 230); put(2330, 1905, 0.85, () => drawBean(g, sp, MOVES.sleep(), { view: "side" })); label("SLEEP", 2090, 1990);
+}
+window.done = true;
+</script></body></html>
