@@ -74,6 +74,7 @@ export function drawBean(g, sp, pose, opt = {}) {
   const body = smooth([at(-bw * 0.92, 14), at(-bw * 1.0, bodyH * 0.3), at(-bw * 0.9, bodyH * 0.62), at(-bw * 0.72, bodyH * 0.9), at(0, bodyH * 1.0), at(bw * 0.72, bodyH * 0.9), at(bw * 0.9, bodyH * 0.62), at(bw * 1.0, bodyH * 0.3), at(bw * 0.92, 14), at(0, -10)]);
   const bb = { x: hip[0] - bw * 1.1, y: hip[1] - bodyH * 1.05, w: bw * 2.2, h: bodyH * 1.1 };
   fillLit(g, body, C.coat, sun, bb);
+  if (sp.dress) { const sk = smooth([at(-bw * 1.25, 0), at(-bw * 0.95, bodyH * 0.42), at(bw * 0.95, bodyH * 0.42), at(bw * 1.25, 0), at(0, -12)]); fillLit(g, sk, C.dress, sun, bb, { ol: 8 }); }
   // coat details
   g.save(); g.clip(body);
   const fx = side ? bw * 0.35 : 0;
@@ -115,6 +116,7 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
     g.strokeStyle = "rgba(0,0,0,0.35)"; g.lineWidth = 5; g.beginPath(); g.moveTo(x + r * 0.28, y - r * 1.0); g.quadraticCurveTo(x + r * 0.22, y - r * 0.7, x + r * 0.3, y - r * 0.46); g.stroke();
     g.restore();
   }
+  if (sp.longHair && !side) { for (const s of [-1, 1]) { const lh = smooth([[x + s * r * 0.85, y - r * 0.5], [x + s * r * 1.12, y + r * 0.2], [x + s * r * 1.0, y + r * 0.95], [x + s * r * 0.72, y + r * 0.85], [x + s * r * 0.8, y + r * 0.1]]); fillLit(g, lh, C.hair, sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 7 }); } }
   // face: dot eyes, small brows, mouth (reference: simple, bold)
   const e = opt.expr || sp.expr || "smile", eyes = side ? [x + r * 0.45] : [x - r * 0.3, x + r * 0.3], ey = y - r * 0.02;
   g.lineCap = "round"; g.strokeStyle = INK; g.fillStyle = INK;
@@ -127,6 +129,7 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
     if (e === "angry" || e === "smug") { g.moveTo(ex - 22, ey - 44); g.lineTo(ex + 20, ey - 32); } else if (e === "shock") { g.arc(ex, ey - 30, 20, 1.2 * Math.PI, 1.8 * Math.PI); } else { g.moveTo(ex - 18, ey - 40); g.quadraticCurveTo(ex, ey - 47, ex + 18, ey - 40); }
     g.stroke();
   }
+  if (sp.glasses) { g.lineWidth = 6; g.strokeStyle = INK; for (const ex of eyes) { g.beginPath(); g.arc(ex, ey, 30, 0, 7); g.stroke(); g.fillStyle = "rgba(200,225,255,0.18)"; g.fill(); } if (!side) { g.beginPath(); g.moveTo(eyes[0] + 30, ey - 4); g.quadraticCurveTo(x, ey - 14, eyes[1] - 30, ey - 4); g.stroke(); } }
   const mx = side ? x + r * 0.55 : x, my = y + r * 0.42;
   g.lineWidth = 8;
   if (e === "grin" || e === "laugh") { const w = 52; g.fillStyle = "#ffffff"; g.beginPath(); g.moveTo(mx - w, my - 10); g.quadraticCurveTo(mx, my + 46, mx + w, my - 10); g.closePath(); g.fill(); g.stroke(); g.lineWidth = 4; for (let k = -2; k <= 2; k++) { g.beginPath(); g.moveTo(mx + k * 18, my - 6); g.lineTo(mx + k * 18, my + 8); g.stroke(); } g.beginPath(); g.moveTo(mx - w + 8, my + 4); g.quadraticCurveTo(mx, my + 12, mx + w - 8, my + 4); g.stroke(); }
@@ -192,4 +195,25 @@ export const OFFICE = {
     colors: { coat: "#283a66", tie: "#c8323a", shoes: "#1a1616", hair: "#8e8e94" } },
   casual: { name: "Colleague", hair: true, expr: "smile", buttons: false,
     colors: { coat: "#2fae86", shoes: "#3a2a20", hair: "#5a3a26" } },
+};
+
+export const MW = {
+  percy: { name: "Percy", hair: true, glasses: true, shirt: true, lapels: true, tie: true, expr: "smile", face: "#f6e4d2",
+    colors: { coat: "#5b6070", tie: "#a8323a", shoes: "#1a1616", hair: "#9a948c" } },
+  kid: { name: "Young Percy", hat: "cap", hair: true, buttons: true, belt: true, expr: "sad", tall: 0.72, legs: 0.7, head: 0.95, face: "#fbe8d6",
+    colors: { coat: "#6b7a8a", shoes: "#3a2a1a", hair: "#6a4a2a", hat: "#5a4a3a", buttons: "#3a2a1a", belt: "#3a2618" } },
+  eng1: { name: "Engineer", hair: true, shirt: true, lapels: true, tie: true, stache: true, expr: "smile", face: "#f6e2cc",
+    colors: { coat: "#f4f3ef", tie: "#2f4f8a", shoes: "#1a1616", hair: "#3a2a20" } },
+  eng2: { name: "Engineer", hair: true, shirt: true, lapels: true, glasses: true, expr: "grin", face: "#eed6bc",
+    colors: { coat: "#f4f3ef", tie: "#3a6a3a", shoes: "#1a1616", hair: "#8a5a34" } },
+  eng3: { name: "Engineer", hair: true, shirt: true, lapels: true, tie: true, stache: true, expr: "smile", face: "#c99067",
+    colors: { coat: "#f4f3ef", tie: "#8a3a2a", shoes: "#1a1616", hair: "#1a1412" } },
+  engw: { name: "Engineer", hair: true, longHair: true, dress: true, lapels: true, expr: "laugh", face: "#f6e2cc",
+    colors: { coat: "#f4f3ef", dress: "#3f6fb5", shoes: "#1a1616", hair: "#7a4a26" } },
+  boss: { name: "Company boss", hair: true, shirt: true, lapels: true, tie: true, stache: true, wide: 1.25, expr: "smug", face: "#f8e6d6",
+    colors: { coat: "#2a2c3e", tie: "#2f4f8a", shoes: "#1a1616", hair: "#e2ded6" } },
+  mom: { name: "Mom", hair: true, longHair: true, dress: true, expr: "smile", face: "#c99067",
+    colors: { coat: "#f0e6d0", dress: "#3f8a6a", shoes: "#3a2a1a", hair: "#3a2418" } },
+  girl: { name: "Kid", hair: true, longHair: true, dress: true, expr: "laugh", tall: 0.72, legs: 0.7, face: "#fbe8d6",
+    colors: { coat: "#f0e6d0", dress: "#c8402e", shoes: "#3a2a1a", hair: "#c9a04a" } },
 };
