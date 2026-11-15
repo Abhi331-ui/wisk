@@ -150,6 +150,15 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
   g.save(); g.clip(fp); const rg = g.createRadialGradient(x - r * 0.25, y - r * 0.2, r * 0.3, x, y, r * 1.05); rg.addColorStop(0, "rgba(255,255,255,0)"); rg.addColorStop(1, "rgba(150,165,200,0.30)"); g.fillStyle = rg; g.fillRect(x - r, y - r, 2 * r, 2 * r);
   for (const s of (side ? [1] : [-1, 1])) { g.fillStyle = "rgba(240,130,130,0.10)"; g.beginPath(); g.ellipse(x + (side ? r * 0.35 : s * r * 0.52), y + r * 0.3, r * 0.16, r * 0.09, 0, 0, 7); g.fill(); }
   g.restore();
+  if (sp.beard) { // full beard: sideburns down the jaw to a soft chin, hair strands, lit like the head
+    const bs = sp.beardSize ?? 1, cx = side ? x + r * 0.2 : x, H = C.beard || C.hair;
+    const bd = smooth([[cx - r * 0.97, y - r * 0.12], [cx - r * 1.02, y + r * 0.38], [cx - r * 0.72, y + r * (0.86 + 0.2 * bs)], [cx, y + r * (1.08 + 0.32 * bs)], [cx + r * 0.72, y + r * (0.86 + 0.2 * bs)], [cx + r * 1.02, y + r * 0.38], [cx + r * 0.97, y - r * 0.12],
+      [cx + r * 0.8, y - r * 0.1], [cx + r * 0.66, y + r * 0.2], [cx + r * 0.36, y + r * 0.3], [cx, y + r * 0.27], [cx - r * 0.36, y + r * 0.3], [cx - r * 0.66, y + r * 0.2], [cx - r * 0.8, y - r * 0.1]]);
+    g.save(); g.shadowColor = "rgba(0,0,0,0.18)"; g.shadowBlur = 10; const bg = g.createLinearGradient(cx - r, y - r * 0.2, cx + r * 0.6, y + r * 1.3); bg.addColorStop(0, mix(H, "#ffffff", 0.18)); bg.addColorStop(0.5, H); bg.addColorStop(1, mix(H, "#000000", 0.38)); g.fillStyle = bg; g.fill(bd); g.restore();
+    g.save(); g.clip(bd); let rs = 77; const rr = () => ((rs = (rs * 1664525 + 1013904223) >>> 0) / 4294967296); for (let k = 0; k < 150; k++) { const u = rr() * 2 - 1, sx0 = cx + u * r * 0.98, sy0 = y - r * 0.1 + rr() * r * 0.9 * (1 - Math.abs(u) * 0.3), L = r * (0.18 + rr() * 0.28), cv = u * r * 0.08;
+      g.strokeStyle = rr() < 0.5 ? `rgba(255,240,220,${0.10 + rr() * 0.12})` : `rgba(0,0,0,${0.10 + rr() * 0.14})`; g.lineWidth = 2 + rr() * 2.5; g.beginPath(); g.moveTo(sx0, sy0); g.quadraticCurveTo(sx0 + cv, sy0 + L * 0.6, sx0 + cv * 1.6 - u * 4, sy0 + L); g.stroke(); }
+    const sh = g.createRadialGradient(cx - r * 0.35, y + r * 0.3, 0, cx - r * 0.35, y + r * 0.3, r * 0.9); sh.addColorStop(0, "rgba(255,245,225,0.22)"); sh.addColorStop(1, "rgba(255,245,225,0)"); g.fillStyle = sh; g.fillRect(cx - r * 1.1, y - r * 0.2, r * 2.2, r * 1.6); g.restore();
+    g.save(); g.lineWidth = 6; g.strokeStyle = INK; g.globalAlpha = 0.75; g.beginPath(); g.moveTo(cx - r * 0.97, y - r * 0.12); g.bezierCurveTo(cx - r * 1.1, y + r * 0.5, cx - r * 0.7, y + r * (1.0 + 0.3 * bs), cx, y + r * (1.08 + 0.32 * bs)); g.bezierCurveTo(cx + r * 0.7, y + r * (1.0 + 0.3 * bs), cx + r * 1.1, y + r * 0.5, cx + r * 0.97, y - r * 0.12); g.stroke(); g.restore(); }
   // hair cap with grey streak highlights (reference style)
   if (sp.hair) {
     const hp = side ? smooth([[x - r * 1.0, y + r * 0.25], [x - r * 0.92, y - r * 0.62], [x - r * 0.3, y - r * 1.03], [x + r * 0.45, y - r * 0.95], [x + r * 0.82, y - r * 0.62], [x + r * 0.55, y - r * 0.5], [x + r * 0.05, y - r * 0.58], [x - r * 0.35, y - r * 0.3], [x - r * 0.6, y + r * 0.1]])
@@ -190,9 +199,9 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
     const hp = side ? smooth([[x - r * 0.95, y - r * 0.6], [x - r * 0.42, y - r * 1.78], [x + r * 0.38, y - r * 1.75], [x + r * 0.92, y - r * 0.6], [x, y - r * 0.82]]) : smooth([[x - r * 1.5, y - r * 0.58], [x - r * 0.62, y - r * 1.58], [x, y - r * 1.66], [x + r * 0.62, y - r * 1.58], [x + r * 1.5, y - r * 0.58], [x, y - r * 0.86]]);
     fillLit(g, hp, C.hat, sun, { x: x - r * 1.5, y: y - r * 1.8, w: r * 3, h: r * 1.3 }, { ol: 9 });
     g.lineWidth = 8; g.strokeStyle = C.gold; g.beginPath(); if (side) { g.moveTo(x - r * 0.84, y - r * 0.64); g.quadraticCurveTo(x, y - r * 0.9, x + r * 0.82, y - r * 0.64); } else { g.moveTo(x - r * 1.36, y - r * 0.64); g.quadraticCurveTo(x, y - r * 0.96, x + r * 1.36, y - r * 0.64); } g.stroke();
-    const ck = side ? [x, y - r * 1.18] : [x + r * 0.6, y - r * 1.15];
+    if (!sp.noCockade) { const ck = side ? [x, y - r * 1.18] : [x + r * 0.6, y - r * 1.15];
     for (const [rr, col] of [[24, "#2848b0"], [16, "#f6f2ea"], [8, "#d02a2e"]]) { g.beginPath(); g.arc(ck[0], ck[1], rr, 0, 7); g.fillStyle = col; g.fill(); }
-    g.lineWidth = 5; g.strokeStyle = INK; g.beginPath(); g.arc(ck[0], ck[1], 24, 0, 7); g.stroke();
+    g.lineWidth = 5; g.strokeStyle = INK; g.beginPath(); g.arc(ck[0], ck[1], 24, 0, 7); g.stroke(); }
     if (sp.plume) fillLit(g, smooth([[x - 12, y - r * 1.62], [x + 34, y - r * 2.25], [x + 80, y - r * 2.2], [x + 28, y - r * 1.64]]), "#f6f2ea", sun, { x: x - 20, y: y - r * 2.3, w: 120, h: 90 }, { ol: 6, sheen: false });
   } else if (hat === "tricorne") {
     const hp = smooth([[x - r * 1.2, y - r * 0.62], [x - r * 0.6, y - r * 1.5], [x + r * 0.6, y - r * 1.5], [x + r * 1.2, y - r * 0.62], [x, y - r * 0.9]]);
@@ -213,6 +222,20 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
     fillLit(g, ellP(x, y - r * 0.82, r * 1.05, r * 0.16), C.hat, sun, { x: x - r, y: y - r, w: 2 * r, h: r * 0.4 }, { ol: 8, sheen: false });
     fillLit(g, smooth([[x - r * 0.62, y - r * 0.82], [x - r * 0.6, y - r * 1.12], [x + r * 0.6, y - r * 1.12], [x + r * 0.62, y - r * 0.82]]), C.hat, sun, { x: x - r * 0.7, y: y - r * 1.2, w: r * 1.4, h: r * 0.45 }, { ol: 8, sheen: false });
     g.fillStyle = C.band || "#1a2a5a"; g.fillRect(x - r * 0.6, y - r * 0.98, r * 1.2, r * 0.12);
+  } else if (hat === "tophat") {
+    fillLit(g, ellP(x, y - r * 0.8, r * 1.0, r * 0.15), C.hat, sun, { x: x - r, y: y - r, w: 2 * r, h: r * 0.4 }, { ol: 8, sheen: false });
+    const tp = smooth([[x - r * 0.62, y - r * 0.8], [x - r * 0.66, y - r * 1.95], [x + r * 0.66, y - r * 1.95], [x + r * 0.62, y - r * 0.8]]);
+    fillLit(g, tp, C.hat, sun, { x: x - r * 0.7, y: y - r * 2.0, w: r * 1.4, h: r * 1.2 }, { ol: 9 }); g.fillStyle = C.band || "#3a3034"; g.fillRect(x - r * 0.62, y - r * 1.06, r * 1.24, r * 0.16);
+  } else if (hat === "bonnet") {
+    const bp = smooth([[x - r * 1.12, y + r * 0.15], [x - r * 1.15, y - r * 0.85], [x - r * 0.4, y - r * 1.3], [x + r * 0.5, y - r * 1.28], [x + r * 1.15, y - r * 0.8], [x + r * 1.12, y + r * 0.15], [x + r * 0.85, y - r * 0.55], [x, y - r * 0.85], [x - r * 0.85, y - r * 0.55]]);
+    fillLit(g, bp, C.hat, sun, { x: x - r * 1.2, y: y - r * 1.3, w: r * 2.4, h: r * 1.5 }, { ol: 9 });
+    g.save(); g.clip(bp); g.strokeStyle = mix(C.hat, "#000000", 0.18); g.lineWidth = 5; for (let k = 0; k < 4; k++) { g.beginPath(); g.arc(x, y - r * 0.2, r * (0.8 + k * 0.14), Math.PI * 1.1, Math.PI * 1.9); g.stroke(); } g.restore();
+    g.strokeStyle = C.band || "#c8b89a"; g.lineWidth = 7; g.beginPath(); g.moveTo(x - r * 0.75, y + r * 0.2); g.quadraticCurveTo(x, y + r * 0.75, x + r * 0.75, y + r * 0.2); g.stroke(); g.strokeStyle = INK;
+  } else if (hat === "brim" || hat === "slouch") {
+    const sl = hat === "slouch" ? 0.12 : 0;
+    fillLit(g, smooth([[x - r * 1.35, y - r * (0.66 - sl)], [x - r * 0.6, y - r * 0.92], [x + r * 0.6, y - r * 0.92], [x + r * 1.35, y - r * (0.66 + sl)], [x, y - r * 0.62]]), C.hat, sun, { x: x - r * 1.4, y: y - r, w: r * 2.8, h: r * 0.5 }, { ol: 8, sheen: false });
+    const cp = smooth([[x - r * 0.68, y - r * 0.82], [x - r * 0.62, y - r * 1.42], [x, y - r * (hat === "slouch" ? 1.36 : 1.5)], [x + r * 0.62, y - r * 1.42], [x + r * 0.68, y - r * 0.82]]);
+    fillLit(g, cp, C.hat, sun, { x: x - r * 0.7, y: y - r * 1.5, w: r * 1.4, h: r * 0.7 }, { ol: 9 }); g.fillStyle = C.band || mix(C.hat, "#000000", 0.35); g.fillRect(x - r * 0.64, y - r * 1.0, r * 1.28, r * 0.13);
   } else if (hat === "bearskin") {
     fillLit(g, ellP(x, y - r * 1.15, r * 0.98, r * 1.05), C.hat, sun, { x: x - r, y: y - r * 2.2, w: r * 2, h: r * 2.1 }, { ol: 9 });
   }

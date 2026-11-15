@@ -2,8 +2,16 @@
 import { drawBean, drawBunny, MOVES } from "./bean2.js";
 const INK = "#2a1620";
 const ARM = { hang: [14, -10], hold: [40, -100], point: [92, 0], up: [165, -20], cheer: [165, -20], wave: [150, -45], hip: [30, -125], shrug: [50, -120], scared: [130, -100], reach: [70, -20] };
+const CONV = new WeakMap();
+export function fromOld(O) { if (!O || O.colors) return O; if (CONV.has(O)) return CONV.get(O);
+  const hatMap = { tophat: "tophat", sunbonnet: "bonnet", brim: "brim", slouch: "slouch", plume: "bicorne", cap: "cap" }, hat = hatMap[O.hat] || (O.cap ? "cap" : null);
+  const sp = { name: JSON.stringify(O).slice(0, 40), halfFace: true, wide: O.dress ? 1.7 : 1.6, tall: 0.9, legs: 0.85, hat, plume: O.hat === "plume", noCockade: true, hair: true, beard: !!O.beard, beardSize: O.beardSize, stache: !!(O.moustache || O.beard),
+    dress: !!O.dress, vest: !!O.vest, buttons: !!(O.buttons2 || O.vest || O.overalls), epaulettes: !!O.epaulettes, belt: !!(O.belt || O.overalls), expr: "smile", face: "#f0cfae",
+    colors: { coat: O.overalls || O.top || "#8a7a6a", dress: O.dress || O.top, vest: O.vest || O.collar || "#f2ece0", shoes: O.shoes || "#1a1618", hair: O.hairCol || O.hair || O.beard || O.moustache || "#3a2a1e", beard: O.beard || O.moustache,
+      hat: O.hatCol || O.cap || "#2a2420", gold: O.epaulettes || "#e8b840", buttons: O.buttons2 || "#d8b048", belt: O.belt || "#3a2618", band: O.plume || undefined } };
+  CONV.set(O, sp); return sp; }
 export function folk18(p, a) {
-  const g = p.g, o = a.opts || {}, sp = a.outfit, t = o.t || 0;
+  const g = p.g, o = a.opts || {}, sp = fromOld(a.outfit), t = o.t || 0;
   let pose = { ...(o.run != null ? MOVES.run(o.run) : o.d != null ? MOVES.walk(o.d) : MOVES.stand()) };
   if (o.run == null && o.d == null) { const sw = Math.sin(t * 6.283) * 3, L = ARM[o.armL] || ARM.hang, R = ARM[o.armR] || ARM.hang;
     pose.shL = L[0] + sw + (o.armL === "wave" ? 16 * Math.cos(t * 12.566) : 0); pose.elL = L[1]; pose.shR = R[0] - sw + (o.armR === "wave" ? 16 * Math.sin(t * 12.566) : 0); pose.elR = R[1]; pose.lean = (o.tilt || 0) * 0.6; }
