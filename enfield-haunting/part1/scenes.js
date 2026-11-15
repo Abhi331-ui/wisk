@@ -115,11 +115,11 @@
     c.save(); c.filter = 'blur(6px)'; c.drawImage(c.canvas, 0, 0); c.restore();
     c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(0, 0, W, H);
     const s = o.ps || 6.5, x = o.px ?? 260, y = o.py ?? 640 + Math.sin(T * .7) * 6;
-    E.profileHead(x, y, s, { rim: [1.4, -.6, 'rgba(170,195,240,.95)'] });
+    E.profileHead(x + window.__HH[0] * 1.8, y + window.__HH[1] * 1.8, s, { rim: [1.4, -.6, 'rgba(170,195,240,.95)'] });
     if (o.eyes) eyes(o.eyes[0], o.eyes[1], o.eyes[2], o.eyes[3]);
   }
   function eyes(x, y, s, a) { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = a; for (const d of [-1, 1]) { const g = c.createRadialGradient(x + d * 38 * s, y, 0, x + d * 38 * s, y, 26 * s); g.addColorStop(0, '#fff6e0'); g.addColorStop(.25, 'rgba(240,150,60,.9)'); g.addColorStop(1, 'rgba(240,150,60,0)'); c.fillStyle = g; c.beginPath(); c.arc(x + d * 38 * s, y, 26 * s, 0, 7); c.fill(); } c.restore(); }
-  function black(T, lt, o) { c.fillStyle = '#000'; c.fillRect(0, 0, W, H); if (o.shadowMan) { c.save(); c.globalAlpha = o.shadowMan; cam.x = 0; cam.y = 1.2; cam.z = 0; cam.f = 1500; E.figure('man', 0, -.5, 3, 1.8, { fill: '#060608', rim: [2, -3, 'rgba(140,165,215,.7)'] }); c.restore(); } if (o.eyes) eyes(540, o.eyes[0], o.eyes[1], o.eyes[2]); E.rain(T, .25); }
+  function black(T, lt, o) { c.fillStyle = '#000'; c.fillRect(0, 0, W, H); if (o.shadowMan) { c.save(); c.globalAlpha = o.shadowMan; cam.z = 0; E.figure('man', 0, -.5, 3, 1.8, { fill: '#060608', rim: [2, -3, 'rgba(140,165,215,.7)'] }); c.restore(); } if (o.eyes) eyes(540, o.eyes[0], o.eyes[1], o.eyes[2]); E.rain(T, .25); }
   const SCN = { bedroom, living, hall, wall, street, house, profile, black };
   // ---------------- captions ----------------
   const cap = document.getElementById('cap'); let cur = -1, spans = [], wt = [];
@@ -133,9 +133,12 @@
     const fr = Math.floor(T * 30);
     const shake = pulse(T, PART.knocks || [], .12) * 26 + pulse(T, PART.slams || [], .1) * 30 + pulse(T, PART.booms || [], .3) * 14 + (o.shake ? 6 : 0);
     cam.x = lerp(sh.c0[0], sh.c1[0], k); cam.y = lerp(sh.c0[1], sh.c1[1], k); cam.z = lerp(sh.c0[2], sh.c1[2], k); cam.f = lerp(sh.c0[3], sh.c1[3], k);
-    cam.ox = (hash(fr, 1) - .5) * shake + Math.sin(T * .9) * 3; cam.oy = (hash(fr, 2) - .5) * shake + Math.sin(T * .7) * 3;
+    const hx = Math.sin(T * .61) * .6 + Math.sin(T * 1.37 + 1.3) * .3 + Math.sin(T * 2.9 + .4) * .1, hy = Math.sin(T * .53 + 2.1) * .6 + Math.sin(T * 1.21 + .7) * .3 + Math.sin(T * 3.3) * .1;
+    cam.x += hx * .045; cam.y += hy * .03; cam.f *= 1 + .012 * Math.sin(T * .37);
+    window.__HH = [hx * 9, hy * 9];
+    cam.ox = (hash(fr, 1) - .5) * shake + hx * 9; cam.oy = (hash(fr, 2) - .5) * shake + hy * 9;
     c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.filter = 'none'; c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
-    const roll = (sh.roll || 0) * Math.sin(T * .5); c.save(); c.translate(W / 2, H / 2); c.rotate(roll); c.translate(-W / 2, -H / 2);
+    const roll = (sh.roll || 0) * Math.sin(T * .5) + .011 * Math.sin(T * .43 + .8) + .005 * Math.sin(T * 1.1); c.save(); c.translate(W / 2, H / 2); c.rotate(roll); c.translate(-W / 2, -H / 2);
     SCN[sh.s](T, lt, o); c.restore();
     if (o.flash) { const f = pulse(T, [o.flash], .18); c.fillStyle = `rgba(235,240,255,${f * .6})`; c.fillRect(0, 0, W, H); }
     titles(T);
