@@ -1,5 +1,8 @@
 node_modules/
 .hyperframes/
 renders/
+render.log
 assets/mix.wav
 assets/voice.wav
+assets/*_premix.wav
+assets/*_voice.wav
