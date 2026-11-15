@@ -150,15 +150,6 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
   g.save(); g.clip(fp); const rg = g.createRadialGradient(x - r * 0.25, y - r * 0.2, r * 0.3, x, y, r * 1.05); rg.addColorStop(0, "rgba(255,255,255,0)"); rg.addColorStop(1, "rgba(150,165,200,0.30)"); g.fillStyle = rg; g.fillRect(x - r, y - r, 2 * r, 2 * r);
   for (const s of (side ? [1] : [-1, 1])) { g.fillStyle = "rgba(240,130,130,0.10)"; g.beginPath(); g.ellipse(x + (side ? r * 0.35 : s * r * 0.52), y + r * 0.3, r * 0.16, r * 0.09, 0, 0, 7); g.fill(); }
   g.restore();
-  if (sp.beard) { // full beard: sideburns down the jaw to a soft chin, hair strands, lit like the head
-    const bs = sp.beardSize ?? 1, cx = side ? x + r * 0.2 : x, H = C.beard || C.hair;
-    const bd = smooth([[cx - r * 0.97, y - r * 0.12], [cx - r * 1.02, y + r * 0.38], [cx - r * 0.72, y + r * (0.86 + 0.2 * bs)], [cx, y + r * (1.08 + 0.32 * bs)], [cx + r * 0.72, y + r * (0.86 + 0.2 * bs)], [cx + r * 1.02, y + r * 0.38], [cx + r * 0.97, y - r * 0.12],
-      [cx + r * 0.8, y - r * 0.1], [cx + r * 0.66, y + r * 0.2], [cx + r * 0.36, y + r * 0.3], [cx, y + r * 0.27], [cx - r * 0.36, y + r * 0.3], [cx - r * 0.66, y + r * 0.2], [cx - r * 0.8, y - r * 0.1]]);
-    g.save(); g.shadowColor = "rgba(0,0,0,0.18)"; g.shadowBlur = 10; const bg = g.createLinearGradient(cx - r, y - r * 0.2, cx + r * 0.6, y + r * 1.3); bg.addColorStop(0, mix(H, "#ffffff", 0.18)); bg.addColorStop(0.5, H); bg.addColorStop(1, mix(H, "#000000", 0.38)); g.fillStyle = bg; g.fill(bd); g.restore();
-    g.save(); g.clip(bd); let rs = 77; const rr = () => ((rs = (rs * 1664525 + 1013904223) >>> 0) / 4294967296); for (let k = 0; k < 150; k++) { const u = rr() * 2 - 1, sx0 = cx + u * r * 0.98, sy0 = y - r * 0.1 + rr() * r * 0.9 * (1 - Math.abs(u) * 0.3), L = r * (0.18 + rr() * 0.28), cv = u * r * 0.08;
-      g.strokeStyle = rr() < 0.5 ? `rgba(255,240,220,${0.10 + rr() * 0.12})` : `rgba(0,0,0,${0.10 + rr() * 0.14})`; g.lineWidth = 2 + rr() * 2.5; g.beginPath(); g.moveTo(sx0, sy0); g.quadraticCurveTo(sx0 + cv, sy0 + L * 0.6, sx0 + cv * 1.6 - u * 4, sy0 + L); g.stroke(); }
-    const sh = g.createRadialGradient(cx - r * 0.35, y + r * 0.3, 0, cx - r * 0.35, y + r * 0.3, r * 0.9); sh.addColorStop(0, "rgba(255,245,225,0.22)"); sh.addColorStop(1, "rgba(255,245,225,0)"); g.fillStyle = sh; g.fillRect(cx - r * 1.1, y - r * 0.2, r * 2.2, r * 1.6); g.restore();
-    g.save(); g.lineWidth = 6; g.strokeStyle = INK; g.globalAlpha = 0.75; g.beginPath(); g.moveTo(cx - r * 0.97, y - r * 0.12); g.bezierCurveTo(cx - r * 1.1, y + r * 0.5, cx - r * 0.7, y + r * (1.0 + 0.3 * bs), cx, y + r * (1.08 + 0.32 * bs)); g.bezierCurveTo(cx + r * 0.7, y + r * (1.0 + 0.3 * bs), cx + r * 1.1, y + r * 0.5, cx + r * 0.97, y - r * 0.12); g.stroke(); g.restore(); }
   // hair cap with grey streak highlights (reference style)
   if (sp.hair) {
     const hp = side ? smooth([[x - r * 1.0, y + r * 0.25], [x - r * 0.92, y - r * 0.62], [x - r * 0.3, y - r * 1.03], [x + r * 0.45, y - r * 0.95], [x + r * 0.82, y - r * 0.62], [x + r * 0.55, y - r * 0.5], [x + r * 0.05, y - r * 0.58], [x - r * 0.35, y - r * 0.3], [x - r * 0.6, y + r * 0.1]])
@@ -172,6 +163,23 @@ function drawHead(g, sp, c, r, sun, side, pose, opt) {
   }
   if (sp.longHair && !side) { for (const s of [-1, 1]) { const lh = smooth([[x + s * r * 0.85, y - r * 0.5], [x + s * r * 1.12, y + r * 0.2], [x + s * r * 1.0, y + r * 0.95], [x + s * r * 0.72, y + r * 0.85], [x + s * r * 0.8, y + r * 0.1]]); fillLit(g, lh, mix(C.hair, "#000000", 0.35), sun, { x: x - r, y: y - r, w: 2 * r, h: 2 * r }, { ol: 7 }); hairStrands(g, lh, { x: x + Math.min(s * r * 0.7, s * r * 1.15), y: y - r * 0.55, w: r * 0.45, h: r * 1.55 }, C.hair); } }
   reink(g, fp, 9);
+  if (sp.beard) { // realistic full beard over the jaw line: layered locks, ragged strand tips, lit from the sun side, no hard outline
+    const bs = sp.beardSize ?? 1, cx = side ? x + r * 0.2 : x, H = C.beard || C.hair, cy = y + r * (1.08 + 0.32 * bs);
+    let rs = 77; const rr = () => ((rs = (rs * 1664525 + 1013904223) >>> 0) / 4294967296);
+    const pts = [[cx - r * 0.99, y - r * 0.14], [cx - r * 1.06, y + r * 0.38], [cx - r * 0.76, y + r * (0.88 + 0.2 * bs)], [cx, cy], [cx + r * 0.76, y + r * (0.88 + 0.2 * bs)], [cx + r * 1.06, y + r * 0.38], [cx + r * 0.99, y - r * 0.14],
+      [cx + r * 0.82, y - r * 0.1], [cx + r * 0.68, y + r * 0.2], [cx + r * 0.36, y + r * 0.3], [cx, y + r * 0.27], [cx - r * 0.36, y + r * 0.3], [cx - r * 0.68, y + r * 0.2], [cx - r * 0.82, y - r * 0.1]];
+    const bd = smooth(pts), dark = mix(H, "#000000", 0.45), lite = mix(H, "#fff2dc", 0.35);
+    g.save(); g.shadowColor = "rgba(20,10,5,0.35)"; g.shadowBlur = 14; g.shadowOffsetY = 6; const bg = g.createLinearGradient(cx - r * 0.8, y - r * 0.1, cx + r * 0.7, cy); bg.addColorStop(0, mix(H, "#ffffff", 0.12)); bg.addColorStop(0.55, H); bg.addColorStop(1, dark); g.fillStyle = bg; g.fill(bd); g.restore();
+    g.save(); g.clip(bd);
+    for (let k = 0; k < 26; k++) { const u = rr() * 2 - 1, lx = cx + u * r * 0.95, ly = y + r * (0.05 + rr() * 0.7), L = r * (0.35 + rr() * 0.3), d = u * r * 0.1; // locks: dark gaps then lit tops
+      g.strokeStyle = `rgba(${0},${0},${0},0.22)`; g.lineWidth = 10 + rr() * 8; g.beginPath(); g.moveTo(lx + 4, ly); g.quadraticCurveTo(lx + d + 4, ly + L * 0.6, lx + d * 1.8 + 4, ly + L); g.stroke();
+      g.strokeStyle = mix(H, "#fff2dc", 0.12 + rr() * 0.2); g.globalAlpha = 0.55; g.lineWidth = 6 + rr() * 6; g.beginPath(); g.moveTo(lx, ly); g.quadraticCurveTo(lx + d, ly + L * 0.6, lx + d * 1.8, ly + L); g.stroke(); g.globalAlpha = 1; }
+    for (let k = 0; k < 420; k++) { const u = rr() * 2 - 1, sx0 = cx + u * r * 1.0, sy0 = y - r * 0.12 + rr() * r * 1.05, L = r * (0.1 + rr() * 0.22), cv = u * r * 0.06 + (rr() - 0.5) * 6, t = rr();
+      g.strokeStyle = t < 0.45 ? `rgba(255,236,210,${0.12 + rr() * 0.18})` : t < 0.85 ? `rgba(0,0,0,${0.12 + rr() * 0.2})` : lite; g.lineWidth = 1.2 + rr() * 2; g.beginPath(); g.moveTo(sx0, sy0); g.quadraticCurveTo(sx0 + cv, sy0 + L * 0.6, sx0 + cv * 1.7, sy0 + L); g.stroke(); }
+    const lit = g.createRadialGradient(cx - r * 0.4, y + r * 0.25, 0, cx - r * 0.4, y + r * 0.25, r * 1.0); lit.addColorStop(0, "rgba(255,240,215,0.25)"); lit.addColorStop(1, "rgba(255,240,215,0)"); g.fillStyle = lit; g.fillRect(cx - r * 1.2, y - r * 0.3, r * 2.4, r * 1.8);
+    const ao = g.createLinearGradient(0, y + r * 0.25, 0, y + r * 0.45); ao.addColorStop(0, "rgba(0,0,0,0.22)"); ao.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = ao; g.fillRect(cx - r * 0.5, y + r * 0.2, r, r * 0.3); g.restore();
+    g.save(); for (let k = 0; k < 90; k++) { const tt = rr(), seg = Math.min(5, Math.floor(tt * 6)), a = pts[seg], c2 = pts[seg + 1], f = tt * 6 - seg, px = a[0] + (c2[0] - a[0]) * f, py = a[1] + (c2[1] - a[1]) * f, nx = (px - cx) / r, L = 6 + rr() * 14;
+      g.strokeStyle = rr() < 0.5 ? H : dark; g.lineWidth = 1.5 + rr() * 2; g.beginPath(); g.moveTo(px - nx * 6, py - 4); g.lineTo(px + nx * L * 0.6, py + L * 0.8); g.stroke(); } g.restore(); }
   // face: dot eyes, small brows, mouth (reference: simple, bold)
   const e = opt.expr || sp.expr || "smile", LK = side ? 0 : (opt.look || 0) * r * 0.22, eyes = side ? [x + r * 0.45] : [x - r * 0.3 + LK, x + r * 0.3 + LK], ey = y - r * 0.02;
   g.lineCap = "round"; g.strokeStyle = INK; g.fillStyle = INK;
