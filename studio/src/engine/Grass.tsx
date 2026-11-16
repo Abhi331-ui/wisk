@@ -1,49 +1,76 @@
-// The user's LOCKED grass look (.claude/skills/locked-grass): 4-segment blades 0.012 m wide tapering to the tip, 0.32 m tall,
-// t² forward bend, vertex colour dark root → light tip, per-blade green tint RGB(0.36-0.54, 0.55-0.77, 0.20-0.30), ~8 % straw
-// blades RGB(0.95, 0.85, 0.5), random yaw, tilt ±0.25 rad, height ×0.6-1.5, MeshStandardMaterial double-sided, roughness 0.8,
-// envMapIntensity 0.5, receives shadows, no frustum culling, ~330 blades/m² near camera. Look values are NOT to be changed.
-// Added on top (skill rule: one wind drives everything): vertex-shader sway from the shared wind field, quadratic in height.
+// GPU-instanced grass blades: tapered, curved, colour-graded root→tip, translucent tips, swaying in the global wind.
 import React, {useMemo} from 'react';
 import * as THREE from 'three';
 import {WIND, WIND_GLSL} from './wind';
 
-export type Zone = [number, number, number, number, number]; // cx, cz, width, depth, count
-export type GrassProps = {zones: Zone[]; t: number; skip?: (x: number, z: number) => boolean; heightAt?: (x: number, z: number) => number; seed?: number; straw?: number};
-export const Grass: React.FC<GrassProps> = ({zones, t, skip = () => false, heightAt = () => 0, seed = 5, straw = 0.08}) => {
+const rng = (seed: number) => () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+export type GrassProps = {
+  center: [number, number]; size: [number, number]; count: number; height?: [number, number]; seed?: number; t: number;
+  base?: string; tip?: string; dry?: string; ground?: (x: number, z: number) => number; avoid?: (x: number, z: number) => boolean;
+  flowers?: number; width?: number;
+};
+export const Grass: React.FC<GrassProps> = ({center, size, count, height = [0.25, 0.6], seed = 7, t, base = '#2f4a17', tip = '#9cb04a', dry = '#b9a65a', ground, avoid, flowers = 0, width = 0.028}) => {
   const mesh = useMemo(() => {
-    let s0 = (seed * 16807) % 2147483647 || 1; const rnd = () => ((s0 = (s0 * 16807) % 2147483647) - 1) / 2147483646;
-    const seg = 4, geo = new THREE.BufferGeometry(), pos: number[] = [], col: number[] = [], idx: number[] = [], hv: number[] = [];
-    for (let s = 0; s <= seg; s++) {
-      const tt = s / seg, w = 0.012 * (1 - tt * 0.92), y = tt * 0.32, bend = tt * tt * 0.09;
-      pos.push(-w, y, bend, w, y, bend); hv.push(tt, tt);
-      const c = 0.42 + 0.58 * tt; col.push(c * 0.78, c, c * 0.62, c * 0.78, c, c * 0.62);
-      if (s < seg) { const k = s * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
+    const seg = 5, g = new THREE.BufferGeometry(), pos: number[] = [], uv: number[] = [], idx: number[] = [];
+    for (let i = 0; i <= seg; i++) {
+      const v = i / seg, w = (1 - Math.pow(v, 1.6)) * 0.5;
+      pos.push(-w, v, 0, w, v, 0); uv.push(0, v, 1, v);
+      if (i < seg) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     }
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-    geo.setAttribute('aH', new THREE.Float32BufferAttribute(hv, 1)); geo.setIndex(idx); geo.computeVertexNormals();
-    const mat = new THREE.MeshStandardMaterial({vertexColors: true, side: THREE.DoubleSide, roughness: 0.8, envMapIntensity: 0.5});
-    const u = {uT: {value: 0}, uWindDir: {value: new THREE.Vector2(...WIND.dir)}, uWindS: {value: WIND.strength}, uWindG: {value: WIND.gust}};
-    mat.onBeforeCompile = (s) => {
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+    g.computeVertexNormals();
+    const r = rng(seed), N = count, inst = new THREE.InstancedBufferGeometry(); inst.copy(g as any); inst.instanceCount = N;
+    const off = new Float32Array(N * 4), shp = new Float32Array(N * 4), col = new Float32Array(N * 3);
+    const cB = new THREE.Color(base), cT = new THREE.Color(tip), cD = new THREE.Color(dry), c = new THREE.Color();
+    let n = 0;
+    while (n < N) {
+      const x = center[0] + (r() - 0.5) * size[0], z = center[1] + (r() - 0.5) * size[1];
+      if (avoid && avoid(x, z)) continue;
+      // clumping: thin out between clumps
+      const clump = 0.5 + 0.5 * Math.sin(x * 1.7 + Math.sin(z * 0.9) * 2) * Math.sin(z * 1.3 + Math.sin(x * 0.7));
+      if (r() > 0.55 + 0.45 * clump) continue;
+      const y = ground ? ground(x, z) : 0, hgt = height[0] + (height[1] - height[0]) * Math.pow(r(), 0.8) * (0.7 + 0.3 * clump);
+      off.set([x, y, z, r() * Math.PI * 2], n * 4);
+      shp.set([hgt, width * (0.7 + 0.6 * r()), (r() - 0.5) * 0.6 + 0.25, r()], n * 4);
+      c.copy(cT).lerp(cD, Math.pow(r(), 3) * 0.7).multiplyScalar(0.8 + 0.4 * r()); col.set([c.r, c.g, c.b], n * 3); n++;
+    }
+    inst.setAttribute('aOff', new THREE.InstancedBufferAttribute(off, 4)); inst.setAttribute('aShp', new THREE.InstancedBufferAttribute(shp, 4));
+    inst.setAttribute('aTip', new THREE.InstancedBufferAttribute(col, 3));
+    inst.boundingSphere = new THREE.Sphere(new THREE.Vector3(center[0], 0, center[1]), Math.hypot(size[0], size[1]));
+    const m = new THREE.MeshStandardMaterial({color: '#ffffff', roughness: 0.85, side: THREE.DoubleSide});
+    const u = {uT: {value: 0}, uWindDir: {value: new THREE.Vector2(...WIND.dir)}, uWindS: {value: WIND.strength}, uWindG: {value: WIND.gust}, uBase: {value: new THREE.Color(base)}};
+    m.onBeforeCompile = (s) => {
       Object.assign(s.uniforms, u);
-      s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nattribute float aH;' + WIND_GLSL)
-        .replace('#include <begin_vertex>', `#include <begin_vertex>
-          vec4 wp = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
-          float w = windAt(wp.xz);
-          float sway = (w * 0.55 + sin(uT * 2.6 + wp.x * 1.7 + wp.z * 1.1) * 0.12 * (0.4 + w)) * aH * aH * 0.32;
-          vec3 wl = (inverse(mat3(instanceMatrix)) * vec3(uWindDir.x, 0.0, uWindDir.y));
-          transformed += normalize(wl) * sway;`);
+      s.vertexShader = s.vertexShader
+        .replace('#include <common>', '#include <common>\nattribute vec4 aOff; attribute vec4 aShp; attribute vec3 aTip; varying vec3 vCol; varying float vV; uniform vec3 uBase;' + WIND_GLSL)
+        .replace('#include <beginnormal_vertex>', `vec3 objectNormal = vec3(0.0,0.0,1.0);`)
+        .replace('#include <begin_vertex>', `
+          float v = position.y; vV = v;
+          float ca = cos(aOff.w), sa = sin(aOff.w);
+          vec3 p = vec3(position.x * aShp.y * 2.0, v * aShp.x, 0.0);
+          // natural curve + wind bend (quadratic in height)
+          float w = windAt(aOff.xz) * (0.85 + 0.3 * aShp.w);
+          float sway = sin(uT * (2.2 + aShp.w) + aOff.x * 1.3 + aOff.z) * 0.18 * w;
+          float bend = (aShp.z + w * 0.9 + sway) * v * v;
+          p.z += bend * aShp.x; p.y -= 0.35 * bend * bend * aShp.x * 0.4;
+          vec3 q = vec3(p.x * ca - p.z * sa, p.y, p.x * sa + p.z * ca);
+          vec2 wd = normalize(uWindDir); q.xz += wd * w * 0.25 * v * v * aShp.x;
+          vec3 transformed = q + aOff.xyz;
+          vCol = mix(uBase * 0.55, aTip, smoothstep(0.0, 0.85, v));`)
+        .replace('#include <defaultnormal_vertex>', `vec3 bn = normalize(vec3(-sin(aOff.w), 0.35, cos(aOff.w))); vec3 transformedNormal = normalMatrix * normalize(mix(bn, vec3(0.0,1.0,0.0), 0.55));
+          #ifdef FLIP_SIDED
+          transformedNormal = - transformedNormal;
+          #endif`);
+      s.fragmentShader = s.fragmentShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vCol; varying float vV;')
+        .replace('#include <color_fragment>', 'diffuseColor.rgb *= vCol;')
+        .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance += vCol * 0.06 * smoothstep(0.5,1.0,vV);');
+      (m as any).userData.u = u;
     };
-    const pts: [number, number][] = [];
-    for (const [zx, zz, zw, zd, n] of zones) for (let i = 0; i < n; i++) { const x = zx + (rnd() - 0.5) * zw, z = zz + (rnd() - 0.5) * zd; if (!skip(x, z)) pts.push([x, z]); }
-    const im = new THREE.InstancedMesh(geo, mat, pts.length), M4 = new THREE.Matrix4(), Q4 = new THREE.Quaternion(), E4 = new THREE.Euler(), C4 = new THREE.Color();
-    pts.forEach(([x, z], i) => {
-      E4.set((rnd() - 0.5) * 0.5, rnd() * 6.28, (rnd() - 0.5) * 0.5); Q4.setFromEuler(E4); const sc = 0.6 + rnd() * 0.9;
-      M4.compose(new THREE.Vector3(x, heightAt(x, z), z), Q4, new THREE.Vector3(1, sc, 1)); im.setMatrixAt(i, M4);
-      im.setColorAt(i, rnd() < straw ? C4.setRGB(0.95, 0.85, 0.5) : C4.setRGB(0.36 + rnd() * 0.18, 0.55 + rnd() * 0.22, 0.2 + rnd() * 0.1));
-    });
-    im.receiveShadow = true; im.frustumCulled = false; (im as any).userData.u = u;
-    return im;
-  }, [seed, JSON.stringify(zones)]);
-  (mesh as any).userData.u.uT.value = t;
+    (m as any).userData.u = u;
+    const me = new THREE.Mesh(inst, m); me.frustumCulled = false; me.receiveShadow = true; me.castShadow = false;
+    return me;
+  }, [seed, count]);
+  (mesh.material as any).userData.u.uT.value = t;
   return <primitive object={mesh} />;
 };

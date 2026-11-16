@@ -42,7 +42,7 @@ export const OrchardTest: React.FC<{off?: string[]}> = ({off = []}) => {
       <Env hdri="alps_field" bg={false} envIntensity={1} sun={{dir: [-0.35, 0.45, -0.8], intensity: 3.2, color: '#fff0d8', area: 18}} />
       <PhotoSky name="alps_field" grounded={1.7} radius={300} />
       <Ground />
-      {on('grass') && <Grass zones={[[0, 3, 12, 10, 40000], [0, -4, 24, 12, 50000], [0, -16, 40, 14, 40000]]} t={t} />}
+      {on('grass') && <Grass center={[0, 2]} size={[22, 22]} count={160000} t={t} />}
       {on('trees') && <><Tree id="tree_small_02" at={[1.2, 0, -1.5]} s={1} t={t} strands />
       <Tree id="island_tree_01" at={[-6, 0, -8]} s={1} t={t} strands /></>}
       <Card id="grandma" at={[0.2, 0, 1.2]} draw={(p) => bodyFront(p, {jacket: '#6b3f5a', pants: '#3b3f52', boots: '#4a3426', dress: '#3f5f8a', hairStyle: 'bun', hairColor: '#cfcac4'}, {mode: 'stand', expr: 'grin', facing: 1, seed: 4, sway})} height={1.6} />
