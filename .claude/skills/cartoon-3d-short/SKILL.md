@@ -30,6 +30,7 @@ User rules that apply:
 - Save after every step.
 - "Just do it" once the script is approved.
 - **Ultra-realistic world:** every environment element (sky, clouds, sunlight, trees, grass, terrain, water, birds, animals, cars, ships, wind, motion, physics) must look super realistic and highly detailed. See "Ultra-realistic world and script-matched scenes" below. It overrides any conflicting "painted/storybook" value later in this file.
+- **The whole world is real, all the way to the horizon.** Nothing is skipped because it's far from the camera. Distant mountains, cities, forests, sea, sky and crowds are fully built and life-like. See "Full world, no shortcuts" below.
 - **Characters have hair.** Every character gets a hairstyle suited to their role, age and era. Hair moves.
 - **Everything matches the script.** Every setting, prop, vehicle, animal, weather, time of day and action comes from the script of THIS video. Never reuse the bridge town or props unless the script calls for them.
 
@@ -41,6 +42,23 @@ location, era, time of day, weather, season, every object/vehicle/animal/plant v
 physics, characters), and which word it lands on. Every item on screen must be justified by a line of the script, and
 every concrete noun/action in the script that can be shown should be shown. Check period accuracy (1831 = no cars;
 a 1912 ship has coal smoke; etc.). Build `story.ts`, `build.ts` and `cast.ts` from SCENES.md, not from the bridge.
+
+**0b. Full world, no shortcuts (applies to every shot).**
+- Build the ENTIRE visible world, not just what's near the camera: every direction the camera can see, to the horizon.
+  Distant mountains are real terrain (heightmap/erosion, snow, rock, forest cover), distant towns have real buildings
+  with roofs, windows and chimneys, distant forests are real tree instances, the sea runs to a real horizon with waves.
+- No flat painted backdrops, no blurry cards standing in for scenery, no empty ground, and no fog or blur used to HIDE
+  missing detail. Fog and depth of field are only there for realism (aerial perspective, lens), and the detail behind
+  them must exist.
+- Distance LOD is allowed only when it's invisible: lower-poly models, baked impostors rendered FROM the real models,
+  and grass that turns into a matching textured ground at range. The far result must look exactly like real distant
+  scenery in a photo: correct scale, colour shifted by atmosphere, still with texture and shapes.
+- Life in the distance too: smoke from far chimneys, far birds, boats on the lake, cars or carts on far roads (period
+  correct), clouds and their shadows moving over distant hills, trees swaying on far slopes, distant people walking.
+- Interiors are complete too: what's seen through windows and doors (streets, gardens, neighbouring buildings) is
+  fully built, not a flat image.
+- Check: every still is reviewed at 100 % on the far third of the frame as carefully as the subject. Anything that
+  looks flat, smeared, repeated (visible tiling) or empty fails the quality gate.
 
 **1. Rendering.**
 - `renderer.toneMapping = ACESFilmicToneMapping` (or AgX), physically correct lights, `outputColorSpace = SRGB`,
@@ -66,7 +84,7 @@ a 1912 ship has coal smoke; etc.). Build `story.ts`, `build.ts` and `cast.ts` fr
 - One global `wind(t, pos)` function (direction + strength + gusts from noise) drives EVERYTHING: grass, trees,
   leaves, flags, hair, smoke, clouds, water ripples, dust. Strength follows the script (calm, breeze, storm).
 - Grass: GPU-instanced blades (100k-1M) with vertex-shader sway, colour variation, tip translucency, clumps,
-  flowers, weeds; density falls off with distance; ground scatter (rocks, twigs, leaves).
+  flowers, weeds; far grass switches to a matching textured ground that still looks like grass in a photo (rule 0b); ground scatter (rocks, twigs, leaves).
 - Trees: real models or procedural (ez-tree style) with trunk bend, branch sway and per-leaf flutter in the shader;
   subsurface-ish leaf translucency when backlit; species right for the place and season.
 
