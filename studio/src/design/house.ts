@@ -14,9 +14,8 @@ export function houseMats(T: HouseTex, door = '#1f4a34') {
   const brick = P({map: rep(T.brick.map, 0.5), normalMap: rep(T.brick.normalMap, 0.5), roughnessMap: rep(T.brick.roughnessMap, 0.5), color: '#ffffff', roughness: 0.9});
   const slate = P({map: rep(T.slate.map, 0.8), normalMap: rep(T.slate.normalMap, 0.8), color: '#c9ccd6', roughness: 0.6});
   const stone = P({map: rep(T.stone.map, 1), color: '#efe6d2', roughness: 0.5});
-  brick.userData.matte = slate.userData.matte = stone.userData.matte = true;
   const paint = P({color: '#f4f0e6', roughness: 0.25, clearcoat: 0.8, clearcoatRoughness: 0.08});
-  const doorM = P({color: door, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.14, envMapIntensity: 0.7}); doorM.userData.matte = true;
+  const doorM = P({color: door, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.04});
   const brass = new THREE.MeshStandardMaterial({color: '#e0b25e', roughness: 0.18, metalness: 1});
   const glass = P({color: '#1c2028', roughness: 0.02, metalness: 0.3, clearcoat: 1, clearcoatRoughness: 0.0, envMapIntensity: 2});
   const lit = P({color: '#2a2014', roughness: 0.05, emissive: '#ffbf72', emissiveIntensity: 1.6, clearcoat: 1, clearcoatRoughness: 0});
@@ -29,9 +28,27 @@ export function houseMats(T: HouseTex, door = '#1f4a34') {
   const milk = P({color: '#ffffff', roughness: 0.05, transmission: 0.25, thickness: 0.01, clearcoat: 1});
   const foil = new THREE.MeshStandardMaterial({color: '#d8d8dc', roughness: 0.25, metalness: 1});
   const zinc = new THREE.MeshStandardMaterial({color: '#a9adb0', roughness: 0.35, metalness: 0.9});
-  return {brick, slate, stone, paint, doorM, brass, glass, lit, net, lead, iron, pot, tiles, hedge, milk, foil, zinc};
+  const curtain = P({color: '#b85a4a', roughness: 0.9, sheen: 0.6, sheenColor: new THREE.Color('#f0b0a0'), side: THREE.DoubleSide, emissive: '#6a2a1a', emissiveIntensity: 0.25});
+  const geranium = P({color: '#e2262c', roughness: 0.5, sheen: 0.4}), leaf = P({color: '#3f7a2e', roughness: 0.6}), wood = P({color: '#3f6a3a', roughness: 0.3, clearcoat: 0.8});
+  const soot = new THREE.MeshBasicMaterial({map: sootTex(), transparent: true, depthWrite: false, color: '#000000', opacity: 0.55});
+  const coir = new THREE.MeshStandardMaterial({color: '#8a6a3a', roughness: 1}); coir.userData.matte = true;
+  const rose = P({color: '#d83a5a', roughness: 0.5, sheen: 0.5});
+  return {brick, slate, stone, paint, doorM, brass, glass, lit, net, lead, iron, pot, tiles, hedge, milk, foil, zinc, curtain, geranium, leaf, wood, soot, coir, rose};
 }
 type M = ReturnType<typeof houseMats>;
+/** vertical soot/rain streak alpha (dark at the top, fading down in drips) */
+function sootTex() {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 256; const g = c.getContext('2d')!;
+  for (let i = 0; i < 40; i++) { const x = Math.random() * 128, w = 2 + Math.random() * 7, h = 60 + Math.random() * 190, gr = g.createLinearGradient(0, 0, 0, h);
+    gr.addColorStop(0, `rgba(255,255,255,${0.25 + Math.random() * 0.4})`); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(x, 0, w, h); }
+  const t = new THREE.CanvasTexture(c); return t;
+}
+/** a pair of drawn-back curtains + a pelmet inside a window opening (seen through the glass) */
+function curtains(g: THREE.Group, m: M, x: number, y: number, w: number, h: number, z: number) {
+  for (const s of [-1, 1]) { const geo = new THREE.PlaneGeometry(w * 0.26, h, 12, 1), p = geo.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, Math.sin(p.getX(i) * 60) * 0.02); geo.computeVertexNormals();
+    add(g, geo, m.curtain, [x + s * w * 0.38, y, z - 0.045]); }
+  add(g, new THREE.BoxGeometry(w, 0.12, 0.02), m.curtain, [x, y + h / 2 - 0.06, z - 0.045]);
+}
 const add = (g: THREE.Group, geo: THREE.BufferGeometry, m: THREE.Material, p: [number, number, number], r: [number, number, number] = [0, 0, 0]) => {
   const o = new THREE.Mesh(geo, m); o.position.set(...p); o.rotation.set(...r); o.castShadow = o.receiveShadow = true; g.add(o); return o;
 };
@@ -41,6 +58,8 @@ function sash(g: THREE.Group, m: M, x: number, y: number, w: number, h: number, 
   if (litWin) add(g, new THREE.PlaneGeometry(w - 0.1, h * 0.45), m.net, [x, y - h * 0.22, z - 0.05]);
   for (const [ww, hh, dx, dy] of [[w, 0.07, 0, h / 2], [w, 0.09, 0, -h / 2], [0.07, h, -w / 2, 0], [0.07, h, w / 2, 0], [w, 0.05, 0, 0.02], [0.03, h / 2, 0, h / 4], [0.03, h / 2, 0, -h / 4]] as const)
     add(g, new RoundedBoxGeometry(ww, hh, 0.08, 2, 0.01), m.paint, [x + dx, y + dy, z - 0.02]);
+  curtains(g, m, x, y, w - 0.06, h - 0.06, z);
+  add(g, new THREE.PlaneGeometry(w * 0.9, 0.9), m.soot, [x, y - h / 2 - 0.55, z + 0.005]).castShadow = false;
   add(g, new RoundedBoxGeometry(w + 0.2, 0.08, 0.2, 2, 0.015), m.stone, [x, y - h / 2 - 0.06, z + 0.06]);                 // sill
   add(g, new RoundedBoxGeometry(w + 0.24, 0.22, 0.06, 2, 0.01), m.stone, [x, y + h / 2 + 0.13, z + 0.02]);                // lintel
   add(g, new RoundedBoxGeometry(0.16, 0.24, 0.07, 2, 0.01), m.stone, [x, y + h / 2 + 0.13, z + 0.04]);                    // keystone
@@ -93,6 +112,13 @@ export function buildHouse(m: M, opts: {seed?: number; lights?: boolean[]} = {})
   add(g, new THREE.PlaneGeometry(0.92, 0.4), m.tiles, [dx, 0.125, -0.18], [-Math.PI / 2, 0, 0]);
   // ---- upper sashes ----
   sash(g, m, -1.1, 4.58, 1.04, 1.55, 0.001, L[1]); sash(g, m, 1.1, 4.58, 1.04, 1.55, 0.001, L[2]);
+  // window box of red geraniums on the right-hand upstairs sill
+  add(g, new RoundedBoxGeometry(0.95, 0.16, 0.2, 2, 0.02), m.wood, [1.1, 3.85, 0.2]);
+  for (let k = 0; k < 9; k++) { const x = 0.72 + k * 0.095, y = 3.98 + Math.sin(k * 2.1) * 0.03;
+    for (let q = 0; q < 3; q++) add(g, new THREE.SphereGeometry(0.045, 10, 8).scale(1.2, 0.5, 1), m.leaf, [x + Math.sin(q * 2) * 0.03, y - 0.02, 0.2 + Math.cos(q * 2) * 0.05]);
+    if (k % 2 === 0) for (let q = 0; q < 6; q++) add(g, new THREE.SphereGeometry(0.018, 8, 6), m.geranium, [x + Math.cos(q) * 0.025, y + 0.08 + Math.sin(q * 1.7) * 0.02, 0.2 + Math.sin(q) * 0.025]); }
+  // grime band along the base of the wall
+  add(g, new THREE.PlaneGeometry(HW, 0.9), m.soot, [0, 0.45, 0.012], [0, 0, Math.PI]).castShadow = false;
   for (const x of [-1.1, 1.1]) for (const s of [-1, 1]) add(g, boxUV(0.06, 1.55, 0.16, 1), m.brick, [x + s * 0.55, 4.58, -0.08]);
   // ---- roof (front + back pitch), ridge, chimney stack with pots, gutter + downpipe ----
   const pitch = Math.atan2(RIDGE, DEPTH / 2), slope = Math.hypot(RIDGE, DEPTH / 2) + 0.35;
@@ -105,6 +131,14 @@ export function buildHouse(m: M, opts: {seed?: number; lights?: boolean[]} = {})
     const pg = new THREE.LatheGeometry([[0, 0], [0.15, 0], [0.13, 0.12], [0.11, 0.5], [0.13, 0.56], [0.1, 0.58], [0.09, 0.56], [0, 0.56]].map(([x, y]) => new THREE.Vector2(x, y)), 20);
     add(g, pg, m.pot, [cx, EAVE + RIDGE * 0.7 + 1.31, cz - 0.4 + k * 0.4]);
   }
+  const mastY = EAVE + RIDGE * 0.7 + 1.3;
+  add(g, new THREE.CylinderGeometry(0.02, 0.02, 2.2, 8), m.zinc, [cx + 0.42, mastY + 0.9, cz]);
+  for (const [y, w] of [[mastY + 1.8, 1.5], [mastY + 1.35, 1.2]] as const) {
+    add(g, new THREE.CylinderGeometry(0.012, 0.012, w, 6).rotateZ(Math.PI / 2), m.zinc, [cx + 0.42, y, cz]);
+    for (const s2 of [-1, 1]) add(g, new THREE.CylinderGeometry(0.01, 0.01, 0.75, 6), m.zinc, [cx + 0.42 + s2 * w / 2, y, cz]);
+  }
+  for (const yy of [mastY - 0.5, mastY - 0.1]) add(g, new THREE.TorusGeometry(0.42, 0.008, 6, 24).rotateX(Math.PI / 2).scale(1, 1, 1.6), m.zinc, [cx, yy, cz]);
+  add(g, new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(cx + 0.42, mastY, cz), new THREE.Vector3(cx + 0.8, EAVE + 0.6, -0.3), new THREE.Vector3(-1.9, EAVE - 0.2, 0.05), new THREE.Vector3(-1.85, 2.6, 0.04)]), 40, 0.006, 5), m.iron, [0, 0, 0]);
   add(g, new THREE.CylinderGeometry(0.065, 0.065, HW, 12, 1, true, 0, Math.PI).rotateZ(Math.PI / 2), m.iron, [0, EAVE + 0.02, 0.12], [Math.PI, 0, 0]);
   add(g, new THREE.CylinderGeometry(0.04, 0.04, EAVE, 10), m.iron, [HW / 2 - 0.12, EAVE / 2, 0.1]);
   // ---- front garden: tiled path, low brick wall with stone coping, gate pillars, privet hedge ----
@@ -118,6 +152,13 @@ export function buildHouse(m: M, opts: {seed?: number; lights?: boolean[]} = {})
   // ---- doorstep life: two milk bottles with foil caps, galvanised dustbin by the bay ----
   const bottle = new THREE.LatheGeometry([[0, 0], [0.036, 0], [0.038, 0.01], [0.038, 0.13], [0.026, 0.18], [0.02, 0.2], [0.021, 0.205], [0, 0.205]].map(([x, y]) => new THREE.Vector2(x, y)), 32);
   for (const bx of [dx - 0.38, dx - 0.29]) { add(g, bottle, m.milk, [bx, 0.14, 0.27]); add(g, new THREE.CylinderGeometry(0.022, 0.022, 0.01, 20), m.foil, [bx, 0.35, 0.27]); }
+  add(g, new RoundedBoxGeometry(0.75, 0.025, 0.45, 2, 0.01), m.coir, [dx, 0.14, -0.15]);
+  const scr = new THREE.Group(); scr.position.set(dx + 0.68, 0, 0.2); g.add(scr);
+  for (const s2 of [-1, 1]) add(scr, new THREE.CylinderGeometry(0.012, 0.012, 0.22, 8), m.iron, [s2 * 0.12, 0.11, 0]);
+  add(scr, new THREE.BoxGeometry(0.26, 0.012, 0.04), m.iron, [0, 0.17, 0]);
+  const bush = new THREE.Group(); bush.position.set(-1.6, 0, 2.2); g.add(bush);
+  for (let k = 0; k < 40; k++) { const a = k * 2.4, r2 = 0.1 + (k % 7) * 0.04; add(bush, new THREE.SphereGeometry(0.07, 10, 8).scale(1, 0.7, 1), m.leaf, [Math.cos(a) * r2, 0.25 + (k % 5) * 0.12, Math.sin(a) * r2]); }
+  for (let k = 0; k < 9; k++) { const a = k * 1.9; add(bush, new THREE.SphereGeometry(0.05, 12, 10), m.rose, [Math.cos(a) * 0.25, 0.45 + (k % 3) * 0.15, Math.sin(a) * 0.25]); }
   const bin = new THREE.Group(); bin.position.set(-2.0, 0, 1.0); g.add(bin);
   add(bin, new THREE.CylinderGeometry(0.27, 0.24, 0.7, 40, 1, true), m.zinc, [0, 0.35, 0]);
   for (const y of [0.15, 0.35, 0.55]) add(bin, new THREE.TorusGeometry(0.262, 0.012, 8, 40).rotateX(Math.PI / 2), m.zinc, [0, y, 0]);
