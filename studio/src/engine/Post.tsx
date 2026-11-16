@@ -2,6 +2,7 @@
 import React, {useEffect, useMemo} from 'react';
 import * as THREE from 'three';
 import {useFrame, useThree} from '@react-three/fiber';
+import {N8AOPostPass} from 'n8ao';
 import {BloomEffect, ChromaticAberrationEffect, DepthOfFieldEffect, Effect, EffectComposer, EffectPass, RenderPass, ToneMappingEffect, ToneMappingMode, VignetteEffect, BlendFunction, SMAAEffect} from 'postprocessing';
 
 class AcesFit extends Effect {
@@ -23,14 +24,21 @@ class WhipBlur extends Effect {
   }
 }
 
-export type PostProps = {focus: number; bokeh: number; whip: number; exposure?: number; bloom?: number; vignette?: number; sharpen?: boolean};
-export const Post: React.FC<PostProps> = ({focus, bokeh, whip, bloom = 0.5, vignette = 0.32, exposure = 1}) => {
+export type PostProps = {focus: number; bokeh: number; whip: number; exposure?: number; bloom?: number; vignette?: number; sharpen?: boolean;
+  /** screen-space ambient occlusion (N8AO): radius in metres, intensity */ ao?: {radius: number; intensity: number; falloff?: number}};
+export const Post: React.FC<PostProps> = ({focus, bokeh, whip, bloom = 0.5, vignette = 0.32, exposure = 1, ao}) => {
   const {gl, scene, camera, size} = useThree();
   const fx = useMemo(() => {
     console.log('POST BUILD', Date.now());
     gl.toneMapping = THREE.NoToneMapping;
     const composer = new EffectComposer(gl, {frameBufferType: THREE.HalfFloatType, multisampling: 0});
     composer.addPass(new RenderPass(scene, camera));
+    if (ao) {
+      const n8 = new N8AOPostPass(scene, camera, size.width, size.height);
+      n8.configuration.aoRadius = ao.radius; n8.configuration.intensity = ao.intensity; n8.configuration.distanceFalloff = ao.falloff ?? 0.4;
+      n8.configuration.halfRes = false; n8.configuration.aoSamples = 16; n8.configuration.denoiseSamples = 8; n8.configuration.gammaCorrection = false;
+      composer.addPass(n8);
+    }
     const dof = new DepthOfFieldEffect(camera, {focusDistance: 0.02, focalLength: 0.03, bokehScale: 0, resolutionScale: 0.5});
     const bloomE = new BloomEffect({luminanceThreshold: 1.0, luminanceSmoothing: 0.2, intensity: bloom, mipmapBlur: true, radius: 0.6});
     const whipE = new WhipBlur();
