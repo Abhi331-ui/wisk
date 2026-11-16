@@ -10,6 +10,7 @@ import {RoomDesign} from './design/RoomDesign';
 import {HouseDesign} from './design/HouseDesign';
 import {StreetDesign} from './design/StreetDesign';
 import {CityDesign} from './design/CityDesign';
+import {SpaghettiOpening} from './video/SpaghettiOpening';
 export const Root: React.FC = () => (
   <>
     <Composition id="PerfTest" component={PerfTest} durationInFrames={60} fps={30} width={1080} height={1920} />
@@ -22,5 +23,6 @@ export const Root: React.FC = () => (
     <Composition id="HouseDesign" component={HouseDesign} durationInFrames={2} fps={30} width={1080} height={1920} />
     <Composition id="StreetDesign" component={StreetDesign} durationInFrames={3} fps={30} width={1080} height={1920} />
     <Composition id="CityDesign" component={CityDesign} durationInFrames={2} fps={30} width={1080} height={1920} />
+    <Composition id="SpaghettiOpening" component={SpaghettiOpening} durationInFrames={364} fps={30} width={1080} height={1920} />
   </>
 );
