@@ -78,23 +78,23 @@ export function carDetailed(paint: string, two?: string) {
     put(g, new THREE.CylinderGeometry(0.008, 0.008, 3.6, 8).rotateX(Math.PI / 2), chrome, [s * (W / 2 - 0.025), 0.78, 0.0]);
   }
   // front: oval chrome grille with bars, headlamps in bezels, sidelights, wrap-around bumpers with overriders
-  const gr = new THREE.Group(); gr.position.set(0, 0.62, 2.13); gr.rotation.x = -0.25; g.add(gr);
+  const gr = new THREE.Group(); gr.position.set(0, 0.62, 2.33); gr.rotation.x = -0.25; g.add(gr);
   put(gr, new THREE.TorusGeometry(0.28, 0.022, 10, 48).scale(1, 0.55, 1), chrome);
   put(gr, new THREE.CircleGeometry(0.27, 40).scale(1, 0.53, 1), P({color: '#0a0a0a', roughness: 0.5}), [0, 0, -0.01]);
   for (let k = -6; k <= 6; k++) put(gr, new THREE.BoxGeometry(0.012, 0.28 * Math.sqrt(1 - (k / 7) ** 2), 0.02), chrome, [k * 0.04, 0, 0]);
   for (const s of [-1, 1]) {
-    put(g, new THREE.SphereGeometry(0.12, 28, 20, 0, Math.PI * 2, 0, Math.PI / 2).rotateX(Math.PI / 2), P({color: '#fffbf0', emissive: '#fff4d8', emissiveIntensity: 0.5, roughness: 0.02, clearcoat: 1}), [s * 0.56, 0.8, 1.98]);
-    put(g, new THREE.TorusGeometry(0.125, 0.022, 10, 32), chrome, [s * 0.56, 0.8, 1.99]);
-    put(g, new THREE.SphereGeometry(0.035, 12, 10), P({color: '#ffcf70', emissive: '#ff9a20', emissiveIntensity: 0.3}), [s * 0.42, 0.56, 2.1]);
-    put(g, new THREE.BoxGeometry(0.1, 0.14, 0.04), P({color: '#a00e10', emissive: '#500000', emissiveIntensity: 0.6, roughness: 0.1, clearcoat: 1}), [s * 0.66, 0.72, -2.13]);
-    put(g, new THREE.CylinderGeometry(0.035, 0.045, 0.16, 16), chrome, [s * 0.32, 0.4, 2.27]); // overriders
-    put(g, new THREE.CylinderGeometry(0.035, 0.045, 0.16, 16), chrome, [s * 0.32, 0.4, -2.25]);
+    put(g, new THREE.SphereGeometry(0.12, 28, 20, 0, Math.PI * 2, 0, Math.PI / 2).rotateX(Math.PI / 2), P({color: '#fffbf0', emissive: '#fff4d8', emissiveIntensity: 0.5, roughness: 0.02, clearcoat: 1}), [s * 0.56, 0.8, 2.17]);
+    put(g, new THREE.TorusGeometry(0.125, 0.022, 10, 32), chrome, [s * 0.56, 0.8, 2.2]);
+    put(g, new THREE.SphereGeometry(0.035, 12, 10), P({color: '#ffcf70', emissive: '#ff9a20', emissiveIntensity: 0.3}), [s * 0.42, 0.52, 2.34]);
+    put(g, new THREE.BoxGeometry(0.1, 0.14, 0.04), P({color: '#a00e10', emissive: '#500000', emissiveIntensity: 0.6, roughness: 0.1, clearcoat: 1}), [s * 0.62, 0.72, -2.31]);
+    put(g, new THREE.CylinderGeometry(0.035, 0.045, 0.16, 16), chrome, [s * 0.32, 0.4, 2.44]); // overriders
+    put(g, new THREE.CylinderGeometry(0.035, 0.045, 0.16, 16), chrome, [s * 0.32, 0.4, -2.42]);
   }
   for (const z of [1, -1]) { // bumpers: a chrome blade following the plan curve of the nose/tail
-    const pts = Array.from({length: 21}, (_, i) => { const u = i / 20 * 2 - 1; return new THREE.Vector3(u * 0.86, 0.4, z * (2.2 - 0.14 * u * u)); });
+    const pts = Array.from({length: 21}, (_, i) => { const u = i / 20 * 2 - 1; return new THREE.Vector3(u * 0.9, 0.4, z * (2.38 - 0.16 * u * u)); });
     put(g, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, 0.055, 12), chrome).scale.set(1, 1.15, 1);
-    put(g, new THREE.PlaneGeometry(0.52, 0.12), P({color: '#0b0b0b', roughness: 0.4}), [0, 0.58, z * 2.17], [0, z > 0 ? 0 : Math.PI, 0]); // plate (blank)
-    for (let k = 0; k < 6; k++) put(g, new THREE.PlaneGeometry(0.045, 0.07), P({color: '#bfbfbf', roughness: 0.3, metalness: 0.8}), [-0.19 + k * 0.075, 0.58, z * 2.175], [0, z > 0 ? 0 : Math.PI, 0]);
+    put(g, new THREE.PlaneGeometry(0.52, 0.12), P({color: '#0b0b0b', roughness: 0.4}), [0, 0.56, z * 2.31], [z > 0 ? -0.2 : 0.2, z > 0 ? 0 : Math.PI, 0]); // plate (blank)
+    for (let k = 0; k < 6; k++) put(g, new THREE.PlaneGeometry(0.045, 0.07), P({color: '#bfbfbf', roughness: 0.3, metalness: 0.8}), [-0.19 + k * 0.075, 0.56, z * 2.315], [0, z > 0 ? 0 : Math.PI, 0]);
   }
   // wheels: rounded tyres with tread, white walls, domed chrome hubcaps; dark wheel-arch liners
   const tg = tyreGeo();
@@ -110,6 +110,6 @@ export function carDetailed(paint: string, two?: string) {
   // wipers, mirror, bonnet mascot
   for (const s of [-1, 1]) put(g, new THREE.BoxGeometry(0.4, 0.012, 0.012), P({color: '#111', roughness: 0.4}), [s * 0.25, 1.03, 0.76], [0, 0, s * 0.35]);
   put(g, new THREE.CylinderGeometry(0.008, 0.008, 0.18, 8), chrome, [-0.78, 1.08, 0.7], [0, 0, 0.6]); put(g, new THREE.SphereGeometry(0.05, 16, 12).scale(1, 0.7, 0.4), chrome, [-0.85, 1.16, 0.7]);
-  put(g, new THREE.ConeGeometry(0.03, 0.1, 12).rotateX(Math.PI / 2), chrome, [0, 1.05, 1.92]);
+  put(g, new THREE.ConeGeometry(0.03, 0.1, 12).rotateX(Math.PI / 2), chrome, [0, 1.12, 2.05]);
   return g;
 }

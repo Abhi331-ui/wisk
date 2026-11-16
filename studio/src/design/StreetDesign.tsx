@@ -21,7 +21,7 @@ const FZ = 8.2, N = 18; // facade distance from the street centre; houses per si
 const VIEWS: [[number, number, number], [number, number, number], number][] = [
   [[0.6, 1.1, 1.0], [-18, 2.6, -1.2], 60],      // 0 hero: waist height in the road, down the street to the vanishing point
   [[-3.2, 1.0, -3.8], [-14, 2.2, -7.4], 64],      // 1 on the pavement: houses, hedges, a lamp
-  [[-5.6, 0.95, -0.4], [-10.6, 0.75, -3.6], 50],  // 2 close: the parked car against the leaf hedges
+  [[-14.2, 1.05, -0.2], [-10.4, 0.75, -2.6], 48],  // 2 close: the parked car, front three-quarter, hedges behind
 ];
 const Cam: React.FC<{v: number}> = ({v}) => { const {camera} = useThree(); const c = camera as THREE.PerspectiveCamera; const [p, l, f] = VIEWS[v]; c.position.set(...p); c.lookAt(...l); c.fov = f; c.updateProjectionMatrix(); return null; };
 const Scene: React.FC = () => {
