@@ -37,8 +37,8 @@ Beats (camera plan): `../shorts/preview/beats.py` → `data/<video>.beats.json` 
   1. 1957 television set (src/design/tv.ts, TVDesign) — APPROVED v1
   2. Front room 1957 (src/design/room.ts, RoomDesign) — APPROVED v3 (house style: shiny + anime post, engine/look.ts)
   3. Terraced house exterior (src/design/house.ts, HouseDesign) — APPROVED v2 (dusk sky SKY_ROT 1.996 approved, clouds liked)
-  4. London street at dusk (src/design/StreetDesign.tsx, streetProps.ts) — v1 sent for review
-  5. Rooftops + city to the horizon (aerial)
+  4. London street at dusk (src/design/StreetDesign.tsx, streetProps.ts, car.ts, hedge.ts) — APPROVED v3
+  5. Rooftops + city to the horizon (src/design/city.ts, CityDesign) — v1 rendering
   6. Swiss meadow + Alps + village
   7. Spaghetti tree (hero)
   8. Drying racks + wicker baskets
