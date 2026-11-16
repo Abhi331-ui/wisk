@@ -13,8 +13,8 @@ import {buildRoom, RD, RW} from './room';
 RectAreaLightUniformsLib.init();
 
 const VIEWS: [[number, number, number], [number, number, number], number][] = [
-  [[0.35, 1.05, 1.88], [-1.0, 0.85, -1.15], 62],   // 0 from the doorway corner: fire, TV, window, armchairs
-  [[-1.3, 1.1, 1.88], [1.2, 0.75, -0.25], 58],      // 1 toward the sofa, lamp and ducks
+  [[0.55, 1.15, 1.9], [-0.95, 0.85, -1.2], 66],   // 0 from the doorway corner: fire, TV, window, armchairs
+  [[0.45, 1.2, -1.8], [1.0, 0.75, 0.9], 64],      // 1 toward the sofa, lamp and ducks
 ];
 const Cam: React.FC<{v: number}> = ({v}) => { const {camera} = useThree(); const c = camera as THREE.PerspectiveCamera; const [p, l, f] = VIEWS[v]; c.position.set(...p); c.lookAt(...l); c.fov = f; c.updateProjectionMatrix(); return null; };
 function duskWindow() {
@@ -43,10 +43,10 @@ const Scene: React.FC<{t: number}> = ({t}) => {
   return (
     <group>
       <primitive object={world} />
-      <pointLight position={[RW / 2 - 0.35, 1.5, -0.65]} color="#ffb265" intensity={4.5} distance={9} decay={2} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.003} shadow-radius={4} />
+      <pointLight position={[RW / 2 - 0.35, 1.5, -0.65]} color="#ffae60" intensity={5.2} distance={9} decay={2} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.003} shadow-radius={4} />
       <pointLight position={[-RW / 2 + 0.55, 0.3, 0.05]} color="#ff6a28" intensity={2.6 * fl} distance={5} decay={2} />
       <pointLight position={[-0.75, 0.95, -1.15]} color="#b9c8ff" intensity={0.9} distance={4} decay={2} />
-      <rectAreaLight position={[0, 1.58, -RD / 2 + 0.02]} color="#9fb0e0" intensity={3.2} width={1.6} height={1.55} rotation={[0, 0, 0]} onUpdate={(l: any) => l.lookAt(0, 1.2, 0)} />
+      <rectAreaLight position={[0, 1.58, -RD / 2 + 0.02]} color="#8ea4e8" intensity={4.2} width={1.6} height={1.55} rotation={[0, 0, 0]} onUpdate={(l: any) => l.lookAt(0, 1.2, 0)} />
     </group>
   );
 };
@@ -58,7 +58,7 @@ export const RoomDesign: React.FC = () => {
       <Env hdri="lythwood_room" bg={false} envIntensity={0.22} />
       <color attach="background" args={['#000']} />
       <Scene t={f / 30} />
-      <Post focus={2.6} bokeh={1.4} whip={0} bloom={0.4} vignette={0.36} ao={{radius: 0.4, intensity: 2.4}} />
+      <Post focus={2.8} bokeh={1.2} whip={0} bloom={0.45} vignette={0.4} ao={{radius: 0.45, intensity: 2.8}} exposure={1.05} />
     </ThreeCanvas>
   );
 };

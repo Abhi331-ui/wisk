@@ -18,6 +18,11 @@ const cushion = (w: number, h: number, d: number, puff = 0.18, r = 0.035) => {
     const k = (1 - x * x) * (1 - z * z); if (y > 0.2) p.setY(i, p.getY(i) + puff * h * k * (y - 0.2));
     const kz = (1 - x * x) * (1 - y * y * 0.6); if (z < -0.3) p.setZ(i, p.getZ(i) - puff * 0.5 * d * kz * 0.25);
   }
+  for (let i = 0; i < p.count; i++) { // gentle wrinkles and sag where people sit
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const n = Math.sin(x * 23 + z * 7) * Math.sin(z * 19 - x * 5) * 0.004 + Math.sin(x * 51 + z * 43) * 0.0015;
+    if (y > 0) p.setY(i, y + n - 0.012 * Math.exp(-((x / (w * 0.3)) ** 2 + (z / (d * 0.35)) ** 2)));
+  }
   g.computeVertexNormals(); return g;
 };
 export type RoomTex = {floor: PBR; walnut: PBR; fabricN: PBR; plaster: PBR; wallpaper: THREE.Texture; moquette: THREE.Texture; chintz: THREE.Texture; tiles: THREE.Texture; rug: THREE.Texture; rugN: PBR};
@@ -104,8 +109,12 @@ export function buildRoom(T: RoomTex) {
   const bowl = new THREE.LatheGeometry([[0.01, 0], [0.12, 0.02], [0.2, 0.07], [0.22, 0.11], [0.21, 0.11], [0.19, 0.075], [0.11, 0.03], [0.01, 0.015]].map(([x, y]) => new THREE.Vector2(x, y)), 48);
   mesh(bowl, phys({color: '#f1e6d0', roughness: 0.35, transmission: 0.55, thickness: 0.01, side: THREE.DoubleSide}), [0, RH - 0.63, 0], [0, 0, 0], g);
   // ---- rug ----
-  const rugM = new THREE.MeshStandardMaterial({map: T.rug, normalMap: rep(T.rugN.normalMap, 5, 4), roughness: 1});
-  mesh(new RoundedBoxGeometry(2.0, 0.012, 1.5, 2, 0.004), rugM, [0.05, 0.006, 0.1], [0, Math.PI / 2, 0], g);
+  const rugM = new THREE.MeshPhysicalMaterial({map: T.rug, normalMap: rep(T.rugN.normalMap, 9, 7), normalScale: new THREE.Vector2(1.2, 1.2), roughness: 1, sheen: 1, sheenColor: new THREE.Color('#e6b8a0'), sheenRoughness: 0.8});
+  const rugG = new THREE.Group(); rugG.position.set(0.05, 0, 0.1); rugG.rotation.y = Math.PI / 2; g.add(rugG);
+  mesh(new RoundedBoxGeometry(2.0, 0.014, 1.5, 2, 0.006), rugM, [0, 0.007, 0], [0, 0, 0], rugG);
+  const tassel = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.003, 0.002, 0.07, 4).rotateZ(Math.PI / 2), new THREE.MeshStandardMaterial({color: '#e7dcc4', roughness: 1}), 2 * 120);
+  let ti = 0; for (const s2 of [-1, 1]) for (let k = 0; k < 120; k++) { const z = -0.74 + (k / 119) * 1.48, m4 = new THREE.Matrix4().makeRotationY(Math.sin(k * 1.7) * 0.25).setPosition(s2 * 1.035, 0.004, z); tassel.setMatrixAt(ti++, m4); }
+  rugG.add(tassel);
   return g;
 }
 function laceAlpha() {
@@ -119,11 +128,11 @@ function laceAlpha() {
  *  a deep-buttoned back with dimples, show-wood arm caps */
 function suite(seats: number, fab: THREE.Material, wood: THREE.Material) {
   const g = new THREE.Group(), sw = 0.6, W = seats * sw + 0.34, D = 0.84, LEG = 0.19;
-  const pipe = (fab as THREE.MeshPhysicalMaterial).clone(); pipe.color = new THREE.Color('#c9c1a6');
+  const pipe = (fab as THREE.MeshPhysicalMaterial).clone(); pipe.color = new THREE.Color('#8f9480');
   mesh(new RoundedBoxGeometry(W, 0.16, D, 5, 0.05), fab, [0, LEG + 0.08, 0], [0, 0, 0], g);                     // base rail
   for (let k = 0; k < seats; k++) {
     const x = -((seats - 1) * sw) / 2 + k * sw, cw = sw - 0.015, cd = D - 0.24;
-    mesh(cushion(cw, 0.13, cd, 0.3, 0.05), fab, [x, LEG + 0.235, 0.07], [0, 0, 0], g);
+    mesh(cushion(cw, 0.14, cd, 0.42, 0.055), fab, [x, LEG + 0.235, 0.07], [0, 0, 0], g);
     for (const y of [0.17, 0.3]) { // piping round the cushion edges
       const path = new THREE.CurvePath<THREE.Vector3>(); const hw = cw / 2 - 0.02, hd = cd / 2 - 0.02;
       const pts = [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd], [-hw, -hd]].map(([a, b]) => new THREE.Vector3(x + a, LEG + y + 0.005, 0.07 + b));
@@ -194,10 +203,20 @@ function chinaDog(side: number) {
   void side; return g;
 }
 function duck(size: number) {
-  const g = new THREE.Group(), body = new THREE.MeshPhysicalMaterial({color: '#7f8a5a', roughness: 0.12, clearcoat: 1}), head = new THREE.MeshPhysicalMaterial({color: '#2f5a3c', roughness: 0.1, clearcoat: 1}), wing = new THREE.MeshPhysicalMaterial({color: '#a98a62', roughness: 0.14, clearcoat: 1});
-  mesh(new THREE.SphereGeometry(size * 0.35, 24, 16).scale(1.5, 0.75, 0.55), body, [0, 0, 0.0], [0, 0, 0], g);
-  mesh(new THREE.SphereGeometry(size * 0.18, 20, 14), head, [size * 0.55, size * 0.12, 0], [0, 0, 0], g);
-  mesh(new THREE.ConeGeometry(size * 0.06, size * 0.18, 12).rotateZ(-Math.PI / 2), new THREE.MeshPhysicalMaterial({color: '#d9a13a', roughness: 0.2, clearcoat: 1}), [size * 0.75, size * 0.1, 0], [0, 0, 0], g);
-  for (const s of [-1, 1]) mesh(new THREE.SphereGeometry(size * 0.3, 16, 10).scale(1.2, 0.25, 0.9), wing, [-size * 0.05, size * 0.2, s * size * 0.12], [s * 0.6, 0, 0.3], g);
+  // glazed ceramic wall duck in flight: tapered body, neck curving up to a green head, swept-back raised wings
+  const g = new THREE.Group(), glaze = (c: string) => new THREE.MeshPhysicalMaterial({color: c, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.03});
+  const prof = [[0, -0.5], [0.16, -0.45], [0.24, -0.25], [0.26, 0], [0.22, 0.25], [0.14, 0.42], [0, 0.5]].map(([x, y]) => new THREE.Vector2(x * size, y * size * 1.6));
+  mesh(new THREE.LatheGeometry(prof, 32).rotateZ(-Math.PI / 2).scale(1, 0.75, 0.7), glaze('#8a7c5a'), [0, 0, 0], [0, 0, 0], g);
+  const neck = new THREE.QuadraticBezierCurve3(new THREE.Vector3(size * 0.7, 0, 0), new THREE.Vector3(size * 0.95, size * 0.05, 0), new THREE.Vector3(size * 1.05, size * 0.22, 0));
+  mesh(new THREE.TubeGeometry(neck, 12, size * 0.08, 12), glaze('#2f5a3c'), [0, 0, 0], [0, 0, 0], g);
+  mesh(new THREE.SphereGeometry(size * 0.14, 24, 16).scale(1.25, 1, 0.95), glaze('#2f5a3c'), [size * 1.1, size * 0.27, 0], [0, 0, 0], g);
+  mesh(new THREE.ConeGeometry(size * 0.05, size * 0.2, 12).rotateZ(-Math.PI / 2).scale(1, 0.6, 1), glaze('#d9a13a'), [size * 1.3, size * 0.25, 0], [0, 0, 0], g);
+  mesh(new THREE.TorusGeometry(size * 0.07, size * 0.012, 8, 24), glaze('#f2efe6'), [size * 0.72, size * 0.02, 0], [0, Math.PI / 2, 0], g); // white neck ring
+  for (const s of [-1, 1]) {
+    const wing = new THREE.Shape(); wing.moveTo(0, 0); wing.quadraticCurveTo(size * 0.3, size * 0.5, size * -0.1, size * 0.95); wing.quadraticCurveTo(size * -0.35, size * 0.5, size * -0.55, size * 0.15); wing.lineTo(0, 0);
+    const wm = mesh(new THREE.ExtrudeGeometry(wing, {depth: size * 0.04, bevelEnabled: true, bevelSize: size * 0.02, bevelThickness: size * 0.02, bevelSegments: 3}), glaze('#b49468'), [size * 0.05, size * 0.12, s * size * 0.1], [s * -1.2, 0, -0.35], g);
+    void wm;
+  }
+  mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.03, 6).rotateX(Math.PI / 2), new THREE.MeshStandardMaterial({color: '#555', metalness: 1, roughness: 0.4}), [0, size * 0.1, -0.03], [0, 0, 0], g);
   return g;
 }
