@@ -31,6 +31,7 @@ User rules that apply:
 - "Just do it" once the script is approved.
 - **Ultra-realistic world:** every environment element (sky, clouds, sunlight, trees, grass, terrain, water, birds, animals, cars, ships, wind, motion, physics) must look super realistic and highly detailed. See "Ultra-realistic world and script-matched scenes" below. It overrides any conflicting "painted/storybook" value later in this file.
 - **The whole world is real, all the way to the horizon.** Nothing is skipped because it's far from the camera. Distant mountains, cities, forests, sea, sky and crowds are fully built and life-like. See "Full world, no shortcuts" below.
+- **Characters in shot = blurred background (user rule).** Whenever a character is on screen, focus the lens on the character (eyes / face distance) and blur everything behind them with a shallow depth of field (bokeh ~6-12 px at 1080 wide, stronger the closer the character). Shots with no characters (wides, rooftops, establishing, object inserts) stay sharp or only lightly blurred.
 - **Characters have hair.** Every character gets a hairstyle suited to their role, age and era. Hair moves.
 - **Everything matches the script.** Every setting, prop, vehicle, animal, weather, time of day and action comes from the script of THIS video. Never reuse the bridge town or props unless the script calls for them.
 

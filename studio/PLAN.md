@@ -49,3 +49,8 @@ Beats (camera plan): `../shorts/preview/beats.py` → `data/<video>.beats.json` 
   13. Rainy windowsill + tin with a sprig of spaghetti
   14. Rainy back garden
   15. 1950s film camera + crew props (April Fool reveal)
+
+## Standing rules from the user (design phase)
+- When characters are in a shot, focus on them and BLUR THE BACKGROUND (shallow depth of field, Post focus = character distance, bokeh ~6-12). No characters → sharp.
+- Brightness: keep exposure around 1.0 with bloom ~0.5 (user said the 1.25 street was too bright).
+- Look: shiny + bright anime-background post (engine/look.ts), the cloudy dusk sky over London (SKY_ROT 1.996).
