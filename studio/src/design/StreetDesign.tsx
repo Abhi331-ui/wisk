@@ -11,14 +11,17 @@ import {ANIME_POST, shiny} from '../engine/look';
 import {mergeByMaterial, hash} from '../engine/kit';
 import {loadPBR, loadTex, pbrMaterial, useAsset} from '../engine/assets';
 import {buildHouse, houseMats, HW} from './house';
-import {lampPost, pillarBox, telePole, wire, car1950s, smoke} from './streetProps';
+import {lampPost, pillarBox, telePole, wire, smoke, manhole, drainGrate, puddle, leafLitter, bicycle, flowerBed} from './streetProps';
+import {carDetailed} from './car';
+import {leafHedge} from './hedge';
 
 const SKY_ROT = 1.396 + 0.6; // approved dusk sky
 const SUN = new THREE.Vector3(0.877, 0.18, 0.445).applyAxisAngle(new THREE.Vector3(0, 1, 0), SKY_ROT).toArray() as [number, number, number];
 const FZ = 8.2, N = 18; // facade distance from the street centre; houses per side each way
 const VIEWS: [[number, number, number], [number, number, number], number][] = [
   [[0.6, 1.1, 1.0], [-18, 2.6, -1.2], 60],      // 0 hero: waist height in the road, down the street to the vanishing point
-  [[-3.2, 1.0, -3.8], [-14, 2.2, -7.4], 64],      // 1 on the pavement: houses, the parked car, a lamp
+  [[-3.2, 1.0, -3.8], [-14, 2.2, -7.4], 64],      // 1 on the pavement: houses, hedges, a lamp
+  [[-5.6, 0.95, -0.4], [-10.6, 0.75, -3.6], 50],  // 2 close: the parked car against the leaf hedges
 ];
 const Cam: React.FC<{v: number}> = ({v}) => { const {camera} = useThree(); const c = camera as THREE.PerspectiveCamera; const [p, l, f] = VIEWS[v]; c.position.set(...p); c.lookAt(...l); c.fov = f; c.updateProjectionMatrix(); return null; };
 const Scene: React.FC = () => {
@@ -29,10 +32,16 @@ const Scene: React.FC = () => {
     const [brick, slate, stone, asphalt, tiles, privet] = res as any;
     const g = new THREE.Group(), doors = ['#21345a', '#1f4a34', '#7a1f26', '#3b2a1e', '#5a5a24', '#2a2a2a'];
     // build a few house variants once (merged), then place clones down both sides; mirrored pairs as real terraces
-    const variants = Array.from({length: 6}, (_, k) => { const h = buildHouse(houseMats({brick, slate, stone, tiles, privet}, doors[k]), {lights: [k % 2 === 0, k % 3 !== 1, k === 2 || k === 5]}); shiny(h); return mergeByMaterial(h); });
+    const mk = (k: number, hedge: boolean) => { const h = buildHouse(houseMats({brick, slate, stone, tiles, privet}, doors[k]), {lights: [k % 2 === 0, k % 3 !== 1, k === 2 || k === 5], hedge}); shiny(h); return mergeByMaterial(h); };
+    const variants = Array.from({length: 6}, (_, k) => mk(k, true)), nearV = Array.from({length: 6}, (_, k) => mk(k, false));
     for (const side of [-1, 1]) for (let i = -N; i <= N; i++) {
-      const v = variants[Math.floor(hash(i, side) * 6)].clone();
-      v.position.set(i * HW, 0, side * FZ); v.rotation.y = side > 0 ? Math.PI : 0; if (i % 2) v.scale.x = -1; g.add(v);
+      const k = Math.floor(hash(i, side) * 6), near = side < 0 ? i >= -5 && i <= 1 : i >= -4 && i <= 1;
+      const house = new THREE.Group(); house.position.set(i * HW, 0, side * FZ); house.rotation.y = side > 0 ? Math.PI : 0; if (i % 2) house.scale.x = -1; g.add(house);
+      house.add((near ? nearV : variants)[k].clone());
+      if (near) {
+        const hd = leafHedge(3.3, 1.35, 0.62, 11 + i * 3 + side); hd.position.set(-0.62, 0, 2.62); house.add(hd);
+        if (hash(i, side + 5) < 0.6) { const fb = flowerBed(2.6, 0.7, i + 9); fb.position.set(-0.7, 0, 1.85); house.add(fb); }
+      }
     }
     const pave = pbrMaterial(stone, 70, 1.0, {color: '#cfc8bb'});
     for (const s of [-1, 1]) {
@@ -51,8 +60,15 @@ const Scene: React.FC = () => {
       prev = tops;
     }
     const pb = pillarBox(); pb.position.set(9.6, 0.12, -4.55); pb.rotation.y = 0.5; g.add(pb);
-    const c1 = car1950s('#2f4a3a'); c1.position.set(-9.5, 0, -2.35); c1.rotation.y = -Math.PI / 2; g.add(c1);
-    const c2 = car1950s('#c9c2a8'); c2.position.set(-21, 0, 2.35); c2.rotation.y = Math.PI / 2; g.add(c2);
+    const c1 = carDetailed('#2f4a3a', '#d8d2bc'); c1.position.set(-9.5, 0, -2.3); c1.rotation.y = -Math.PI / 2; g.add(c1);
+    const c2 = carDetailed('#c9c2a8'); c2.position.set(-21, 0, 2.3); c2.rotation.y = Math.PI / 2; g.add(c2);
+    const c3 = carDetailed('#5a1e22'); c3.position.set(-38, 0, -2.3); c3.rotation.y = -Math.PI / 2; g.add(c3);
+    // road detail: manholes, kerb drains, puddles, leaves in both gutters, a bicycle against a garden wall
+    for (const [x, z] of [[-3, 0.4], [-16, -0.6], [-30, 0.3], [6, -0.2]]) { const mh = manhole(); mh.position.set(x, 0.01, z); g.add(mh); }
+    for (let x = -60; x < 60; x += 14) for (const sd of [-1, 1]) { const dg = drainGrate(); dg.position.set(x + sd * 3, 0.012, sd * 2.98); g.add(dg); }
+    for (const [x, z, w, d] of [[-6.5, 1.6, 1.6, 0.9], [-13, -2.2, 2.4, 0.7], [-2, -2.6, 1.0, 0.5], [-25, 1.0, 2.0, 1.1]]) { const pu = puddle(w, d, x); pu.position.set(x, 0.008, z); g.add(pu); }
+    for (const sd of [-1, 1]) { const ll = leafLitter(120, 0.6, 2600, sd + 3); ll.position.set(-10, 0, sd * 2.9); g.add(ll); const lp = leafLitter(120, 1.6, 900, sd + 9); lp.position.set(-10, 0.125, sd * 4.1); g.add(lp); }
+    const bike = bicycle(); bike.position.set(-6.2, 0.12, -4.7); bike.rotation.set(0, Math.PI / 2, 0.22); g.add(bike);
     // the far end: a T-junction with a terrace across it, and a stone church tower with a spire beyond
     const xEnd = -(N + 0.5) * HW - 9.5;
     for (let k = -6; k <= 6; k++) { const v = variants[Math.abs(k) % 6].clone(); v.position.set(xEnd, 0, k * HW); v.rotation.y = Math.PI / 2; if (k % 2) v.scale.x = -1; g.add(v); }
@@ -74,7 +90,7 @@ export const StreetDesign: React.FC = () => {
   const {width, height} = useVideoConfig(), f = useCurrentFrame();
   return (
     <ThreeCanvas width={width} height={height} shadows="soft" gl={{antialias: false, preserveDrawingBuffer: true}} camera={{near: 0.05, far: 6000}}>
-      <Cam v={Math.min(1, f)} />
+      <Cam v={Math.min(2, f)} />
       <Env hdri="belfast_sunset_puresky" bg={false} envIntensity={1.1} rotation={SKY_ROT} fog={{color: '#9e95b0', near: 60, far: 260}} sun={{dir: SUN, intensity: 3.8, color: '#ffb46e', area: 40, shadow: 4096}} />
       <PhotoSky name="belfast_sunset_puresky" radius={5000} rotation={SKY_ROT} intensity={1.05} />
       <Scene />

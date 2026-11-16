@@ -64,7 +64,7 @@ function sash(g: THREE.Group, m: M, x: number, y: number, w: number, h: number, 
   add(g, new RoundedBoxGeometry(w + 0.24, 0.22, 0.06, 2, 0.01), m.stone, [x, y + h / 2 + 0.13, z + 0.02]);                // lintel
   add(g, new RoundedBoxGeometry(0.16, 0.24, 0.07, 2, 0.01), m.stone, [x, y + h / 2 + 0.13, z + 0.04]);                    // keystone
 }
-export function buildHouse(m: M, opts: {seed?: number; lights?: boolean[]} = {}) {
+export function buildHouse(m: M, opts: {seed?: number; lights?: boolean[]; hedge?: boolean} = {}) {
   const g = new THREE.Group(), L = opts.lights ?? [true, true, false];
   const wall = (x0: number, x1: number, y0: number, y1: number, z = 0, d = 0.35) => add(g, boxUV(x1 - x0, y1 - y0, d, 1), m.brick, [(x0 + x1) / 2, (y0 + y1) / 2, z - d / 2]);
   // facade with openings: bay x[-1.6,0.4] y[0,2.8]; door recess x[1.05,2.05] y[0,2.75]; upstairs x[-1.62,-0.58],[0.58,1.62] y[3.8,5.35]
@@ -148,7 +148,7 @@ export function buildHouse(m: M, opts: {seed?: number; lights?: boolean[]} = {})
   for (const px of [dx - 0.58, dx + 0.58]) { add(g, boxUV(0.34, 1.0, 0.34, 1), m.brick, [px, 0.5, 3.05]); add(g, new RoundedBoxGeometry(0.42, 0.1, 0.42, 2, 0.02), m.stone, [px, 1.05, 3.05]); }
   const hg = new RoundedBoxGeometry(HW - 1.5, 0.75, 0.55, 6, 0.2), hp = hg.attributes.position;
   for (let i = 0; i < hp.count; i++) { const x = hp.getX(i), y = hp.getY(i), z = hp.getZ(i), n = Math.sin(x * 13 + y * 7) * Math.cos(z * 11 + x * 3) * 0.03 + Math.sin(x * 31 + z * 29) * 0.015; hp.setXYZ(i, x * (1 + n), y + n * 0.5, z * (1 + n * 2)); }
-  hg.computeVertexNormals(); add(g, hg, m.hedge, [-0.62, 1.0, 2.75]);
+  hg.computeVertexNormals(); if (opts.hedge !== false) add(g, hg, m.hedge, [-0.62, 1.0, 2.75]);
   // ---- doorstep life: two milk bottles with foil caps, galvanised dustbin by the bay ----
   const bottle = new THREE.LatheGeometry([[0, 0], [0.036, 0], [0.038, 0.01], [0.038, 0.13], [0.026, 0.18], [0.02, 0.2], [0.021, 0.205], [0, 0.205]].map(([x, y]) => new THREE.Vector2(x, y)), 32);
   for (const bx of [dx - 0.38, dx - 0.29]) { add(g, bottle, m.milk, [bx, 0.14, 0.27]); add(g, new THREE.CylinderGeometry(0.022, 0.022, 0.01, 20), m.foil, [bx, 0.35, 0.27]); }
