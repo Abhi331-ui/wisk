@@ -8,6 +8,7 @@ import {TVFrame} from './tests/TVFrame';
 import {TVDesign} from './design/TVDesign';
 import {RoomDesign} from './design/RoomDesign';
 import {HouseDesign} from './design/HouseDesign';
+import {StreetDesign} from './design/StreetDesign';
 export const Root: React.FC = () => (
   <>
     <Composition id="PerfTest" component={PerfTest} durationInFrames={60} fps={30} width={1080} height={1920} />
@@ -18,5 +19,6 @@ export const Root: React.FC = () => (
     <Composition id="TVDesign" component={TVDesign} durationInFrames={1} fps={30} width={1080} height={1920} />
     <Composition id="RoomDesign" component={RoomDesign} durationInFrames={2} fps={30} width={1080} height={1920} />
     <Composition id="HouseDesign" component={HouseDesign} durationInFrames={2} fps={30} width={1080} height={1920} />
+    <Composition id="StreetDesign" component={StreetDesign} durationInFrames={2} fps={30} width={1080} height={1920} />
   </>
 );
