@@ -58,7 +58,12 @@ export function buildCity(T: CityTex, focus: THREE.Vector3, opts: {mid?: number;
   // ---- mid tier: instanced LOD houses + instanced windows ----
   const mid = rowsAround(focus.x, focus.z, MID, opts.skip ?? 0);
   const M: THREE.Matrix4[] = mid.map((h) => new THREE.Matrix4().makeRotationY(h.face > 0 ? 0 : Math.PI).setPosition(h.x, 0, h.z));
-  for (const [k, geo] of Object.entries(geos)) { const im = new THREE.InstancedMesh(geo, mats[k], M.length); M.forEach((m, i) => im.setMatrixAt(i, m)); im.castShadow = im.receiveShadow = true; root.add(im); }
+  const tint = new THREE.Color();
+  for (const [k, geo] of Object.entries(geos)) {
+    const im = new THREE.InstancedMesh(geo, mats[k], M.length); M.forEach((m, i) => im.setMatrixAt(i, m));
+    if (k === 'brick' || k === 'slate') M.forEach((_, i) => { const v = hash(i, k === 'brick' ? 11 : 13); tint.setRGB(0.82 + 0.3 * v, 0.82 + 0.25 * hash(i, 5), 0.82 + 0.22 * hash(i, 9)); if (k === 'slate') tint.multiplyScalar(0.72 + 0.35 * v); im.setColorAt(i, tint); });
+    im.castShadow = im.receiveShadow = true; root.add(im);
+  }
   const winGeo = new THREE.PlaneGeometry(1, 1), nW = M.length * WINS.length;
   const winMat = P({color: '#ffffff', roughness: 0.05, clearcoat: 1, emissive: '#ffffff', emissiveIntensity: 1});
   winMat.onBeforeCompile = (s) => { s.fragmentShader = s.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n totalEmissiveRadiance *= vColor.rgb * step(0.5, vColor.r + vColor.g + vColor.b);'); };
@@ -96,33 +101,50 @@ export function buildCity(T: CityTex, focus: THREE.Vector3, opts: {mid?: number;
     for (let x = focus.x - MID; x < focus.x + MID; x += 30) gardens.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0.01, zc), new THREE.Quaternion(), new THREE.Vector3(30, 1, PERIOD - 2 * (FZ + DEPTH) - 3)));
   }
   inst(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), lawn, gardens);
-  const leaf = P({color: '#4e7a36', roughness: 0.7}), trunk = P({color: '#4a3a2c', roughness: 0.9});
-  const T1: THREE.Matrix4[] = [], T2: THREE.Matrix4[] = [];
-  for (let i = 0; i < 1600; i++) {
-    const k = Math.floor((r() - 0.5) * 2 * MID / PERIOD + focus.z / PERIOD), x = focus.x + (r() - 0.5) * 2 * MID, z = k * PERIOD + PERIOD / 2 + (r() - 0.5) * 8;
-    if (Math.hypot(x - focus.x, z - focus.z) > MID) continue; const s = 2.5 + r() * 3;
-    T1.push(new THREE.Matrix4().compose(new THREE.Vector3(x, s * 1.4, z), new THREE.Quaternion(), new THREE.Vector3(s, s * 0.9, s)));
-    T2.push(new THREE.Matrix4().compose(new THREE.Vector3(x, s * 0.5, z), new THREE.Quaternion(), new THREE.Vector3(0.25, s, 0.25)));
+  const leafM = P({vertexColors: true, roughness: 0.75, sheen: 0.3, sheenColor: new THREE.Color('#b8e090')}), trunk = P({color: '#4a3a2c', roughness: 0.9});
+  const TV = [0, 1, 2, 3].map((v) => treeGeo(v)), TL: THREE.Matrix4[][] = [[], [], [], []], T2: THREE.Matrix4[] = [];
+  for (let i = 0; i < 1800; i++) {
+    const k = Math.floor((r() - 0.5) * 2 * MID / PERIOD + focus.z / PERIOD), x = focus.x + (r() - 0.5) * 2 * MID, z = k * PERIOD + PERIOD / 2 + (r() - 0.5) * 9;
+    if (Math.hypot(x - focus.x, z - focus.z) > MID) continue; const s = 2.2 + r() * 2.6, q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, r() * 6.28, 0));
+    TL[i % 4].push(new THREE.Matrix4().compose(new THREE.Vector3(x, s * 1.25, z), q, new THREE.Vector3(s, s * (0.85 + r() * 0.3), s)));
+    T2.push(new THREE.Matrix4().compose(new THREE.Vector3(x, s * 0.6, z), new THREE.Quaternion(), new THREE.Vector3(0.18 * s / 2.5, s * 1.2, 0.18 * s / 2.5)));
   }
-  inst(new THREE.IcosahedronGeometry(1, 2), leaf, T1); inst(new THREE.CylinderGeometry(1, 1.2, 1, 6), trunk, T2);
+  TV.forEach((geo, v) => inst(geo, leafM, TL[v])); inst(new THREE.CylinderGeometry(0.7, 1, 1, 6), trunk, T2);
   // ---- landmarks: the Thames, Battersea Power Station, St Paul's ----
   root.add(landmarks(stone, brick));
   return root;
 }
-/** the river runs across the view ~1.3-1.6 km away */
-export const inRiver = (x: number, z: number) => { const c = -1450 + 120 * Math.sin(x / 700); return z > c - 140 && z < c + 140; };
+/** a clumpy deciduous tree crown: 5-8 noise-displaced leafy masses, vertex-coloured light on top, dark underneath */
+function treeGeo(seed: number) {
+  const r = rng(seed * 31 + 7), parts: THREE.BufferGeometry[] = [], n = 5 + Math.floor(r() * 4);
+  const greens = [[0.25, 0.42, 0.16], [0.3, 0.47, 0.18], [0.22, 0.37, 0.15], [0.34, 0.5, 0.22]];
+  for (let i = 0; i < n; i++) {
+    const g = new THREE.IcosahedronGeometry(0.45 + r() * 0.35, 3), p = g.attributes.position, cx = (r() - 0.5) * 1.1, cy = (r() - 0.3) * 0.8, cz = (r() - 0.5) * 1.1;
+    const col = new Float32Array(p.count * 3), base = greens[Math.floor(r() * 4)];
+    for (let j = 0; j < p.count; j++) {
+      const x = p.getX(j), y = p.getY(j), z = p.getZ(j), nn = 1 + 0.18 * Math.sin(x * 9 + y * 7) * Math.cos(z * 8 - y * 5) + 0.09 * Math.sin(x * 23 + z * 19);
+      p.setXYZ(j, x * nn + cx, y * nn + cy, z * nn + cz);
+      const lit = THREE.MathUtils.clamp(0.55 + (y + cy) * 0.45, 0.35, 1.15);
+      col.set([base[0] * lit, base[1] * lit, base[2] * lit], j * 3);
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3)); parts.push(g.toNonIndexed());
+  }
+  const m = mergeGeometries(parts)!; m.computeVertexNormals(); return m;
+}
+/** the river runs across the view ~0.9 km away */
+export const inRiver = (x: number, z: number) => { const c = -900 + 120 * Math.sin(x / 700); return z > c - 140 && z < c + 140; };
 function landmarks(stone: THREE.Material, brick: THREE.Material) {
   const g = new THREE.Group();
   const water = new THREE.Mesh(new THREE.PlaneGeometry(9000, 280, 200, 1).rotateX(-Math.PI / 2), P({color: '#2a3048', roughness: 0.03, metalness: 0.6, clearcoat: 1, clearcoatRoughness: 0, envMapIntensity: 1.6}));
   const wp = water.geometry.attributes.position; for (let i = 0; i < wp.count; i++) wp.setZ(i, wp.getZ(i) + 120 * Math.sin(wp.getX(i) / 700)); water.geometry.computeVertexNormals();
-  water.position.set(0, 0.02, -1450); g.add(water);
+  water.position.set(0, 0.02, -900); g.add(water);
   // Battersea Power Station: brick hall, four white fluted chimneys, two smoking
-  const bps = new THREE.Group(); bps.position.set(-650, 0, -1680); g.add(bps);
+  const bps = new THREE.Group(); bps.position.set(-650, 0, -1130); g.add(bps);
   const hall = new THREE.Mesh(new THREE.BoxGeometry(160, 50, 110), brick); hall.position.y = 25; bps.add(hall);
   const white = P({color: '#f1ede4', roughness: 0.35, clearcoat: 0.6});
   for (const [x, z] of [[-75, -50], [75, -50], [-75, 50], [75, 50]]) { const ch = new THREE.Mesh(new THREE.CylinderGeometry(4.5, 6.5, 103, 24), white); ch.position.set(x, 51.5, z); bps.add(ch); const plume = smoke(14, x + z); plume.scale.setScalar(14); plume.position.set(x, 104, z); if (x < 0) bps.add(plume); }
   // St Paul's: drum, colonnade ring, dome, lantern, west towers
-  const sp = new THREE.Group(); sp.position.set(900, 0, -1900); g.add(sp);
+  const sp = new THREE.Group(); sp.position.set(700, 0, -1500); g.add(sp);
   const base = new THREE.Mesh(new THREE.BoxGeometry(150, 30, 60), stone); base.position.y = 15; sp.add(base);
   const drum = new THREE.Mesh(new THREE.CylinderGeometry(22, 22, 25, 40), stone); drum.position.y = 42; sp.add(drum);
   for (let k = 0; k < 32; k++) { const a = (k / 32) * Math.PI * 2, col = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 22, 8), stone); col.position.set(Math.cos(a) * 25, 41, Math.sin(a) * 25); sp.add(col); }
@@ -130,5 +152,21 @@ function landmarks(stone: THREE.Material, brick: THREE.Material) {
   const lantern = new THREE.Mesh(new THREE.CylinderGeometry(3, 3.5, 12, 16), stone); lantern.position.y = 89; sp.add(lantern);
   const cross = new THREE.Mesh(new THREE.SphereGeometry(2.2, 16, 12), P({color: '#e2b250', metalness: 1, roughness: 0.2})); cross.position.y = 97; sp.add(cross);
   for (const x of [-60, 60]) { const tw = new THREE.Mesh(new THREE.BoxGeometry(12, 50, 12), stone); tw.position.set(x, 25, 28); sp.add(tw); const cap = new THREE.Mesh(new THREE.ConeGeometry(7, 12, 8), stone); cap.position.set(x, 56, 28); sp.add(cap); }
+  // two gasholders by the river: lattice guide frame + drum
+  for (const [x, z, R] of [[260, -760, 38], [350, -790, 30]]) {
+    const gh = new THREE.Group(); gh.position.set(x, 0, z); g.add(gh);
+    const drum = new THREE.Mesh(new THREE.CylinderGeometry(R - 2, R - 2, 34, 48), P({color: '#5d6b5e', roughness: 0.5, metalness: 0.5})); drum.position.y = 17; gh.add(drum);
+    const red = P({color: '#7a2a24', roughness: 0.5, metalness: 0.4});
+    for (let k = 0; k < 16; k++) { const a = (k / 16) * Math.PI * 2, col = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 46, 8), red); col.position.set(Math.cos(a) * R, 23, Math.sin(a) * R); gh.add(col); }
+    for (const y of [15, 30, 45]) { const ring = new THREE.Mesh(new THREE.TorusGeometry(R, 0.7, 6, 48).rotateX(Math.PI / 2), red); ring.position.y = y; gh.add(ring); }
+  }
+  // factory chimneys + church spires dotted through the city
+  const brickD = P({color: '#6a3a2c', roughness: 0.8}), stoneS = P({color: '#b9ad98', roughness: 0.6}), spireM = P({color: '#6c7f86', roughness: 0.35, metalness: 0.4});
+  for (const [x, z, h] of [[-420, -520, 55], [520, -380, 48], [-900, -260, 60], [140, -640, 44]]) { const ch = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 3, h, 16), brickD); ch.position.set(x, h / 2, z); g.add(ch); const sm = smoke(12, x); sm.scale.setScalar(6); sm.position.set(x, h + 2, z); g.add(sm); }
+  for (const [x, z] of [[-260, -300], [380, -560], [-700, -720], [820, -240], [60, -1100]]) {
+    const t = new THREE.Mesh(new THREE.BoxGeometry(6, 22, 6), stoneS); t.position.set(x, 11, z); g.add(t);
+    const sp = new THREE.Mesh(new THREE.ConeGeometry(3.4, 20, 8), spireM); sp.position.set(x, 32, z); g.add(sp);
+    const nave = new THREE.Mesh(new THREE.BoxGeometry(14, 12, 34), stoneS); nave.position.set(x, 6, z + 20); g.add(nave);
+  }
   return g;
 }

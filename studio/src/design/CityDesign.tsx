@@ -16,7 +16,7 @@ import {buildCity, rowsAround, HW} from './city';
 const SKY_ROT = 1.396 + 0.6;
 const SUN = new THREE.Vector3(0.877, 0.18, 0.445).applyAxisAngle(new THREE.Vector3(0, 1, 0), SKY_ROT).toArray() as [number, number, number];
 const VIEWS: [[number, number, number], [number, number, number], number][] = [
-  [[6, 42, 60], [40, 6, -700], 55],        // 0 aerial over the rooftops toward the river, Battersea and St Paul's
+  [[6, 78, 140], [30, 0, -820], 52],       // 0 aerial over the rooftops toward the river, Battersea, gasholders and St Paul's
   [[3, 12.5, 4.5], [-30, 8, -40], 62],     // 1 crane up just over our row's roofs: chimneys, pots and aerials in the foreground
 ];
 const Cam: React.FC<{v: number}> = ({v}) => { const {camera} = useThree(); const c = camera as THREE.PerspectiveCamera; const [p, l, f] = VIEWS[v]; c.position.set(...p); c.lookAt(...l); c.fov = f; c.far = 9000; c.updateProjectionMatrix(); return null; };
