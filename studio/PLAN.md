@@ -34,8 +34,8 @@ Beats (camera plan): `../shorts/preview/beats.py` → `data/<video>.beats.json` 
 - Everything is designed in OUR OWN engine (three.js code). No Blender (user, final).
 - Stills rendered with scripts/clip.mjs; each element gets a design test composition in src/design/.
 - Element list, video 1 (spaghetti), in shot order — status:
-  1. 1957 television set (src/design/tv.ts, TVDesign) — v1 sent for review
-  2. Front room 1957 (fireplace, sofa, armchair, lamp, window, curtains)
+  1. 1957 television set (src/design/tv.ts, TVDesign) — APPROVED v1
+  2. Front room 1957 (src/design/room.ts, RoomDesign) — v1 sent for review
   3. Terraced house exterior (brick, sash windows, door, roof, chimney)
   4. London street at sunset (road, lamps, telephone poles, wires)
   5. Rooftops + city to the horizon (aerial)
