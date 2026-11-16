@@ -11,8 +11,15 @@ Beats (camera plan): `../shorts/preview/beats.py` → `data/<video>.beats.json` 
 - Characters: 2D cards drawn with toon.ts Pen (+ hair library + soft glow halo), billboards lit by the scene.
 - Assets: `public/assets/{hdri,tex,models}` (gitignored), fetched by `scripts/fetch_assets.py` from a manifest.
 
-## Video 1: spaghetti (take1). Sets
-living1957, terraces (dusk street + aerial), tvscreen, orchard (Ticino lake), hallway, switchboard, kitchen, mast, windowsill, garden.
+## Video 1: spaghetti (take1). Worlds (user chose: render HERE, full quality, slow; chunked per beat)
+- street1957: London terraced street at dusk, the family house fully built inside (living room + TV close-ups, hallway + phone,
+  kitchen + pantry + windowsill), back gardens (imagined rainy garden = rain light preset), city rows to the horizon, Crystal
+  Palace transmitter mast on a far hill. Window/crane moves are continuous inside this world.
+- orchard: Ticino meadow (alps_field photo sky, ground-projected) + 3D trees with spaghetti, family, drying racks, crew.
+- switchboard: BBC switchboard room 1957.
+- Render: 1080x1920 native at ~70 s/frame, chunk per beat (out/spaghetti/chunks), upscale to 1440x2560 at the end.
+- Look notes from first full still: ground band at grass edge (fix), bokeh too strong on foliage (lower), strands must read as
+  pale pasta not catkins. Grass renderer: KEEP AS IS (user). Character glow: KEEP (user).
 
 ## Status log
 - [x] Voice trimmed + 1.12x, words.json

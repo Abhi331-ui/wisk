@@ -2,6 +2,8 @@
 import {bundle} from '@remotion/bundler';
 import {renderMedia, selectComposition} from '@remotion/renderer';
 import path from 'path';
+import fs from 'fs';
+const cleanup = (u) => { try { fs.rmSync(u, {recursive: true, force: true}); } catch {} };
 process.env.TMPDIR = process.env.TEMP = process.env.TMP = '/home/user/rtmp';
 const [comp, out, range = '0-2', scale = '0.5', props = '{}', conc = '1'] = process.argv.slice(2);
 const serveUrl = await bundle({entryPoint: path.resolve('src/index.ts'), publicDir: path.resolve('public')});
@@ -13,3 +15,4 @@ await renderMedia({...opts, composition: c, frameRange: [a, b], outputLocation: 
   imageFormat: 'jpeg', jpegQuality: 92, scale: Number(scale), concurrency: Number(conc), crf: 16,
   onProgress: ({renderedFrames}) => { const n = Date.now(); if (renderedFrames) { console.log('frames', renderedFrames, ((n - last) / 1000).toFixed(1) + 's'); last = n; } }});
 console.log('total', ((Date.now() - t0) / 1000).toFixed(1) + 's');
+cleanup(serveUrl);

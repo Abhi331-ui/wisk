@@ -2,6 +2,8 @@
 import {bundle} from '@remotion/bundler';
 import {renderStill, selectComposition} from '@remotion/renderer';
 import path from 'path';
+import fs from 'fs';
+const cleanup = (u) => { try { fs.rmSync(u, {recursive: true, force: true}); } catch {} };
 process.env.TMPDIR = process.env.TEMP = process.env.TMP = '/home/user/rtmp';
 const [comp, prefix, frames = '0', scale = '0.5'] = process.argv.slice(2);
 const serveUrl = await bundle({entryPoint: path.resolve('src/index.ts'), publicDir: path.resolve('public')});
@@ -12,3 +14,4 @@ for (const f of frames.split(',').map(Number)) {
   await renderStill({...opts, composition: c, frame: f, output: `${prefix}${String(f).padStart(4, '0')}.png`, scale: Number(scale)});
   console.log('frame', f, ((Date.now() - t0) / 1000).toFixed(1) + 's');
 }
+cleanup(serveUrl);

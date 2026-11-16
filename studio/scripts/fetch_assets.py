@@ -13,7 +13,7 @@ def hdri(aid, res="2k", bg=False):
     if bg: jobs.append((f"https://dl.polyhaven.org/file/ph-assets/HDRIs/extra/Tonemapped%20JPG/{aid}.jpg", f"{ROOT}/hdri/{aid}_bg_full.jpg"))
 def tex(aid, res="2k"):
     f = files(aid)
-    for k, name in [("Diffuse", "diff"), ("nor_gl", "nor"), ("Rough", "rough"), ("AO", "ao"), ("arm", "arm")]:
+    for k, name in [("Diffuse", "diff"), ("col_1", "diff"), ("nor_gl", "nor"), ("Rough", "rough"), ("AO", "ao"), ("arm", "arm")]:
         if k in f and res in f[k]: jobs.append((f[k][res]["jpg"]["url"], f"{ROOT}/tex/{aid}/{name}.jpg"))
 def model(aid, res="1k"):
     g = files(aid)["gltf"][res]["gltf"]
