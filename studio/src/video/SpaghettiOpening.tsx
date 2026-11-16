@@ -44,11 +44,11 @@ const CAMS: Record<number, BeatCam> = {
   1: {set: 'city', a: {pos: [2, 7.5, 3], look: [-25, 8, -45], fov: 60, focus: 30}, b: {pos: [5, 34, 30], look: [25, 4, -650], fov: 56, focus: 80}},
   2: {set: 'room', a: fromScreen(0.75, -0.12, 0.05, 42), b: fromScreen(0.5, -0.05, 0.02, 40)},
   3: {set: 'room', a: fromScreen(0.46, 0.0, 0.0, 40), b: fromScreen(0.3, 0.03, 0.0, 38)},
-  4: {set: 'room', a: {pos: [-0.45, 1.05, -0.95], look: [1.15, 0.8, 0.15], fov: 52, focus: 1.8}, b: {pos: [-0.2, 1.02, -0.55], look: [1.15, 0.78, 0.5], fov: 48, focus: 1.6}},
+  4: {set: 'roomB', a: {pos: [-1.25, 1.05, -1.05], look: [0.58, 0.8, 0.25], fov: 58, focus: 2.25}, b: {pos: [-1.0, 1.02, -0.75], look: [0.58, 0.78, 0.3], fov: 55, focus: 1.9}},
   5: {set: 'city', a: {pos: [4, 80, 150], look: [30, 0, -820], fov: 52, focus: 300}, b: {pos: [12, 64, 90], look: [40, 0, -820], fov: 50, focus: 300}},
   6: {set: 'room', a: fromScreen(0.95, 0.3, 0.1, 44), b: fromScreen(0.62, 0.12, 0.05, 42)},
-  7: {set: 'room', a: fromScreen(0.5, 0.06, 0.03, 40, 0.02), b: fromScreen(0.26, 0.0, 0.03, 36, 0.03)},
-  8: {set: 'room', a: fromScreen(0.24, 0, 0.03, 36), b: fromScreen(0.2, 0, 0.03, 34)},
+  7: {set: 'room', a: fromScreen(0.55, 0.06, 0.03, 40, 0.02), b: fromScreen(0.36, 0.0, 0.03, 38, 0.03)},
+  8: {set: 'room', a: fromScreen(0.34, 0, 0.03, 38), b: fromScreen(0.31, 0, 0.03, 37)},
 };
 const SHOW: Record<number, 'narrator' | 'tree'> = {0: 'narrator', 1: 'narrator', 2: 'tree', 3: 'tree', 4: 'tree', 5: 'narrator', 6: 'narrator', 7: 'narrator', 8: 'narrator'};
 
@@ -68,7 +68,7 @@ const RoomWorld: React.FC<{t: number; beat: number; visible: boolean; bc: Return
     shiny(g); return g;
   }, [res]);
   if (!world) return null;
-  const fl = 0.85 + 0.15 * Math.sin(t * 9.1) * Math.sin(t * 3.7 + 1), tvfl = 0.9 + 0.1 * Math.sin(t * 31) * Math.sin(t * 7);
+  const fl = 0.85 + 0.15 * Math.sin(t * 9.1) * Math.sin(t * 3.7 + 1);
   const sway = springLag((x) => Math.sin(x * 1.3) * 0.15, t);
   const blink = (k: number) => ((t + k * 0.77) % 3.3) < 0.13;
   // the family on the sofa, watching the TV (they face the screen; we see them three-quarter from the TV side)
@@ -78,12 +78,11 @@ const RoomWorld: React.FC<{t: number; beat: number; visible: boolean; bc: Return
       <primitive object={world} />
       <pointLight position={[RW / 2 - 0.35, 1.5, -0.65]} color="#ffae60" intensity={visible ? 5.2 : 0} distance={9} decay={2} castShadow={visible} shadow-mapSize={[1024, 1024]} shadow-bias={-0.003} />
       <pointLight position={[-RW / 2 + 0.55, 0.3, 0.05]} color="#ff6a28" intensity={visible ? 2.6 * fl : 0} distance={5} decay={2} />
-      <pointLight position={SCREEN.clone().addScaledVector(NORMAL, 0.5).toArray()} color="#c8d4ff" intensity={visible ? 1.6 * tvfl : 0} distance={4} decay={2} />
       <rectAreaLight position={[0, 1.58, -RD / 2 + 0.02]} color="#8ea4e8" intensity={visible ? 4.2 : 0} width={1.6} height={1.55} onUpdate={(l: any) => l.lookAt(0, 1.2, 0)} />
       {fam && visible && <>
-        <Card id="dad" at={[SOFA.x - 0.28, 0, SOFA.z - 0.55]} height={1.75} glowK={0.4} draw={(p) => bodyFront(p, {jacket: '#6b5a3a', pants: '#3d4440', boots: '#2a201a', moustache: '#4a3020', hairStyle: 'sidepart', hairColor: '#4a3020'}, {mode: 'sit', expr: 'shock', facing: -1, seed: 9, sway, blink: blink(1), look: -0.6})} />
-        <Card id="mum" at={[SOFA.x - 0.28, 0, SOFA.z + 0.05]} height={1.65} glowK={0.4} draw={(p) => bodyFront(p, {jacket: '#9a3a4a', pants: '#3b3f52', boots: '#5a3b2a', dress: '#b84a5a', hairStyle: 'curly', hairColor: '#6a3a1e'}, {mode: 'sit', expr: 'smile', facing: -1, seed: 4, sway: sway * 1.3, blink: blink(2), look: -0.6})} />
-        <Card id="girl" at={[SOFA.x - 0.3, 0, SOFA.z + 0.62]} height={1.2} glowK={0.4} draw={(p) => bodyFront(p, {jacket: '#e2453c', pants: '#3b5b9a', boots: '#f4f1ea', dress: '#d9a441', build: 'kid', hairStyle: 'braids', hairColor: '#8a5a2b'}, {mode: 'sit', expr: 'grin', facing: -1, seed: 2, sway: sway * 1.6, blink: blink(3), look: -0.6})} />
+        <Card id="dad" at={[SOFA.x - 0.52, 0, SOFA.z - 0.55]} height={1.75} glowK={0.4} draw={(p) => bodyFront(p, {jacket: '#6b5a3a', pants: '#3d4440', boots: '#2a201a', moustache: '#4a3020', hairStyle: 'sidepart', hairColor: '#4a3020'}, {mode: 'sit', expr: 'shock', facing: -1, seed: 9, sway, blink: blink(1), look: -0.6})} />
+        <Card id="mum" at={[SOFA.x - 0.52, 0, SOFA.z + 0.05]} height={1.65} glowK={0.4} draw={(p) => bodyFront(p, {jacket: '#9a3a4a', pants: '#3b3f52', boots: '#5a3b2a', dress: '#b84a5a', hairStyle: 'curly', hairColor: '#6a3a1e'}, {mode: 'sit', expr: 'smile', facing: -1, seed: 4, sway: sway * 1.3, blink: blink(2), look: -0.6})} />
+        <Card id="girl" at={[SOFA.x - 0.54, 0, SOFA.z + 0.62]} height={1.2} glowK={0.4} draw={(p) => bodyFront(p, {jacket: '#e2453c', pants: '#3b5b9a', boots: '#f4f1ea', dress: '#d9a441', build: 'kid', hairStyle: 'braids', hairColor: '#8a5a2b'}, {mode: 'sit', expr: 'grin', facing: -1, seed: 2, sway: sway * 1.6, blink: blink(3), look: -0.6})} />
       </>}
     </group>
   );
@@ -107,7 +106,7 @@ const Rig: React.FC<{t: number}> = ({t}) => {
 };
 export const SpaghettiOpening: React.FC = () => {
   const f = useCurrentFrame(), {fps, width, height} = useVideoConfig(), t = f / fps;
-  const s = cameraAt(beats.slice(0, 9), CAMS, t), room = s.set === 'room';
+  const s = cameraAt(beats.slice(0, 9), CAMS, t), room = s.set.startsWith('room');
   const bc = useMemo(() => makeBroadcast(), []);
   bc.draw(SHOW[s.beat] ?? 'narrator', t, s.beat === 7 ? Math.sin(Math.max(0, t - beats[7].t) * 2.2) * 0.12 : 0);
   const chars = s.beat === 4;
@@ -121,7 +120,7 @@ export const SpaghettiOpening: React.FC = () => {
         {room && <color attach="background" args={['#000']} />}
         <RoomWorld t={t} beat={s.beat} visible={room} bc={bc} />
         <CityWorld visible={!room} />
-        <Post focus={chars ? 1.75 : (s.focus || 2)} bokeh={chars ? 8 : room ? 0.6 : 0} whip={s.whip} bloom={0.5} vignette={0.24}
+        <Post focus={s.focus || 2} bokeh={chars ? 8 : room ? 0.6 : 0} whip={s.whip} bloom={0.5} vignette={0.24}
           ao={room ? {radius: 0.4, intensity: 1.6} : {radius: 1.2, intensity: 1.4}} exposure={room ? 1.15 : 1.0} anime={ANIME_POST} />
       </ThreeCanvas>
       <Audio src={staticFile('audio/spaghetti_opening_mix.wav')} />

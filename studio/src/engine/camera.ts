@@ -13,15 +13,23 @@ const cr = (p0: number, p1: number, p2: number, p3: number, t0: number, t1: numb
   const B1 = ((t2 - t) * A1 + (t - t0) * A2) / (t2 - t0), B2 = ((t3 - t) * A2 + (t - t1) * A3) / (t3 - t1);
   return ((t2 - t) * B1 + (t - t1) * B2) / (t2 - t1);
 };
+/** monotone cubic (Fritsch-Carlson) interpolation of one channel over the key times: smooth, continuous velocity,
+ *  and never overshoots between keys (big fast moves between distant keys stay clean) */
+function monotone(ts: number[], ys: number[], t: number) {
+  const n = ts.length; if (n === 1) return ys[0];
+  if (t <= ts[0]) return ys[0] + (ys[1] - ys[0]) / (ts[1] - ts[0] || 1) * 0; if (t >= ts[n - 1]) return ys[n - 1];
+  const d: number[] = [], m: number[] = new Array(n).fill(0);
+  for (let i = 0; i < n - 1; i++) d.push((ys[i + 1] - ys[i]) / Math.max(1e-6, ts[i + 1] - ts[i]));
+  m[0] = d[0]; m[n - 1] = d[n - 2];
+  for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (2 * d[i - 1] * d[i]) / (d[i - 1] + d[i]); // harmonic mean
+  let i = 0; while (i < n - 2 && t > ts[i + 1]) i++;
+  const h = ts[i + 1] - ts[i], u = (t - ts[i]) / h, u2 = u * u, u3 = u2 * u;
+  return (2 * u3 - 3 * u2 + 1) * ys[i] + (u3 - 2 * u2 + u) * h * m[i] + (-2 * u3 + 3 * u2) * ys[i + 1] + (u3 - u2) * h * m[i + 1];
+}
 const lerpPose = (k: Key[], t: number): Pose => {
-  let i = 0; while (i + 1 < k.length - 1 && k[i + 1].t <= t) i++;
-  const P = (j: number) => k[Math.max(0, Math.min(k.length - 1, j))];
-  const k0 = P(i - 1), k1 = P(i), k2 = P(i + 1), k3 = P(i + 2);
-  const T0 = i - 1 < 0 ? k1.t - (k2.t - k1.t) : k0.t, T3 = i + 2 > k.length - 1 ? k2.t + (k2.t - k1.t) : k3.t;
-  const tt = Math.max(k1.t, Math.min(k2.t, t));
-  const f = (g: (p: Pose) => number) => (k1.t === k2.t ? g(k1.p) : cr(g(k0.p), g(k1.p), g(k2.p), g(k3.p), T0, k1.t, k2.t, T3, tt));
-  const v = (g: (p: Pose) => V3) => [0, 1, 2].map((c) => f((p) => g(p)[c])) as V3;
-  return {pos: v((p) => p.pos), look: v((p) => p.look), fov: f((p) => p.fov ?? 40), roll: f((p) => p.roll ?? 0), focus: f((p) => p.focus ?? 0)};
+  const ts = k.map((q) => q.t), ch = (g: (p: Pose) => number) => monotone(ts, k.map((q) => g(q.p)), t);
+  const v = (g: (p: Pose) => V3) => [0, 1, 2].map((c) => ch((p) => g(p)[c])) as V3;
+  return {pos: v((p) => p.pos), look: v((p) => p.look), fov: ch((p) => p.fov ?? 40), roll: ch((p) => p.roll ?? 0), focus: ch((p) => p.focus ?? 0)};
 };
 
 export type CamState = Pose & {set: string; beat: number; whip: number; dof: number; local: number};
