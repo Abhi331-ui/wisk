@@ -94,7 +94,7 @@ export const StreetDesign: React.FC = () => {
       <Env hdri="belfast_sunset_puresky" bg={false} envIntensity={1.1} rotation={SKY_ROT} fog={{color: '#9e95b0', near: 60, far: 260}} sun={{dir: SUN, intensity: 3.8, color: '#ffb46e', area: 40, shadow: 4096}} />
       <PhotoSky name="belfast_sunset_puresky" radius={5000} rotation={SKY_ROT} intensity={1.05} />
       <Scene />
-      <Post focus={9} bokeh={0.6} whip={0} bloom={0.8} vignette={0.18} ao={{radius: 0.6, intensity: 1.6}} exposure={1.25} anime={ANIME_POST} />
+      <Post focus={9} bokeh={0.6} whip={0} bloom={0.5} vignette={0.22} ao={{radius: 0.6, intensity: 1.6}} exposure={1.0} anime={ANIME_POST} />
     </ThreeCanvas>
   );
 };
