@@ -1,0 +1,13 @@
+{"hdri": [{"aid":"alps_field","bg":true}, {"aid":"rooftop_night","bg":true}, {"aid":"qwantani_night_puresky","bg":true},
+          {"aid":"kloofendal_overcast_puresky","bg":true}, {"aid":"lythwood_room"}, {"aid":"limehouse","bg":true}],
+ "tex": ["brick_wall_10","roof_slates_02","clay_roof_tiles_02","plastered_wall_04","painted_plaster_wall","old_wood_floor",
+         "fabric_pattern_07","leafy_grass","forest_ground_04","bark_willow","cobblestone_floor_01","worn_asphalt","kitchen_wood",
+         "floor_tiles_06","dark_wood","wood_plank_wall","concrete_floor","rusty_metal","metal_plate","decrepit_wallpaper"],
+ "models": ["Television_01","television_02","Sofa_01","ArmChair_01","sofa_02","vintage_cabinet_01","mantel_clock_01",
+   "fancy_picture_frame_01","standing_picture_frame_01","wicker_basket_01","wicker_basket_02","tree_small_02","island_tree_01",
+   "jacaranda_tree","shrub_01","shrub_02","grass_medium_01","grass_medium_02","dandelion_01","celandine_01","nettle_plant",
+   "wooden_ladder","wooden_crate_01","vintage_video_camera","modular_electricity_poles","WoodenTable_01","dining_chair_02",
+   "tea_set_01","potted_plant_01","planter_pot_clay","watering_can_metal_01","trowel_01","garden_gloves_01","street_lamp_01",
+   "metal_trash_can","pot_enamel_01","wooden_spoon","cleaner_tin_01","russian_food_cans_01","vintage_electric_kettle","jug_01",
+   "Lantern_01","side_table_01","throw_pillows_01","ceramic_vase_01","book_encyclopedia_set_01","WoodenChair_01",
+   "Rockingchair_01","ClassicConsole_01","wall_clock","vintage_telephone_wall_clock","fir_tree_01","pine_tree_01","boulder_01"]}
