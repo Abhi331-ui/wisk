@@ -27,10 +27,11 @@ export type PostProps = {focus: number; bokeh: number; whip: number; exposure?: 
 export const Post: React.FC<PostProps> = ({focus, bokeh, whip, bloom = 0.5, vignette = 0.32, exposure = 1}) => {
   const {gl, scene, camera, size} = useThree();
   const fx = useMemo(() => {
+    console.log('POST BUILD', Date.now());
     gl.toneMapping = THREE.NoToneMapping;
-    const composer = new EffectComposer(gl, {frameBufferType: THREE.HalfFloatType, multisampling: 4});
+    const composer = new EffectComposer(gl, {frameBufferType: THREE.HalfFloatType, multisampling: 0});
     composer.addPass(new RenderPass(scene, camera));
-    const dof = new DepthOfFieldEffect(camera, {focusDistance: 0.02, focalLength: 0.03, bokehScale: 0, resolutionScale: 0.75});
+    const dof = new DepthOfFieldEffect(camera, {focusDistance: 0.02, focalLength: 0.03, bokehScale: 0, resolutionScale: 0.5});
     const bloomE = new BloomEffect({luminanceThreshold: 1.0, luminanceSmoothing: 0.2, intensity: bloom, mipmapBlur: true, radius: 0.6});
     const whipE = new WhipBlur();
     const vig = new VignetteEffect({offset: 0.3, darkness: vignette});
@@ -39,7 +40,9 @@ export const Post: React.FC<PostProps> = ({focus, bokeh, whip, bloom = 0.5, vign
     composer.addPass(new EffectPass(camera, dof));
     composer.addPass(new EffectPass(camera, bloomE));
     composer.addPass(new EffectPass(camera, whipE));
-    composer.addPass(new EffectPass(camera, ca, tone, vig));
+    composer.addPass(new EffectPass(camera, new SMAAEffect()));
+    composer.addPass(new EffectPass(camera, ca));
+    composer.addPass(new EffectPass(camera, tone, vig));
     return {composer, dof, whipE, tone};
   }, []);
   useEffect(() => { fx.composer.setSize(size.width, size.height); }, [size.width, size.height]);

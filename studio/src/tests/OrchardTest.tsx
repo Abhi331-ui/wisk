@@ -32,7 +32,7 @@ const Cam: React.FC<{t: number}> = ({t}) => {
   (camera as THREE.PerspectiveCamera).fov = 42; (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
   return null;
 };
-export const OrchardTest: React.FC<{off?: string[]}> = ({off = []}) => {
+export const OrchardTest: React.FC<{off?: string[]; g?: any}> = ({off = [], g = {}}) => {
   const on = (k: string) => !off.includes(k);
   const f = useCurrentFrame(), {width, height} = useVideoConfig(), t = f / 30;
   const sway = springLag((x) => Math.sin(x * 2.4) * 0.5, t);
@@ -42,7 +42,7 @@ export const OrchardTest: React.FC<{off?: string[]}> = ({off = []}) => {
       <Env hdri="alps_field" bg={false} envIntensity={1} sun={{dir: [-0.35, 0.45, -0.8], intensity: 3.2, color: '#fff0d8', area: 18}} />
       {on('sky') && <PhotoSky name="alps_field" grounded={1.7} radius={300} />}
       {on('ground') && <Ground />}
-      {on('grass') && <Grass center={[0, 2]} size={[22, 22]} count={160000} t={t} />}
+      {on('grass') && <Grass center={[0, 2]} size={[22, 22]} count={160000} t={t} eye={[-0.5, 6]} {...g} />}
       {on('trees') && <><Tree id="tree_small_02" at={[1.2, 0, -1.5]} s={1} t={t} strands />
       <Tree id="island_tree_01" at={[-6, 0, -8]} s={1} t={t} strands /></>}
       {on('cards') && <><Card id="grandma" at={[0.2, 0, 1.2]} draw={(p) => bodyFront(p, {jacket: '#6b3f5a', pants: '#3b3f52', boots: '#4a3426', dress: '#3f5f8a', hairStyle: 'bun', hairColor: '#cfcac4'}, {mode: 'stand', expr: 'grin', facing: 1, seed: 4, sway})} height={1.6} />

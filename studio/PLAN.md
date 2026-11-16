@@ -16,7 +16,7 @@ living1957, terraces (dusk street + aerial), tvscreen, orchard (Ticino lake), ha
 
 ## Status log
 - [x] Voice trimmed + 1.12x, words.json
-- [x] Perf test: swiftshader renders 1080x1920 (~2-3 s/frame simple scene)
+- [x] Perf (clean, 4 CPU, no GPU): one render uses all 4 cores; post alone ~11 s/frame, grass 160k ~43 s/frame at 1080x1920. Parallel renders do not help. Full scene est. 60-100 s/frame → 36-60 h per video at 1080p. Needs a GPU machine for the full plan.
 - [ ] Engine core (camera, env, card, post)
 - [ ] Spaghetti sets
 - [ ] Spaghetti stills review → full render → sound mix → QA
