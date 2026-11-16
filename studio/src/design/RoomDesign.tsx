@@ -11,6 +11,7 @@ import {loadPBR, loadTex, useAsset} from '../engine/assets';
 import {buildTV} from './tv';
 import {buildRoom, RD, RW} from './room';
 RectAreaLightUniformsLib.init();
+const SHINY = true;
 
 const VIEWS: [[number, number, number], [number, number, number], number][] = [
   [[0.55, 1.15, 1.9], [-0.95, 0.85, -1.2], 66],   // 0 from the doorway corner: fire, TV, window, armchairs
@@ -36,6 +37,15 @@ const Scene: React.FC<{t: number}> = ({t}) => {
     const tv = buildTV({walnut, cloth: fabricN}, bc); tv.position.set(-1.12, 0, -1.6); tv.rotation.y = Math.PI - 0.65; g.add(tv);
     const view = new THREE.Mesh(new THREE.PlaneGeometry(9, 6.75), new THREE.MeshBasicMaterial({map: duskWindow(), toneMapped: false})); view.position.set(0, 1.6, -RD / 2 - 3.5); g.add(view);
     g.traverse((o: any) => { if (o.isMesh && o.castShadow === undefined) o.castShadow = true; });
+    if (SHINY) g.traverse((o: any) => { // shinier, cleaner surfaces: lower roughness, lacquer coat, brighter colours
+      if (!o.isMesh) return; const ms = Array.isArray(o.material) ? o.material : [o.material];
+      for (const m of ms) if (m && 'roughness' in m && !(m.sheen > 0)) {
+        m.roughness = Math.max(0.06, m.roughness * 0.55); if (m.roughnessMap) m.roughnessMap = null;
+        if ('clearcoat' in m) { m.clearcoat = Math.max(m.clearcoat, 0.6); m.clearcoatRoughness = 0.05; }
+        if (m.normalScale) m.normalScale.multiplyScalar(0.35);
+        m.envMapIntensity = 1.6; m.needsUpdate = true;
+      }
+    });
     return g;
   }, [res]);
   if (!world) return null;
@@ -55,10 +65,10 @@ export const RoomDesign: React.FC = () => {
   return (
     <ThreeCanvas width={width} height={height} shadows="soft" gl={{antialias: false, preserveDrawingBuffer: true}} camera={{near: 0.02, far: 60}}>
       <Cam v={Math.min(1, f)} />
-      <Env hdri="lythwood_room" bg={false} envIntensity={0.22} />
+      <Env hdri="lythwood_room" bg={false} envIntensity={0.45} />
       <color attach="background" args={['#000']} />
       <Scene t={f / 30} />
-      <Post focus={2.8} bokeh={1.2} whip={0} bloom={0.45} vignette={0.4} ao={{radius: 0.45, intensity: 2.8}} exposure={1.05} />
+      <Post focus={2.8} bokeh={0.6} whip={0} bloom={0.8} vignette={0.18} ao={{radius: 0.4, intensity: 1.6}} exposure={1.3} anime={{ink: 1.0, sat: 1.4}} />
     </ThreeCanvas>
   );
 };
