@@ -1,0 +1,1198 @@
+{
+ "spaghetti": {
+  "title": "The Tree That Grew Spaghetti",
+  "palette": "Spring gold + 1957 TV blue",
+  "audio": "spaghetti.mp3",
+  "dur": 80.22,
+  "beats": [
+   {
+    "t": 0.0,
+    "say": "BBC convinced",
+    "shot": "Dim 1957 British living room. A walnut TV set glows blue-white. Waist-high dolly toward the screen, 35 mm.",
+    "hero": false
+   },
+   {
+    "t": 0.96,
+    "say": "half of Britain that",
+    "shot": "Crane up and out through the window: rows of brick terraces at dusk, every window flickering with the same TV glow, chimney smoke drifting.",
+    "hero": true
+   },
+   {
+    "t": 2.3,
+    "say": "spaghetti grows",
+    "shot": "Whip pan down to a laurel tree hung with pale spaghetti strands, swaying in a breeze.",
+    "hero": false
+   },
+   {
+    "t": 3.18,
+    "say": "on trees!",
+    "shot": "Push through the branches, leaves backlit, strands brushing past the lens.",
+    "hero": false
+   },
+   {
+    "t": 4.28,
+    "say": "It's April 1957 the first, and",
+    "shot": "Back in the living room: daffodils on the sill, spring evening light, the family on the sofa.",
+    "hero": false
+   },
+   {
+    "t": 7.04,
+    "say": "millions of families are watching the",
+    "shot": "Aerial over 1957 London rooftops at blue hour, thousands of TV-lit windows, the Thames shining far off.",
+    "hero": true
+   },
+   {
+    "t": 8.78,
+    "say": "most serious news show on television. The",
+    "shot": "Close on the TV screen: the stern narrator (side-parted hair, dark suit) at a desk, scanlines on the glass.",
+    "hero": false
+   },
+   {
+    "t": 11.18,
+    "say": "calm, trusted narrator takes them to a",
+    "shot": "Slow push into the narrator's face on screen. He gives one calm nod.",
+    "hero": false
+   },
+   {
+    "t": 13.56,
+    "say": "sunny Swiss village after a very",
+    "shot": "Fly THROUGH the screen into colour: descend over Lake Lugano, snow Alps, terracotta roofs and a bell tower, golden morning haze.",
+    "hero": true
+   },
+   {
+    "t": 15.64,
+    "say": "mild winter.",
+    "shot": "Waist-high glide over a spring meadow: wildflowers, bees, snow only on the far peaks.",
+    "hero": false
+   },
+   {
+    "t": 16.66,
+    "say": "This year, the spaghetti trees are having a",
+    "shot": "Orchard reveal: rows of trees stepping down to the lake, leading lines to the water.",
+    "hero": false
+   },
+   {
+    "t": 18.86,
+    "say": "bumper crop! A",
+    "shot": "Crane up a tree heavy with spaghetti, every strand glowing translucent gold against the sun.",
+    "hero": true
+   },
+   {
+    "t": 20.02,
+    "say": "smiling family",
+    "shot": "Track along the Swiss family (grandmother's bun, father's moustache, girls' braids) carrying wicker baskets.",
+    "hero": false
+   },
+   {
+    "t": 20.86,
+    "say": "plucks long strands of pasta off the branches and",
+    "shot": "85 mm close: hands pull a strand, it stretches and slips free, orchard bokeh behind.",
+    "hero": false
+   },
+   {
+    "t": 23.78,
+    "say": "lays them out in the",
+    "shot": "Wide: wooden drying racks draped with spaghetti in full sun, pollen floating in light shafts.",
+    "hero": false
+   },
+   {
+    "t": 24.62,
+    "say": "sun to dry.",
+    "shot": "Low angle up through the hanging strands into a soft sun flare.",
+    "hero": false
+   },
+   {
+    "t": 25.34,
+    "say": "He even explains that the dreaded",
+    "shot": "The narrator stands in the orchard and gestures to camera, hair moving in the breeze.",
+    "hero": false
+   },
+   {
+    "t": 27.34,
+    "say": "spaghetti weevil has",
+    "shot": "Macro on a branch: a real-looking weevil beetle walks off the end of a leaf.",
+    "hero": false
+   },
+   {
+    "t": 28.48,
+    "say": "almost disappeared. And",
+    "shot": "The weevil flies off; camera follows it up into the sunlight and loses it in the glare.",
+    "hero": false
+   },
+   {
+    "t": 30.02,
+    "say": "why is every strand exactly the",
+    "shot": "Camera slides along a perfectly even row of hanging strands, like a ruler.",
+    "hero": false
+   },
+   {
+    "t": 32.22,
+    "say": "same length?",
+    "shot": "Top-down: grandfather lays a strand beside a wooden measuring stick. A perfect match.",
+    "hero": false
+   },
+   {
+    "t": 33.08,
+    "say": "Generations of patient breeding,",
+    "shot": "Old farmer with a white beard grafting a sapling, a nursery of young spaghetti trees behind him.",
+    "hero": false
+   },
+   {
+    "t": 34.7,
+    "say": "of course.",
+    "shot": "Narrator smiles knowingly; quick push-in on the punch.",
+    "hero": false
+   },
+   {
+    "t": 35.38,
+    "say": "Then the phones at the BBC",
+    "shot": "Whip back to Britain: a black 1950s rotary phone on a hallway table starts rattling.",
+    "hero": false
+   },
+   {
+    "t": 36.62,
+    "say": "start ringing and they",
+    "shot": "Follow the phone line out of the window along telephone poles across the night city.",
+    "hero": false
+   },
+   {
+    "t": 37.98,
+    "say": "don't stop!",
+    "shot": "The BBC switchboard room: operators in headsets, plug boards lighting up everywhere. Orbit.",
+    "hero": true
+   },
+   {
+    "t": 39.04,
+    "say": "Hundreds of viewers want to",
+    "shot": "One continuous slide past a row of houses: a person on a phone in every window.",
+    "hero": false
+   },
+   {
+    "t": 40.36,
+    "say": "know one thing.",
+    "shot": "Close on an eager viewer (curly-haired housewife) clutching the receiver.",
+    "hero": false
+   },
+   {
+    "t": 41.48,
+    "say": "Where can I buy a",
+    "shot": "She holds up a garden trowel and an empty flowerpot, hopeful.",
+    "hero": false
+   },
+   {
+    "t": 42.64,
+    "say": "spaghetti tree?",
+    "shot": "Imagined: a tiny spaghetti sapling in a pot on a rainy London windowsill.",
+    "hero": false
+   },
+   {
+    "t": 43.68,
+    "say": "Luckily, it was an",
+    "shot": "Back in the orchard: the family stops work and grins at camera.",
+    "hero": false
+   },
+   {
+    "t": 44.78,
+    "say": "April Fool's joke.",
+    "shot": "Reveal the trick: the cameraman behind a 1950s film camera laughing while crew drape strands on branches.",
+    "hero": true
+   },
+   {
+    "t": 45.92,
+    "say": "Unluckily, almost nobody in Britain knew what spaghetti was",
+    "shot": "A grey British street; puzzled passers-by.",
+    "hero": false
+   },
+   {
+    "t": 49.16,
+    "say": "made of.",
+    "shot": "Close: a man stares at a single strand on his fork, baffled.",
+    "hero": false
+   },
+   {
+    "t": 49.66,
+    "say": "You see, in 1957, most British people had",
+    "shot": "Pull back across a 1957 British kitchen: pantry shelves, a kettle, morning light.",
+    "hero": false
+   },
+   {
+    "t": 53.02,
+    "say": "only ever seen spaghetti in one place,",
+    "shot": "Slide along the pantry shelf of plain unbranded tins.",
+    "hero": false
+   },
+   {
+    "t": 55.52,
+    "say": "inside a tin swimming in",
+    "shot": "Push into an open tin of spaghetti in tomato sauce warming on the stove, steam rising.",
+    "hero": false
+   },
+   {
+    "t": 57.26,
+    "say": "tomato sauce.",
+    "shot": "Macro: strands swirling in bubbling red sauce.",
+    "hero": false
+   },
+   {
+    "t": 58.22,
+    "say": "Think about it, if the",
+    "shot": "The father in his armchair. Slow orbit around him.",
+    "hero": false
+   },
+   {
+    "t": 59.22,
+    "say": "most boring, trustworthy man you know told you",
+    "shot": "On the TV: the narrator, perfectly still. Long-lens push.",
+    "hero": false
+   },
+   {
+    "t": 61.88,
+    "say": "pasta grows on trees, you'd probably",
+    "shot": "The father imagines a spaghetti tree in his own rainy back garden.",
+    "hero": false
+   },
+   {
+    "t": 64.1,
+    "say": "believe him too. And this was the",
+    "shot": "The father nods along, convinced.",
+    "hero": false
+   },
+   {
+    "t": 65.94,
+    "say": "most trustworthy voice on",
+    "shot": "Pull back from the TV, out the window, past rows of glowing houses.",
+    "hero": false
+   },
+   {
+    "t": 67.34,
+    "say": "British television.",
+    "shot": "The Crystal Palace transmitter mast at night, red light blinking, clouds sliding past.",
+    "hero": true
+   },
+   {
+    "t": 68.54,
+    "say": "Some viewers were furious that the news had",
+    "shot": "A man in a trilby shakes his fist at the TV.",
+    "hero": false
+   },
+   {
+    "t": 70.76,
+    "say": "lied to them. Ha, others",
+    "shot": "He scratches out an angry letter with a fountain pen.",
+    "hero": false
+   },
+   {
+    "t": 72.3,
+    "say": "just wanted their tree. So the BBC gave them",
+    "shot": "The hopeful woman at her door with her trowel and pot.",
+    "hero": false
+   },
+   {
+    "t": 75.04,
+    "say": "official gardening advice. Place a",
+    "shot": "A switchboard operator answers with a perfectly straight face.",
+    "hero": false
+   },
+   {
+    "t": 76.98,
+    "say": "sprig of spaghetti in a tin of tomato sauce and",
+    "shot": "Close: a hand plants one strand of spaghetti into a tin of tomato sauce on a windowsill.",
+    "hero": false
+   },
+   {
+    "t": 79.52,
+    "say": "hope for the best.",
+    "shot": "Pull back: the woman gazes at the tin as the rain stops and one sunbeam lands on it.",
+    "hero": true
+   }
+  ]
+ },
+ "sandwich": {
+  "title": "The Sandwich Thief",
+  "palette": "Cool glass office + warm fridge gold",
+  "audio": "sandwich.mp3",
+  "dur": 78.78,
+  "beats": [
+   {
+    "t": 0.12,
+    "say": "entire office spent",
+    "shot": "Open-plan office at sunrise, glass skyline outside. Waist-high dolly down the desks, 24 mm.",
+    "hero": true
+   },
+   {
+    "t": 1.44,
+    "say": "weeks hunting a",
+    "shot": "A cubicle corkboard of photos joined with red string, detective style.",
+    "hero": false
+   },
+   {
+    "t": 2.52,
+    "say": "sandwich thief who only ever",
+    "shot": "Close on a towering gourmet sandwich, backlit by the window.",
+    "hero": false
+   },
+   {
+    "t": 4.16,
+    "say": "ate the middle.",
+    "shot": "Same sandwich, middle gone, only the crusts left.",
+    "hero": false
+   },
+   {
+    "t": 5.14,
+    "say": "Every morning,",
+    "shot": "Sun rising over the city through the office glass.",
+    "hero": false
+   },
+   {
+    "t": 5.92,
+    "say": "one employee puts a",
+    "shot": "The owner (ponytail, glasses) walks in with her lunch bag. Track alongside.",
+    "hero": false
+   },
+   {
+    "t": 6.96,
+    "say": "fancy homemade sandwich in the",
+    "shot": "She lifts the glass lunchbox: the sandwich inside, perfect.",
+    "hero": false
+   },
+   {
+    "t": 8.52,
+    "say": "breakroom fridge.",
+    "shot": "Camera INSIDE the fridge as the door opens; cold light spills over her face.",
+    "hero": true
+   },
+   {
+    "t": 9.54,
+    "say": "Every lunchtime, the",
+    "shot": "Time-lapse: sunlight shifts across the office floor.",
+    "hero": false
+   },
+   {
+    "t": 10.64,
+    "say": "bag is still there, the",
+    "shot": "Inside the fridge: the bag, exactly where she left it.",
+    "hero": false
+   },
+   {
+    "t": 11.86,
+    "say": "box is still there, and the",
+    "shot": "Push into the lunchbox.",
+    "hero": false
+   },
+   {
+    "t": 13.22,
+    "say": "lid is even closed.",
+    "shot": "Macro: the clip-lock lid, neatly shut.",
+    "hero": false
+   },
+   {
+    "t": 14.52,
+    "say": "But inside, there's nothing left except",
+    "shot": "The lid lifts.",
+    "hero": false
+   },
+   {
+    "t": 16.5,
+    "say": "four perfect crusts.",
+    "shot": "100 mm macro: four perfect crusts in an empty box, office bokeh behind.",
+    "hero": true
+   },
+   {
+    "t": 18.3,
+    "say": "Management sends a",
+    "shot": "The manager (bald with sides, moustache) typing hard at his desk.",
+    "hero": false
+   },
+   {
+    "t": 19.26,
+    "say": "stern email about workplace theft. Then a",
+    "shot": "Screen glow on his face, no readable text.",
+    "hero": false
+   },
+   {
+    "t": 22.2,
+    "say": "sterner one. People start",
+    "shot": "He types harder; his coffee ripples.",
+    "hero": false
+   },
+   {
+    "t": 23.72,
+    "say": "glaring at each other over the coffee machine.",
+    "shot": "Orbit at the coffee machine: coworkers glare at each other through backlit steam.",
+    "hero": true
+   },
+   {
+    "t": 26.24,
+    "say": "Gary from Accounts has",
+    "shot": "Gary (curly hair, round glasses) at his desk.",
+    "hero": false
+   },
+   {
+    "t": 27.26,
+    "say": "crumbs on his desk. Gary is now the",
+    "shot": "Macro: crumbs scattered across his keyboard.",
+    "hero": false
+   },
+   {
+    "t": 29.76,
+    "say": "main suspect.",
+    "shot": "Slow dutch-tilt push on Gary with every eye in the room on him.",
+    "hero": false
+   },
+   {
+    "t": 30.72,
+    "say": "Finally, they install a",
+    "shot": "A technician on a ladder in the breakroom.",
+    "hero": false
+   },
+   {
+    "t": 32.08,
+    "say": "security camera. At",
+    "shot": "The new camera in the corner, red light blinking.",
+    "hero": false
+   },
+   {
+    "t": 33.3,
+    "say": "three in the morning, a",
+    "shot": "The office at night: city lights outside, moonlight across empty desks.",
+    "hero": false
+   },
+   {
+    "t": 34.52,
+    "say": "ceiling tile slides open and a",
+    "shot": "Tilt up: a ceiling tile slides aside, dust falls through moonlight.",
+    "hero": true
+   },
+   {
+    "t": 36.6,
+    "say": "raccoon climbs down. It",
+    "shot": "A real-looking raccoon climbs down a cable, eyes catching the light.",
+    "hero": false
+   },
+   {
+    "t": 38.14,
+    "say": "pulls open the fridge,",
+    "shot": "Fridge light floods over the raccoon.",
+    "hero": false
+   },
+   {
+    "t": 39.32,
+    "say": "pops the lid,",
+    "shot": "Close: nimble paws pop the lid.",
+    "hero": false
+   },
+   {
+    "t": 40.22,
+    "say": "eats the filling,",
+    "shot": "The raccoon eats the filling, crusts set aside.",
+    "hero": false
+   },
+   {
+    "t": 41.12,
+    "say": "closes the box, and",
+    "shot": "It snaps the lid shut neatly.",
+    "hero": false
+   },
+   {
+    "t": 42.28,
+    "say": "disappears back into the ceiling.",
+    "shot": "Follow it up into the ceiling and fly through into the dark crawlspace.",
+    "hero": false
+   },
+   {
+    "t": 44.22,
+    "say": "Luckily, Gary was",
+    "shot": "Morning: Gary at his desk, relieved.",
+    "hero": false
+   },
+   {
+    "t": 45.26,
+    "say": "innocent.",
+    "shot": "A sunbeam lands on Gary's smile.",
+    "hero": false
+   },
+   {
+    "t": 45.94,
+    "say": "Unluckily, the thief had better",
+    "shot": "Gary eating messily, crumbs flying.",
+    "hero": false
+   },
+   {
+    "t": 47.6,
+    "say": "table manners than Gary.",
+    "shot": "Up in the ceiling, the raccoon dabs its mouth daintily.",
+    "hero": false
+   },
+   {
+    "t": 49.14,
+    "say": "You see, a raccoon's paws work almost like",
+    "shot": "Macro: a raccoon paw on a surface, fingers spread.",
+    "hero": false
+   },
+   {
+    "t": 51.66,
+    "say": "little hands, and a huge part of its brain is",
+    "shot": "The paw opens and closes, almost human.",
+    "hero": false
+   },
+   {
+    "t": 54.18,
+    "say": "devoted just to touch.",
+    "shot": "Night stream: the raccoon feels pebbles underwater, moonlight on the ripples.",
+    "hero": true
+   },
+   {
+    "t": 55.58,
+    "say": "Over a hundred years ago, a scientist gave raccoons 13",
+    "shot": "1900s lab: wooden puzzle boxes, a scientist in a waistcoat, gas-lamp light.",
+    "hero": false
+   },
+   {
+    "t": 59.12,
+    "say": "complicated locks, and they",
+    "shot": "A row of latched wooden boxes.",
+    "hero": false
+   },
+   {
+    "t": 60.9,
+    "say": "cracked 11 of them. Ever",
+    "shot": "The raccoon pops latch after latch.",
+    "hero": false
+   },
+   {
+    "t": 62.54,
+    "say": "opened a jar in the dark without looking? That's how a",
+    "shot": "Dark kitchen: a hand opens a jar without looking.",
+    "hero": false
+   },
+   {
+    "t": 65.1,
+    "say": "raccoon sees the world,",
+    "shot": "The raccoon feeling its way through the dark.",
+    "hero": false
+   },
+   {
+    "t": 66.52,
+    "say": "through its fingers. To an",
+    "shot": "Macro: a paw on the fridge door seal.",
+    "hero": false
+   },
+   {
+    "t": 67.84,
+    "say": "animal like that, a fridge door held shut by a",
+    "shot": "The raccoon sizing up the fridge.",
+    "hero": false
+   },
+   {
+    "t": 70.38,
+    "say": "magnet is basically an",
+    "shot": "Macro: the magnetic seal peeling open.",
+    "hero": false
+   },
+   {
+    "t": 71.9,
+    "say": "invitation. The office",
+    "shot": "The fridge swings open in warm light, like a welcome.",
+    "hero": false
+   },
+   {
+    "t": 73.12,
+    "say": "fixed the ceiling, and the",
+    "shot": "Maintenance screws the ceiling panel shut.",
+    "hero": false
+   },
+   {
+    "t": 74.5,
+    "say": "emails finally stopped. But",
+    "shot": "The manager leans back, relieved.",
+    "hero": false
+   },
+   {
+    "t": 76.32,
+    "say": "nobody ever looked at Gary the",
+    "shot": "Coworkers throw sideways glances.",
+    "hero": false
+   },
+   {
+    "t": 78.0,
+    "say": "same way again.",
+    "shot": "Slow push on Gary, nervously eating his sandwich.",
+    "hero": false
+   }
+  ]
+ },
+ "roomba": {
+  "title": "The Haunted Roomba",
+  "palette": "Moonlight blue + robot green",
+  "audio": "roomba.mp3",
+  "dur": 74.16,
+  "beats": [
+   {
+    "t": 0.16,
+    "say": "family was convinced their house was",
+    "shot": "Suburban house at night under a full moon. Waist-high dolly up the path.",
+    "hero": true
+   },
+   {
+    "t": 1.98,
+    "say": "haunted because their",
+    "shot": "A curtain drifts in a moonlit window.",
+    "hero": false
+   },
+   {
+    "t": 3.06,
+    "say": "vacuum kept cleaning at",
+    "shot": "The robot vacuum on the floor, green light pulsing.",
+    "hero": false
+   },
+   {
+    "t": 4.52,
+    "say": "three in the morning.",
+    "shot": "An owl on the garden fence, moon high above.",
+    "hero": false
+   },
+   {
+    "t": 5.58,
+    "say": "Every night, while",
+    "shot": "Time-lapse of the moon crossing the sky over the house.",
+    "hero": false
+   },
+   {
+    "t": 6.58,
+    "say": "everyone sleeps, the robot vacuum",
+    "shot": "Glide down the hallway past the sleeping family's open doors.",
+    "hero": false
+   },
+   {
+    "t": 8.76,
+    "say": "switches itself on. It",
+    "shot": "The vacuum beeps awake; dust floats in its light.",
+    "hero": false
+   },
+   {
+    "t": 10.38,
+    "say": "doesn't clean, it",
+    "shot": "It races across the floor.",
+    "hero": false
+   },
+   {
+    "t": 11.46,
+    "say": "slams into the same wall",
+    "shot": "It hits the wall; the camera kicks with the impact.",
+    "hero": false
+   },
+   {
+    "t": 13.02,
+    "say": "over and over.",
+    "shot": "Again and again; a picture frame wobbles.",
+    "hero": false
+   },
+   {
+    "t": 14.18,
+    "say": "By morning, there are",
+    "shot": "Sunrise through the blinds.",
+    "hero": false
+   },
+   {
+    "t": 15.16,
+    "say": "zigzag scuffs across the floor and everything in",
+    "shot": "Top-down: zigzag marks across the floor.",
+    "hero": false
+   },
+   {
+    "t": 18.0,
+    "say": "one corner is knocked over. Like it's",
+    "shot": "A knocked-over plant and spilled books in the corner.",
+    "hero": false
+   },
+   {
+    "t": 19.88,
+    "say": "trying to escape something",
+    "shot": "Low angle on the vacuum in the dark corner, long shadows.",
+    "hero": false
+   },
+   {
+    "t": 21.06,
+    "say": "only it can see. They",
+    "shot": "An empty dark hallway, curtains breathing.",
+    "hero": false
+   },
+   {
+    "t": 22.66,
+    "say": "check the schedule, nothing, they",
+    "shot": "Dad (bald, beard) frowning at his phone, the glow on his face.",
+    "hero": false
+   },
+   {
+    "t": 24.26,
+    "say": "reset it, it",
+    "shot": "Mom (bun) presses the reset button.",
+    "hero": false
+   },
+   {
+    "t": 25.1,
+    "say": "happens again. So",
+    "shot": "Night again: the vacuum's light flicks on.",
+    "hero": false
+   },
+   {
+    "t": 26.32,
+    "say": "one night, they turn off the lights,",
+    "shot": "The family switches off the lights.",
+    "hero": false
+   },
+   {
+    "t": 27.88,
+    "say": "hide on the stairs,",
+    "shot": "The family peeks between the banisters, including the kid with braids.",
+    "hero": true
+   },
+   {
+    "t": 29.32,
+    "say": "and wait.",
+    "shot": "A slow creep in on their moonlit faces.",
+    "hero": false
+   },
+   {
+    "t": 30.04,
+    "say": "3 AM, the",
+    "shot": "The owl turns its head outside.",
+    "hero": false
+   },
+   {
+    "t": 31.04,
+    "say": "vacuum beeps. And there,",
+    "shot": "The green light blinks on.",
+    "hero": false
+   },
+   {
+    "t": 33.44,
+    "say": "sitting on top of it like a tiny",
+    "shot": "Crane around to reveal the rider.",
+    "hero": false
+   },
+   {
+    "t": 35.14,
+    "say": "furry captain",
+    "shot": "Orbit the cat riding the vacuum, moonlight rim on its fur.",
+    "hero": true
+   },
+   {
+    "t": 36.02,
+    "say": "is the cat.",
+    "shot": "Close on the cat's smug face.",
+    "hero": false
+   },
+   {
+    "t": 37.24,
+    "say": "Luckily, the house",
+    "shot": "The family bursts out laughing.",
+    "hero": false
+   },
+   {
+    "t": 38.18,
+    "say": "wasn't haunted.",
+    "shot": "Lights on: a cozy living room.",
+    "hero": false
+   },
+   {
+    "t": 39.2,
+    "say": "Unluckily, the ghost still expected",
+    "shot": "Dawn in the kitchen.",
+    "hero": false
+   },
+   {
+    "t": 41.14,
+    "say": "breakfast at six.",
+    "shot": "The cat meows into sleeping dad's face, dawn light.",
+    "hero": false
+   },
+   {
+    "t": 42.5,
+    "say": "You see, robot vacuums have a",
+    "shot": "Macro across the top of the robot.",
+    "hero": false
+   },
+   {
+    "t": 44.22,
+    "say": "big button right on top and one pause",
+    "shot": "The big button.",
+    "hero": false
+   },
+   {
+    "t": 46.7,
+    "say": "all it takes to start a",
+    "shot": "A paw presses it.",
+    "hero": false
+   },
+   {
+    "t": 48.16,
+    "say": "cleaning run.",
+    "shot": "The vacuum starts with the cat aboard.",
+    "hero": false
+   },
+   {
+    "t": 48.94,
+    "say": "Cats are naturally most active in the dark when they'd normally be",
+    "shot": "The cat's eyes glowing in the dark garden.",
+    "hero": false
+   },
+   {
+    "t": 52.18,
+    "say": "out hunting and most of these robots",
+    "shot": "The cat stalks through moonlit grass swaying in the wind.",
+    "hero": true
+   },
+   {
+    "t": 53.96,
+    "say": "don't really see walls. They find them by",
+    "shot": "Low robot-eye view rushing at a wall.",
+    "hero": false
+   },
+   {
+    "t": 56.48,
+    "say": "bumping into them and",
+    "shot": "Bump.",
+    "hero": false
+   },
+   {
+    "t": 57.48,
+    "say": "turning away. It's like",
+    "shot": "Turn.",
+    "hero": false
+   },
+   {
+    "t": 58.7,
+    "say": "walking through your house at night with your arms out.",
+    "shot": "Someone walks a dark hallway with arms out.",
+    "hero": false
+   },
+   {
+    "t": 61.12,
+    "say": "Bump, turn, bump, turn. With a",
+    "shot": "Bumping into furniture.",
+    "hero": false
+   },
+   {
+    "t": 63.06,
+    "say": "cat leaning on one side, every turn bends the",
+    "shot": "Top-down: the cat leans to one side.",
+    "hero": false
+   },
+   {
+    "t": 65.92,
+    "say": "same way, straight into the",
+    "shot": "Its curved path traced across the floor.",
+    "hero": false
+   },
+   {
+    "t": 67.7,
+    "say": "same corner. So the family did what any",
+    "shot": "It lands in the corner again.",
+    "hero": false
+   },
+   {
+    "t": 70.08,
+    "say": "reasonable people would do. They didn't",
+    "shot": "The family conferring around the kitchen table.",
+    "hero": false
+   },
+   {
+    "t": 71.82,
+    "say": "get rid of the cat, they",
+    "shot": "The kid hugs the cat protectively.",
+    "hero": false
+   },
+   {
+    "t": 73.14,
+    "say": "moved the furniture.",
+    "shot": "Time-lapse: furniture rearranged into a racetrack as morning sun sweeps the room.",
+    "hero": true
+   }
+  ]
+ },
+ "croissant": {
+  "title": "The Croissant in the Tree",
+  "palette": "Krak\u00f3w golden morning + leafy green",
+  "audio": "croissant.mp3",
+  "dur": 75.88,
+  "beats": [
+   {
+    "t": 0.0,
+    "say": "In 2021,",
+    "shot": "Aerial over Krak\u00f3w's Old Town at golden morning: basilica spires, pigeons wheeling.",
+    "hero": true
+   },
+   {
+    "t": 1.3,
+    "say": "animal rescuers in Poland were called out to catch a",
+    "shot": "The animal welfare van rolls down a cobbled street.",
+    "hero": false
+   },
+   {
+    "t": 4.04,
+    "say": "dangerous creature that turned out to be",
+    "shot": "A dark shape among leaves, ominous.",
+    "hero": false
+   },
+   {
+    "t": 6.32,
+    "say": "breakfast.",
+    "shot": "Caf\u00e9 table: a fresh croissant, steam rising.",
+    "hero": false
+   },
+   {
+    "t": 7.22,
+    "say": "It's Krakow, and a",
+    "shot": "An apartment courtyard full of tall trees.",
+    "hero": false
+   },
+   {
+    "t": 8.38,
+    "say": "woman stares out",
+    "shot": "The woman (grey curly hair, cardigan) behind a lace curtain.",
+    "hero": false
+   },
+   {
+    "t": 9.24,
+    "say": "her window at something",
+    "shot": "Over her shoulder through the curtain toward the tree.",
+    "hero": false
+   },
+   {
+    "t": 10.16,
+    "say": "brown and wrinkled",
+    "shot": "Slow push on the dark shape in the branches.",
+    "hero": false
+   },
+   {
+    "t": 11.42,
+    "say": "sitting in a tree. It has",
+    "shot": "Wide: the whole tree rustling in the wind.",
+    "hero": false
+   },
+   {
+    "t": 12.88,
+    "say": "no head, it has",
+    "shot": "Close on the shape: no head.",
+    "hero": false
+   },
+   {
+    "t": 13.94,
+    "say": "no legs, and it hasn't moved for",
+    "shot": "Tilt down: no legs.",
+    "hero": false
+   },
+   {
+    "t": 15.9,
+    "say": "two whole days. The",
+    "shot": "Time-lapse day, night, day over the tree, clouds racing.",
+    "hero": true
+   },
+   {
+    "t": 17.36,
+    "say": "neighbors are keeping their",
+    "shot": "Neighbours peering from their windows.",
+    "hero": false
+   },
+   {
+    "t": 18.24,
+    "say": "windows shut just in case it",
+    "shot": "Windows slam, curtains snap closed.",
+    "hero": false
+   },
+   {
+    "t": 19.96,
+    "say": "flies inside.",
+    "shot": "Imagined: the shape launches at a window.",
+    "hero": false
+   },
+   {
+    "t": 21.02,
+    "say": "So she calls the city's",
+    "shot": "She makes a call on her phone.",
+    "hero": false
+   },
+   {
+    "t": 22.3,
+    "say": "animal welfare society. This could be an",
+    "shot": "The rescue office: staff answering phones.",
+    "hero": false
+   },
+   {
+    "t": 24.44,
+    "say": "escaped reptile, an",
+    "shot": "Imagined: an iguana in the branches.",
+    "hero": false
+   },
+   {
+    "t": 25.72,
+    "say": "exotic bird, maybe something",
+    "shot": "Imagined: a parrot.",
+    "hero": false
+   },
+   {
+    "t": 27.26,
+    "say": "venomous. An",
+    "shot": "Imagined: a hissing snake.",
+    "hero": false
+   },
+   {
+    "t": 28.24,
+    "say": "inspector shows up",
+    "shot": "The inspector (short crop, beard, uniform) steps out of the van.",
+    "hero": false
+   },
+   {
+    "t": 29.28,
+    "say": "ready for anything.",
+    "shot": "His gear: net, catch pole, thick gloves.",
+    "hero": false
+   },
+   {
+    "t": 30.62,
+    "say": "Gloves on,",
+    "shot": "He snaps the gloves on.",
+    "hero": false
+   },
+   {
+    "t": 31.46,
+    "say": "ladder up.",
+    "shot": "The ladder goes up against the tree.",
+    "hero": false
+   },
+   {
+    "t": 32.4,
+    "say": "Slowly, carefully, he reaches",
+    "shot": "He climbs; the camera rises alongside him.",
+    "hero": false
+   },
+   {
+    "t": 34.34,
+    "say": "into the branches and",
+    "shot": "His hand slides into trembling leaves.",
+    "hero": false
+   },
+   {
+    "t": 35.58,
+    "say": "pulls out a croissant.",
+    "shot": "Rack focus from the leaves to a croissant in his glove, sun flaring behind.",
+    "hero": true
+   },
+   {
+    "t": 37.38,
+    "say": "Luckily,",
+    "shot": "The inspector grins.",
+    "hero": false
+   },
+   {
+    "t": 38.08,
+    "say": "nobody got bitten.",
+    "shot": "The woman at her window, relieved.",
+    "hero": false
+   },
+   {
+    "t": 39.24,
+    "say": "Unluckily, it had been out there so long that nobody wanted to",
+    "shot": "Macro: the croissant, stale and cracked.",
+    "hero": false
+   },
+   {
+    "t": 42.34,
+    "say": "bite it either.",
+    "shot": "He taps it: hard as a rock.",
+    "hero": false
+   },
+   {
+    "t": 43.4,
+    "say": "You see, your brain is a",
+    "shot": "The woman looks up at the clouds.",
+    "hero": false
+   },
+   {
+    "t": 44.86,
+    "say": "pattern -finding machine, and when it isn't sure what it's looking at, it",
+    "shot": "Real clouds drift into an animal shape.",
+    "hero": false
+   },
+   {
+    "t": 48.38,
+    "say": "guesses animal first. For",
+    "shot": "A knot in tree bark that looks like a face.",
+    "hero": false
+   },
+   {
+    "t": 50.12,
+    "say": "our ancestors, mistaking a",
+    "shot": "Prehistoric savanna at dusk: early humans in tall grass rippling in the wind.",
+    "hero": true
+   },
+   {
+    "t": 51.8,
+    "say": "stick for a snake was harmless. Mistaking a",
+    "shot": "A stick on the path; the ancestor jumps back.",
+    "hero": false
+   },
+   {
+    "t": 54.2,
+    "say": "snake for a stick was not. Ever",
+    "shot": "This time it really is a snake.",
+    "hero": false
+   },
+   {
+    "t": 56.42,
+    "say": "woken up at night and seen someone standing in your room and it was just your",
+    "shot": "A dark bedroom with a figure in the corner.",
+    "hero": false
+   },
+   {
+    "t": 60.04,
+    "say": "coat on a chair? Same thing, but",
+    "shot": "The light snaps on: just a coat on a chair.",
+    "hero": false
+   },
+   {
+    "t": 62.56,
+    "say": "with pastry. Somebody had simply",
+    "shot": "Back to the croissant in the tree.",
+    "hero": false
+   },
+   {
+    "t": 64.42,
+    "say": "tossed it out of a window and the",
+    "shot": "Someone tosses a croissant out of a window; it arcs into the branches.",
+    "hero": false
+   },
+   {
+    "t": 66.12,
+    "say": "rescuers weren't even annoyed. They said she did exactly the",
+    "shot": "The rescue team laughing in the van.",
+    "hero": false
+   },
+   {
+    "t": 69.18,
+    "say": "right thing by calling. So the",
+    "shot": "The inspector gives the woman a thumbs-up.",
+    "hero": false
+   },
+   {
+    "t": 70.82,
+    "say": "wildest animal in Krakow that week was",
+    "shot": "The croissant on an evidence tray under a museum spotlight.",
+    "hero": true
+   },
+   {
+    "t": 72.92,
+    "say": "safely captured and the",
+    "shot": "The croissant inside a transport cage.",
+    "hero": false
+   },
+   {
+    "t": 74.3,
+    "say": "only victim was the croissant.",
+    "shot": "A pigeon pecks at it. End.",
+    "hero": false
+   }
+  ]
+ }
+}

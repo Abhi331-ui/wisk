@@ -1,0 +1,74 @@
+<div class="wrap">
+  <header>
+    <h1>Shorts Animatic Room</h1>
+    <p>Each short's camera plan, timed to your trimmed voice-over. Press play: the panel shows the shot the camera is on at that moment, and gold marks are hero shots. Silence is already removed from every take.</p>
+  </header>
+  <section class="notes" aria-label="Notes before approval">
+    <div class="note"><b>Length</b>After silence removal the takes run 74–80 s. The target is 55–70 s, so they need about 1.12× speed or a few cut lines.</div>
+    <div class="note"><b>Take 1 opening</b>The voice reads "BBC convinced half of Britain… It's April 1957 the first". The year moved and "In 1957, the" is missing. Regenerating just the first two lines fixes it.</div>
+    <div class="note"><b>Missing</b>No voice-over yet for <em>The Bloop</em>. Its plan is ready to time as soon as the take arrives.</div>
+  </section>
+  <nav class="tabs" role="tablist" id="tabs" aria-label="Choose a short"></nav>
+  <section class="monitor" aria-label="Now on camera">
+    <div class="mtop">
+      <button class="ctl" id="play" type="button">▶ Play</button>
+      <span class="tc" id="tc">0:00.0 / 0:00</span>
+      <span class="pal" id="pal"></span>
+    </div>
+    <div class="now">
+      <div class="frame" aria-hidden="true"><div><strong id="bn">1</strong>of <span id="bt">0</span></div></div>
+      <div class="info">
+        <span class="tag" id="tag">Beat</span>
+        <p class="shot" id="shot"></p>
+        <p class="say" id="say"></p>
+      </div>
+    </div>
+    <div class="strip" id="strip" role="slider" aria-label="Seek" tabindex="0" aria-valuemin="0"><div class="fill" id="fill"></div><div class="head" id="head"></div></div>
+    <div class="legend"><span><i style="background:var(--muted)"></i>Camera beat</span><span><i style="background:var(--hero)"></i>Hero shot</span><span><i style="background:var(--tally)"></i>Playhead</span></div>
+  </section>
+  <section class="list" id="list" aria-label="Full shot list"></section>
+</div>
+<audio id="au" preload="auto"></audio>
+<script>
+const DATA = __DATA__;
+const ORDER = ["spaghetti","sandwich","bloop","roomba","croissant"];
+const $ = id => document.getElementById(id);
+const au = $("au"); let cur = null, idx = -1;
+const fmt = (s, d=1) => { const m = Math.floor(s/60), r = s - m*60; return m + ":" + (r < 10 ? "0" : "") + r.toFixed(d); };
+function tabs(){
+  $("tabs").innerHTML = "";
+  ORDER.forEach(k => {
+    const b = document.createElement("button"); b.className = "tab"; b.type = "button"; b.setAttribute("role","tab");
+    if (!DATA[k]) { b.classList.add("missing"); b.disabled = true; b.innerHTML = 'The Bloop<span class="len">waiting for voice</span>'; }
+    else { b.innerHTML = DATA[k].title + '<span class="len">' + Math.round(DATA[k].dur) + ' s</span>'; b.onclick = () => load(k); }
+    b.setAttribute("aria-selected", k === cur); $("tabs").appendChild(b);
+  });
+}
+function load(k){
+  cur = k; idx = -1; const v = DATA[k]; au.pause(); au.src = v.audio; $("play").textContent = "▶ Play";
+  $("pal").textContent = "Palette: " + v.palette; $("bt").textContent = v.beats.length;
+  const st = $("strip"); st.querySelectorAll(".tick").forEach(e => e.remove());
+  v.beats.forEach(b => { const t = document.createElement("div"); t.className = "tick" + (b.hero ? " hero" : ""); t.style.left = (b.t / v.dur * 100) + "%"; st.appendChild(t); });
+  $("list").innerHTML = v.beats.map((b,i) => '<button type="button" class="row' + (b.hero ? ' hero' : '') + '" data-i="' + i + '"><span class="t">' + fmt(b.t) + '</span><span class="s"><div>' + b.shot + '</div><small>“' + b.say + '”</small></span></button>').join("");
+  $("list").querySelectorAll(".row").forEach(r => r.onclick = () => { au.currentTime = v.beats[+r.dataset.i].t + .01; show(au.currentTime); au.play().catch(()=>{}); });
+  tabs(); show(0);
+}
+function show(t){
+  const v = DATA[cur]; let i = 0; while (i + 1 < v.beats.length && v.beats[i+1].t <= t) i++;
+  const p = Math.min(1, t / v.dur) * 100; $("head").style.left = p + "%"; $("fill").style.width = p + "%";
+  $("tc").textContent = fmt(t) + " / " + fmt(v.dur, 0); $("strip").setAttribute("aria-valuenow", Math.round(t));
+  if (i === idx) return; idx = i; const b = v.beats[i];
+  $("bn").textContent = i + 1; $("shot").textContent = b.shot; $("say").textContent = "“" + b.say + "”";
+  $("tag").textContent = b.hero ? "Hero shot · " + fmt(b.t) : "Beat · " + fmt(b.t); $("tag").className = "tag" + (b.hero ? " hero" : "");
+  document.querySelectorAll(".row.on").forEach(r => r.classList.remove("on"));
+  const r = document.querySelector('.row[data-i="' + i + '"]'); if (r) { r.classList.add("on"); if (!au.paused) r.scrollIntoView({block:"nearest"}); }
+}
+$("play").onclick = () => { if (au.paused) au.play().catch(()=>{}); else au.pause(); };
+au.onplay = () => $("play").textContent = "❚❚ Pause"; au.onpause = () => $("play").textContent = "▶ Play";
+au.ontimeupdate = () => show(au.currentTime);
+(function loop(){ if (!au.paused) show(au.currentTime); requestAnimationFrame(loop); })();
+function seek(e){ const r = $("strip").getBoundingClientRect(); au.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * DATA[cur].dur; show(au.currentTime); }
+$("strip").onclick = seek;
+$("strip").onkeydown = e => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { au.currentTime = Math.max(0, au.currentTime + (e.key === "ArrowRight" ? 2 : -2)); show(au.currentTime); e.preventDefault(); } };
+load("spaghetti");
+</script>
