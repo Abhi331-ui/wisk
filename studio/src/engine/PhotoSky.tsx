@@ -15,7 +15,8 @@ export const PhotoSky: React.FC<{name: string; grounded?: number; radius?: numbe
   const tex = useAsset('bg:' + name, () => loadBG(name));
   const mesh = useMemo(() => {
     if (!tex) return null;
-    const m = grounded ? new GroundedSkybox(tex, grounded, radius, 128) : new THREE.Mesh(new THREE.SphereGeometry(radius, 96, 48), new THREE.MeshBasicMaterial({map: tex, side: THREE.BackSide}));
+    // same orientation convention as three's equirect environment lookup (GroundedSkybox already uses it)
+    const m = grounded ? new GroundedSkybox(tex, grounded, radius, 128) : new THREE.Mesh(new THREE.SphereGeometry(radius, 128, 64).scale(1, 1, -1), new THREE.MeshBasicMaterial({map: tex}));
     const mat = m.material as THREE.MeshBasicMaterial;
     if (!grounded) { tex.mapping = THREE.UVMapping; }
     mat.fog = false; mat.depthWrite = false; mat.toneMapped = false;

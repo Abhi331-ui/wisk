@@ -29,3 +29,23 @@ Beats (camera plan): `../shorts/preview/beats.py` → `data/<video>.beats.json` 
 - [ ] Spaghetti stills review → full render → sound mix → QA
 - [ ] Sandwich, Roomba, Croissant (reuse engine)
 - [ ] Bloop (waiting for voice-over)
+
+## NEW WORKFLOW (user, 2026-11-16): design every element one by one, super realistic, send a still, wait for approval
+- Non-living objects/places are DESIGNED IN BLENDER (Cycles stills for approval). Characters stay our 2D cards (toon.ts + hair + glow).
+- Blender 4.0.2 (apt). No OIDN in this build → no denoiser; use 512 spp + adaptive sampling. Scripts in design/*.py, outputs design/*.png/.blend.
+- Element list, video 1 (spaghetti), in shot order — status:
+  1. 1957 television set (design/tv1957.py) — in review
+  2. Front room 1957 (fireplace, sofa, armchair, lamp, window, curtains)
+  3. Terraced house exterior (brick, sash windows, door, roof, chimney)
+  4. London street at sunset (road, lamps, telephone poles, wires)
+  5. Rooftops + city to the horizon (aerial)
+  6. Swiss meadow + Alps + village
+  7. Spaghetti tree (hero)
+  8. Drying racks + wicker baskets
+  9. Hallway + rotary telephone
+  10. BBC switchboard room
+  11. Kitchen, pantry, tin of spaghetti on the stove
+  12. Crystal Palace transmitter mast at night
+  13. Rainy windowsill + tin with a sprig of spaghetti
+  14. Rainy back garden
+  15. 1950s film camera + crew props (April Fool reveal)
