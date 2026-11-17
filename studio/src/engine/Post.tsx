@@ -56,10 +56,10 @@ class WhipBlur extends Effect {
   }
 }
 
-export type PostProps = {focus: number; bokeh: number; whip: number; exposure?: number; bloom?: number; vignette?: number; sharpen?: boolean;
+export type PostProps = {focus: number; focusRange?: number; bokeh: number; whip: number; exposure?: number; bloom?: number; vignette?: number; sharpen?: boolean;
   /** screen-space ambient occlusion (N8AO): radius in metres, intensity */ ao?: {radius: number; intensity: number; falloff?: number};
   /** bright painted anime-background look (Kuwahara + ink outlines + saturated grade) */ anime?: {ink?: number; sat?: number}};
-export const Post: React.FC<PostProps> = ({focus, bokeh, whip, bloom = 0.5, vignette = 0.32, exposure = 1, ao, anime}) => {
+export const Post: React.FC<PostProps> = ({focus, focusRange, bokeh, whip, bloom = 0.5, vignette = 0.32, exposure = 1, ao, anime}) => {
   const {gl, scene, camera, size} = useThree();
   const fx = useMemo(() => {
     console.log('POST BUILD', Date.now());
@@ -87,13 +87,14 @@ export const Post: React.FC<PostProps> = ({focus, bokeh, whip, bloom = 0.5, vign
     let animeE: AnimeLook | null = null;
     if (anime) { animeE = new AnimeLook(); (animeE.uniforms.get('ink') as THREE.Uniform).value = anime.ink ?? 0.85; (animeE.uniforms.get('sat') as THREE.Uniform).value = anime.sat ?? 1.3;
       (animeE.uniforms.get('texel') as THREE.Uniform).value.set(1 / size.width, 1 / size.height); composer.addPass(new EffectPass(camera, animeE)); }
-    return {composer, dof, whipE, tone};
+    return {composer, dof, whipE, tone, animeE};
   }, []);
   useEffect(() => { fx.composer.setSize(size.width, size.height); }, [size.width, size.height]);
   // DOF in world units: focus distance (m) and bokeh scale (px-ish at 1080)
   const c = camera as THREE.PerspectiveCamera;
   fx.dof.cocMaterial.worldFocusDistance = Math.max(0.2, focus);
-  fx.dof.cocMaterial.worldFocusRange = Math.max(0.3, focus * 0.35);
+  fx.dof.cocMaterial.worldFocusRange = focusRange ?? Math.max(0.3, focus * 0.35);
+  if (fx.animeE && anime) (fx.animeE.uniforms.get('ink') as THREE.Uniform).value = anime.ink ?? 0.85;
   fx.dof.bokehScale = bokeh * (size.height / 1920);
   (fx.whipE.uniforms.get('amount') as THREE.Uniform).value = Math.pow(Math.abs(whip), 1.6) * 0.06;
   (fx.tone.uniforms.get('exposure') as THREE.Uniform).value = exposure;

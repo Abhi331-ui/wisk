@@ -80,9 +80,9 @@ const RoomWorld: React.FC<{t: number; beat: number; visible: boolean; bc: Return
       <pointLight position={[-RW / 2 + 0.55, 0.3, 0.05]} color="#ff6a28" intensity={visible ? 2.6 * fl : 0} distance={5} decay={2} />
       <rectAreaLight position={[0, 1.58, -RD / 2 + 0.02]} color="#8ea4e8" intensity={visible ? 4.2 : 0} width={1.6} height={1.55} onUpdate={(l: any) => l.lookAt(0, 1.2, 0)} />
       {fam && visible && <>
-        <Card id="dad" at={[SOFA.x - 0.52, 0, SOFA.z - 0.55]} height={1.75} glowK={0.4} draw={(p) => bodyFront(p, {jacket: '#6b5a3a', pants: '#3d4440', boots: '#2a201a', moustache: '#4a3020', hairStyle: 'sidepart', hairColor: '#4a3020'}, {mode: 'sit', expr: 'shock', facing: -1, seed: 9, sway, blink: blink(1), look: -0.6})} />
-        <Card id="mum" at={[SOFA.x - 0.52, 0, SOFA.z + 0.05]} height={1.65} glowK={0.4} draw={(p) => bodyFront(p, {jacket: '#9a3a4a', pants: '#3b3f52', boots: '#5a3b2a', dress: '#b84a5a', hairStyle: 'curly', hairColor: '#6a3a1e'}, {mode: 'sit', expr: 'smile', facing: -1, seed: 4, sway: sway * 1.3, blink: blink(2), look: -0.6})} />
-        <Card id="girl" at={[SOFA.x - 0.54, 0, SOFA.z + 0.62]} height={1.2} glowK={0.4} draw={(p) => bodyFront(p, {jacket: '#e2453c', pants: '#3b5b9a', boots: '#f4f1ea', dress: '#d9a441', build: 'kid', hairStyle: 'braids', hairColor: '#8a5a2b'}, {mode: 'sit', expr: 'grin', facing: -1, seed: 2, sway: sway * 1.6, blink: blink(3), look: -0.6})} />
+        <Card id="dad" at={[SOFA.x - 0.52, 0, SOFA.z - 0.55]} height={1.75} glowK={0} lit={{side: -1, color: "#dfe8ff", k: 0.42 * fl, rim: 0.65}} draw={(p) => bodyFront(p, {jacket: '#6b5a3a', pants: '#3d4440', boots: '#2a201a', moustache: '#4a3020', hairStyle: 'sidepart', hairColor: '#4a3020'}, {mode: 'sit', expr: 'shock', facing: -1, seed: 9, sway, blink: blink(1), look: -0.6})} />
+        <Card id="mum" at={[SOFA.x - 0.52, 0, SOFA.z + 0.05]} height={1.65} glowK={0} lit={{side: -1, color: "#dfe8ff", k: 0.42 * fl, rim: 0.65}} draw={(p) => bodyFront(p, {jacket: '#9a3a4a', pants: '#3b3f52', boots: '#5a3b2a', dress: '#b84a5a', hairStyle: 'curly', hairColor: '#6a3a1e'}, {mode: 'sit', expr: 'smile', facing: -1, seed: 4, sway: sway * 1.3, blink: blink(2), look: -0.6})} />
+        <Card id="girl" at={[SOFA.x - 0.54, 0, SOFA.z + 0.62]} height={1.2} glowK={0} lit={{side: -1, color: "#dfe8ff", k: 0.42 * fl, rim: 0.65}} draw={(p) => bodyFront(p, {jacket: '#e2453c', pants: '#3b5b9a', boots: '#f4f1ea', dress: '#d9a441', build: 'kid', hairStyle: 'braids', hairColor: '#8a5a2b'}, {mode: 'sit', expr: 'grin', facing: -1, seed: 2, sway: sway * 1.6, blink: blink(3), look: -0.6})} />
       </>}
     </group>
   );
@@ -120,8 +120,8 @@ export const SpaghettiOpening: React.FC = () => {
         {room && <color attach="background" args={['#000']} />}
         <RoomWorld t={t} beat={s.beat} visible={room} bc={bc} />
         <CityWorld visible={!room} />
-        <Post focus={s.focus || 2} bokeh={chars ? 8 : room ? 0.6 : 0} whip={s.whip} bloom={0.5} vignette={0.24}
-          ao={room ? {radius: 0.4, intensity: 1.6} : {radius: 1.2, intensity: 1.4}} exposure={room ? 1.15 : 1.0} anime={ANIME_POST} />
+        <Post focus={s.focus || 2} focusRange={chars ? 1.3 : undefined} bokeh={chars ? 16 : room ? 0.6 : 0} whip={s.whip} bloom={0.5} vignette={0.24}
+          ao={chars ? undefined : room ? {radius: 0.4, intensity: 1.6} : {radius: 1.2, intensity: 1.4}} exposure={room ? 1.15 : 1.0} anime={chars ? {...ANIME_POST, ink: 0} : ANIME_POST} />
       </ThreeCanvas>
       <Audio src={staticFile('audio/spaghetti_opening_mix.wav')} />
     </>
