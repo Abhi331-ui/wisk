@@ -20,7 +20,7 @@ User rules that apply:
 - English only.
 - Voice: energetic and playful. Use ElevenLabs v3 tags like [excited], [playful], [mischievously], [cheerfully], [amazed], [sarcastic], [chuckles]. Never use [pause], [thoughtful], [sighs], [hesitates], [whispers], "..." or dashes, because they add silence.
 - **Always remove silence from a voice-over the user sends** (see Pipeline step 3).
-- **Camera follows the words:** every concrete word in the script drives the camera. "Trees" means the camera moves to the trees, "clouds" means it moves to the clouds. The camera never stops moving, sits at the characters' waist height, and lands on a new subject every ~1.5 s. Characters glow. See "Word-driven camera" below.
+- **Camera follows the words:** every concrete word in the script drives the camera. "Trees" means the camera moves to the trees, "clouds" means it moves to the clouds. The camera never stops moving, sits at the characters' waist height, and lands on a new subject every ~1.5 s. Characters glow, meaning light falls on their body, never an outer halo. See "Word-driven camera" below.
 - **Stunning shots are the goal.** The user gives unlimited time for quality. Every frame should be good enough to be a wallpaper. Spend the time on more local still iterations (cheap), not on more agents or voice credits. See "Stunning shot standard" below.
 - **Budget mode (the user is on a tight budget):** follow "Credit-saving rules" below on every video.
 - Jokes are researched real facts.
@@ -31,7 +31,7 @@ User rules that apply:
 - "Just do it" once the script is approved.
 - **Ultra-realistic world:** every environment element (sky, clouds, sunlight, trees, grass, terrain, water, birds, animals, cars, ships, wind, motion, physics) must look super realistic and highly detailed. See "Ultra-realistic world and script-matched scenes" below. It overrides any conflicting "painted/storybook" value later in this file.
 - **The whole world is real, all the way to the horizon.** Nothing is skipped because it's far from the camera. Distant mountains, cities, forests, sea, sky and crowds are fully built and life-like. See "Full world, no shortcuts" below.
-- **Characters in shot = blurred background (user rule).** Whenever a character is on screen, focus the lens on the character (eyes / face distance) and blur everything behind them with a shallow depth of field (bokeh ~6-12 px at 1080 wide, stronger the closer the character). Shots with no characters (wides, rooftops, establishing, object inserts) stay sharp or only lightly blurred.
+- **Characters in shot = blurred background (user rule).** Whenever a character is on screen, focus the lens on the character (eyes / face distance) and blur everything behind them with a shallow depth of field (bokeh ~6-12 px at 1080 wide, stronger the closer the character). Shots with no characters (wides, rooftops, establishing, object inserts) stay sharp or only lightly blurred. Gotchas: N8AO (ao) breaks the DOF depth, so turn ao off on character shots; set Post focusRange to cover all characters (about 1.3 m) and bokeh ~16; set the anime ink to 0 on those shots or the depth lines stay sharp over the blur.
 - **Characters have hair.** Every character gets a hairstyle suited to their role, age and era. Hair moves.
 - **Everything matches the script.** Every setting, prop, vehicle, animal, weather, time of day and action comes from the script of THIS video. Never reuse the bridge town or props unless the script calls for them.
 
@@ -143,10 +143,11 @@ pre-fractured meshes; cloth (flags, sails) via verlet; particles (splashes, debr
    cats and raccoons: waist of the subject in frame), looking level or slightly up, framing waist-up on characters.
    Go higher only when the word demands it (a word about clouds, sky, birds, rooftops, an aerial establishing line):
    crane up to it, then come back down to waist height for the next character beat.
-5. **Characters glow.** Every character card gets a soft glow: a blurred halo of the card's silhouette (Gaussian ~12-20 px at
-   1080, opacity .35-.5, warm white by day / peach at golden / cool at night) behind the card, plus a subtle inner
-   rim light. It must be a SOFT blurred halo, never a hard offset copy of the outline (that reads as a picture frame).
-   Brighten it a little on the character's key word. The glow lives on the card layer, so world ink/blur don't touch it.
+5. **Characters glow = light falling ON them (user rule, 2026-11-17).** NOT an outer halo around the card (the user
+   rejected that hard: "their whole body will glow like some light is falling on them, not the outer glow"). Use
+   Card `lit={{side, color, k, rim}}` with glowK={0}: the body is brightened by a key light from the motivated source side
+   (TV, window, sun), colours stay rich, plus a soft rim band just INSIDE the ink line on the lit side. Flicker k with the
+   source (TV). Brighten it a little on the character's key word.
 
 ## Stunning shot standard (every camera beat must pass)
 **Composition**
@@ -344,6 +345,6 @@ lighting 5-6, ink 6, textures 5-6, characters 7, depth 6-7, composition 6-7 (fro
 - A foreground bush cut by the frame edge reads as a "green ball"; a foreground prop must be recognisable or gone.
 - Flags: red + yellow star/diamond reads as Vietnam's. Use a period-correct flag (St George's cross for England 1831).
 - Painted signs lit by a side sun go grey-blue and unreadable: give the sign face an unlit material.
-- Golden rim light done as an offset outer copy turns every hat into a picture frame: inner rim + the soft blurred glow halo only.
+- Golden rim light done as an offset outer copy turns every hat into a picture frame: inner rim only, no outer halo.
 - Balcony/railing rails at chest height through characters: put the lens ~2.5 m up so rails cross legs, not torsos.
 - Flat holds read as freezes in QA (frozen span ≥12 f): every hold needs a creeping push-in.
