@@ -60,9 +60,9 @@ function paint(key: string, draw: Draw, scale: number, glowPx: number, lit?: Lit
 export type CardProps = {
   id: string; draw: Draw; at: [number, number, number]; height?: number; scale?: number;
   /** light tint multiplied into the card (set lighting); glow colour/strength */
-  tint?: string; glow?: string; glowK?: number; lit?: Lit; shadow?: boolean; face?: 'camera' | number; flip?: boolean;
+  tint?: string; glow?: string; glowK?: number; lit?: Lit; /** HDR self-brightness (>1 makes the whites bloom softly) */ bright?: number; shadow?: boolean; face?: 'camera' | number; flip?: boolean;
 };
-export const Card: React.FC<CardProps> = ({id, draw, at, height = 1.8, scale = 1.4, tint = '#ffffff', glow = '#fff4dc', glowK = 0.45, lit, shadow = true, face = 'camera', flip}) => {
+export const Card: React.FC<CardProps> = ({id, draw, at, height = 1.8, scale = 1.4, tint = '#ffffff', glow = '#fff4dc', glowK = 0.45, lit, bright = 1, shadow = true, face = 'camera', flip}) => {
   const {camera} = useThree();
   const e = paint(id, draw, scale, 16 * scale, lit);
   const k = height / 1000; // design units → metres
@@ -73,7 +73,7 @@ export const Card: React.FC<CardProps> = ({id, draw, at, height = 1.8, scale = 1
     glow: new THREE.MeshBasicMaterial({map: e.gtex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false}),
     blob: new THREE.MeshBasicMaterial({color: '#000000', transparent: true, opacity: 0.45, depthWrite: false, map: blobTex()}),
   }), [id]);
-  mats.card.color.set(tint); mats.glow.color.set(glow).multiplyScalar(glowK);
+  mats.card.color.set(tint).multiplyScalar(bright); mats.glow.color.set(glow).multiplyScalar(glowK);
   const sx = flip ? -1 : 1;
   return (
     <group position={at} rotation={[0, yaw, 0]}>

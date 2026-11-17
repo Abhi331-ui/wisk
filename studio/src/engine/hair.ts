@@ -85,6 +85,9 @@ export const hairFront = (p: Pen, st: HairStyle, col: string, hp: P2[], H: Blob,
   // highlight sheen + strand lines that follow the part
   p.clip(cap, () => {
     p.arc(cx - side * a * 0.1, crown + b * 0.28, a * 0.55, b * 0.16, 200, 300, 6 * u, T.light);
+    // glossy shine (reference look): a wide soft sheen band + a bright specular streak along the crown
+    p.arc(cx - side * a * 0.05, crown + b * 0.42, a * 0.62, b * 0.24, 205, 300, 10 * u, mix(col, '#ffffff', 0.45));
+    p.arc(cx - side * a * 0.05, crown + b * 0.42, a * 0.62, b * 0.24, 215, 285, 4 * u, mix(col, '#ffffff', 0.85));
     for (let k = -2; k <= 2; k++) p.stroke([[cx + side * (k * 14 - 10) * u, crown + b * 0.08], [cx + side * (k * 18 + 6) * u + sway * 3 * u, cut - 10 * u]], 1.3 * u, mul(T.dark, [0.8, 0.8, 0.85]));
   });
   p.poly(cap, null, ow * 0.9);
