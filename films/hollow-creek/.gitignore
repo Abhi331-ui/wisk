@@ -1,0 +1,5 @@
+node_modules/
+stills/
+out/
+*.wav
+*.log

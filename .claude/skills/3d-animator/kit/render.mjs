@@ -20,9 +20,9 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const port = server.address().port;
 
-const angle = process.platform === 'darwin' ? ['--use-angle=metal'] : process.platform === 'win32' ? ['--use-angle=d3d11'] : [];
+const angle = process.platform === 'darwin' ? ['--use-angle=metal'] : process.platform === 'win32' ? ['--use-angle=d3d11'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
 const browser = await puppeteer.launch({ headless: true, executablePath: process.env.CHROME_PATH || undefined,
-  args: ['--hide-scrollbars', '--force-color-profile=srgb', '--enable-gpu', '--ignore-gpu-blocklist', '--disable-gpu-vsync', '--run-all-compositor-stages-before-draw', ...angle] });
+  args: [...(process.getuid?.() === 0 ? ['--no-sandbox'] : []), '--hide-scrollbars', '--force-color-profile=srgb', '--enable-gpu', '--ignore-gpu-blocklist', '--disable-gpu-vsync', '--run-all-compositor-stages-before-draw', ...angle] });
 const page = await browser.newPage();
 await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
 page.on('console', (m) => { if (['error', 'warning', 'warn'].includes(m.type())) console.log('[page]', m.type(), m.text()); });
