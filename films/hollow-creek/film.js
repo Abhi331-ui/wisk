@@ -6,7 +6,9 @@ import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { W, H, lerp, seg, smooth, easeInOut, halton, hash } from './lib.js';
 import { drawCover } from './cover.js';
-import { loadFonts, canvas, drawTitle, drawCredits, drawPage1, drawPanel1, PAGE, panelRect } from './pages.js';
+import { loadFonts, canvas, drawTitle, drawCredits } from './pages.js';
+import { PAGE, panelRect } from './comic.js';
+import { drawPage as drawPage1, drawPanel } from './page01.js';
 
 await loadFonts();
 export const total = 17.5;
@@ -84,7 +86,7 @@ const page1 = add(new THREE.PlaneGeometry(BW, BH), new THREE.MeshStandardMateria
 page1.rotation.x = -Math.PI / 2;
 // panel 1 again at high resolution, laid on the page, so the push-in stays sharp
 const P1 = panelRect(0), P1C = V((P1.x + P1.w / 2) / PAGE.W * BW, R_TOP + 0.0003, -BH / 2 + (P1.y + P1.h / 2) / PAGE.H * BH);
-const hiCv = canvas(1800, Math.round(1800 * P1.h / P1.w)); drawPanel1(hiCv.getContext('2d'), 0, 0, hiCv.width, hiCv.height);
+const hiCv = canvas(1800, Math.round(1800 * P1.h / P1.w)); drawPanel(0, hiCv.getContext('2d'), 0, 0, hiCv.width, hiCv.height);
 const panel1 = add(new THREE.PlaneGeometry(P1.w / PAGE.W * BW, P1.h / PAGE.H * BH), new THREE.MeshStandardMaterial({ map: tex(hiCv), roughness: 0.85 }), P1C.x, P1C.y, P1C.z);
 panel1.rotation.x = -Math.PI / 2; panel1.castShadow = false;
 
@@ -151,7 +153,8 @@ function pose(t) {
 const camera = new THREE.PerspectiveCamera(40, W / H, 0.01, 20);
 const COVER = V(BW / 2, R_TOP, 0), SPREAD = V(0, R_TOP, 0);
 const E_A = V(BW / 2, 0.50, 0.17), E_B = V(0, 0.68, 0.23), E_C = V(BW / 2, 0.37, 0.12);
-const E_D = V(P1C.x, R_TOP + 0.135, P1C.z + 0.038), E_E = V(P1C.x, R_TOP + 0.108, P1C.z + 0.03);
+const P1H = P1.h / PAGE.H * BH, FILL = P1H / 2 / Math.tan(THREE.MathUtils.degToRad(20));   // camera height at which panel 1 fills the frame
+const E_D = V(P1C.x, R_TOP + FILL * 1.15, P1C.z + FILL * 0.32), E_E = V(P1C.x, R_TOP + FILL * 0.98, P1C.z + FILL * 0.27);
 const bez = (a, b, c, d) => new THREE.CubicBezierCurve3(a, b, c, d);
 const MOVES = [   // [start, end, rail, lookFrom, lookTo, shutter, lens (aperture radius m), easing]
   [0.4, 5.0, bez(V(0.42, 0.78, 2.3), V(0.36, 0.66, 1.4), V(0.14, 0.56, 0.55), E_A), V(-0.12, 0.2, -0.3), COVER, 0.5, 0.008, easeInOut],   // far approach

@@ -56,3 +56,12 @@ export function drawShadow(opts = {}) {
   g.fillStyle = '#f4f0ff'; g.beginPath(); g.arc(300, hy + 44, 40, 0.15, Math.PI - 0.15); g.lineTo(300, hy + 56); g.closePath(); g.fill();
   return k;
 }
+// the Shadow side-on, running (for chases): Milo's side card recoloured, one crescent eye, the grin
+export function drawShadowSide(opts = {}) {
+  const k = drawSide(CAST.milo, { mode: 'march', ...opts }), g = k.getContext('2d');
+  g.globalCompositeOperation = 'source-in'; g.fillStyle = VIOLET; g.fillRect(0, 0, 600, 1000); g.globalCompositeOperation = 'source-over';
+  const [, top] = headOf(k), hy = top + 115, p = new Pen(g);
+  g.save(); g.translate(345, hy); g.rotate(-0.25); p.ell(0, 0, 20, 10, '#f4f0ff', 0); g.restore();
+  g.fillStyle = '#f4f0ff'; g.beginPath(); g.arc(345, hy + 42, 30, 0.1, Math.PI - 0.6); g.lineTo(345, hy + 50); g.closePath(); g.fill();
+  return k;
+}

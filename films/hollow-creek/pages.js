@@ -1,4 +1,5 @@
 // The printed comic: every page is a 2D canvas, drawn once. 90s newsprint look: cream paper, flat inks, halftone, wear.
+import { CAST, drawFront } from './cast/cast.js';
 // Fonts: Bangers (titles, SFX) and Comic Neue Bold (lettering), loaded before __ready.
 const INK = '#141014';
 const h = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
@@ -133,7 +134,7 @@ export function drawCredits(c, W, H) {                             // drawn mirr
   ['A paper route.', 'A street lamp.', 'A shadow with ideas', 'of its own.'].forEach((l, i) => text(c, l, W / 2, H * (0.18 + i * 0.045), W * 0.045));
   c.lineWidth = 6; c.strokeStyle = INK; c.strokeRect(W * 0.1, H * 0.42, W * 0.8, H * 0.48);   // a 90s mail-order ad (made up)
   outlined(c, 'GENUINE X-RAY', W / 2, H * 0.48, W * 0.09, '#ffe14a', INK, 8); outlined(c, 'SPECS!', W / 2, H * 0.55, W * 0.12, '#ffe14a', INK, 9);
-  milo(c, W / 2, H * 0.67, W * 0.06, { mood: 'shock', noShadow: true });
+  { const k = drawFront(CAST.milo, { expr: 'shock' }), s = H * 0.16 / 680; c.drawImage(k, W / 2 - 300 * s, H * 0.775 - 975 * s, 600 * s, 1000 * s); }
   text(c, 'SEE THROUGH ANYTHING!*', W / 2, H * 0.8, W * 0.045); text(c, 'ONLY 25¢', W / 2, H * 0.85, W * 0.07, 'Bangers', '#d8322b');
   text(c, '*not anything', W * 0.75, H * 0.885, W * 0.025);
   age(c, W, H, 0.7);
