@@ -1,0 +1,14 @@
+{
+  "name": "my-3d-film",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "stills": "node render.mjs --stills=0.5,2.5,4.5 --n=16",
+    "preview": "node render.mjs --video --n=4 --out=out/preview.mp4",
+    "final": "node render.mjs --video --n=48 --out=out/final.mp4"
+  },
+  "dependencies": {
+    "puppeteer": "25.12.0",
+    "three": "0.185.1"
+  }
+}

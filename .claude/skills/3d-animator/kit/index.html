@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>film</title><link rel="icon" href="data:,">
+<script type="importmap">
+{ "imports": { "three": "./node_modules/three/build/three.module.js", "three/addons/": "./node_modules/three/examples/jsm/" } }
+</script>
+<style>html, body { margin: 0; background: #000; } #stage { display: block; width: 1920px; height: 1080px; }</style>
+</head><body>
+<canvas id="stage" width="1920" height="1080"></canvas>
+<script type="module">
+// Open this page in a browser to scrub the film: ?t=2.5 shows one frame, ?play=1 plays it (preview quality).
+const film = await import('./film.js');
+window.__ready = true;
+const q = new URLSearchParams(location.search);
+if (!q.has('render')) {
+  if (q.has('play')) { const t0 = performance.now(); const loop = () => { window.renderAt(((performance.now() - t0) / 1000) % window.total, 1); requestAnimationFrame(loop); }; loop(); }
+  else window.renderAt(parseFloat(q.get('t') || '2'), parseInt(q.get('n') || '16'));
+}
+</script>
+</body></html>

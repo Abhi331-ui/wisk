@@ -1,0 +1,22 @@
+3D ANIMATOR SKILL - install in 1 minute
+
+EASIEST: open Claude Code or Codex in any folder and type:
+  Install the skill in this zip for me: <drag the zip here>
+
+OR COPY THE FOLDER YOURSELF
+Claude Code
+  Mac:     ~/.claude/skills/3d-animator/
+  Windows: %USERPROFILE%\.claude\skills\3d-animator\
+Codex
+  Mac:     ~/.agents/skills/3d-animator/      (older Codex: ~/.codex/skills/)
+  Windows: %USERPROFILE%\.agents\skills\3d-animator\
+The folder must contain SKILL.md directly (not 3d-animator/3d-animator/SKILL.md).
+
+THEN restart it, make an empty folder for your film, open it there and type:
+  Use the 3d-animator skill. Make me a 20 second cinematic film of [your idea].
+
+YOU NEED
+  Node.js 20+ and ffmpeg (it checks and tells you how to install them)
+  About 170 MB for the render browser, downloaded once by npm install
+  Optional: an ElevenLabs API key for the voice and AI sound effects
+Works on Mac and Windows. A Mac with Apple silicon or a PC with a GPU renders fastest.
