@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0}</style></head><body>
+<canvas id="c" width="1600" height="2448"></canvas>
+<script type="module">
+import { loadFonts } from './pages.js'; import { drawCover } from './cover.js';
+await loadFonts(); drawCover(document.getElementById('c').getContext('2d'), 1600, 2448); window.done = true;
+</script></body></html>

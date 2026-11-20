@@ -5,7 +5,8 @@ import * as THREE from 'three';
 import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { W, H, lerp, seg, smooth, easeInOut, halton, hash } from './lib.js';
-import { loadFonts, canvas, drawCover, drawTitle, drawCredits, drawPage1, drawPanel1, PAGE, panelRect } from './pages.js';
+import { drawCover } from './cover.js';
+import { loadFonts, canvas, drawTitle, drawCredits, drawPage1, drawPanel1, PAGE, panelRect } from './pages.js';
 
 await loadFonts();
 export const total = 17.5;

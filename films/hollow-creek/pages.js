@@ -114,28 +114,6 @@ function town(c, x, y, w, hh, dusk = true) {                       // sky, hills
 }
 
 // ---------- the cover ----------
-export function drawCover(c, W, H) {
-  const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#16144a'); g.addColorStop(0.55, '#3b2a7a'); g.addColorStop(1, '#6a2f6e'); c.fillStyle = g; c.fillRect(0, 0, W, H);
-  c.fillStyle = '#ffe9a0'; c.beginPath(); c.arc(W * 0.58, H * 0.45, W * 0.3, 0, 6.283); c.fill();   // huge moon
-  halftone(c, 0, H * 0.2, W, H * 0.8, 'rgba(20,10,40,0.35)', 14, 0.45);
-  c.fillStyle = '#1a1030'; c.beginPath(); c.moveTo(0, H * 0.78); for (let i = 0; i <= 12; i++) c.lineTo(W * i / 12, H * (0.74 + 0.03 * Math.sin(i * 2.1)) - (i % 3 === 1 ? H * 0.06 : 0)); c.lineTo(W, H); c.lineTo(0, H); c.fill();
-  c.fillStyle = '#2b1d48'; c.fillRect(0, H * 0.83, W, H * 0.17);   // road
-  milo(c, W * 0.34, H * 0.66, W * 0.07, { bike: true, look: -1, mood: 'shock', noShadow: true });
-  shadowKid(c, W * 0.74, H * 0.72, W * 0.06);                      // the shadow running the other way
-  c.fillStyle = 'rgba(28,16,48,0.6)'; c.beginPath(); c.moveTo(W * 0.4, H * 0.83); c.quadraticCurveTo(W * 0.6, H * 0.9, W * 0.71, H * 0.85); c.lineTo(W * 0.73, H * 0.87); c.quadraticCurveTo(W * 0.58, H * 0.94, W * 0.38, H * 0.86); c.fill();
-  // masthead
-  c.fillStyle = '#d8322b'; c.fillRect(0, 0, W, H * 0.2); c.fillStyle = '#ffd23a'; c.fillRect(0, H * 0.2, W, H * 0.012);
-  outlined(c, 'HOLLOW CREEK', W * 0.55, H * 0.085, W * 0.15, '#ffe14a', INK, W * 0.022);
-  outlined(c, 'T A L E S', W * 0.62, H * 0.165, W * 0.06, '#ffffff', INK, W * 0.012);
-  c.fillStyle = '#fff'; c.fillRect(W * 0.03, H * 0.022, W * 0.13, H * 0.155); c.lineWidth = W * 0.006; c.strokeStyle = INK; c.strokeRect(W * 0.03, H * 0.022, W * 0.13, H * 0.155);   // corner box
-  text(c, 'No.', W * 0.095, H * 0.045, W * 0.03, 'Bangers'); text(c, '1', W * 0.095, H * 0.095, W * 0.09, 'Bangers', '#d8322b'); text(c, '75¢', W * 0.095, H * 0.152, W * 0.04, 'Bangers');
-  // burst + tagline
-  c.save(); c.translate(W * 0.83, H * 0.3); c.rotate(0.18); c.beginPath(); for (let i = 0; i <= 24; i++) { const a = i / 24 * 6.283, r = (i % 2 ? 0.1 : 0.14) * W; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } c.fillStyle = '#ffe14a'; c.fill(); stroke(c, W * 0.006);
-  text(c, 'FIRST', 0, -W * 0.025, W * 0.045, 'Bangers', '#d8322b'); text(c, 'ISSUE!', 0, W * 0.025, W * 0.045, 'Bangers', '#d8322b'); c.restore();
-  c.save(); c.translate(W * 0.36, H * 0.31); c.rotate(-0.06); outlined(c, 'THE NIGHT MY', 0, 0, W * 0.085, '#ffffff', INK, W * 0.014); outlined(c, 'SHADOW RAN AWAY!', W * 0.06, H * 0.05, W * 0.085, '#ffffff', INK, W * 0.014); c.restore();
-  c.fillStyle = '#fff'; c.fillRect(W * 0.05, H * 0.9, W * 0.12, H * 0.07); for (let i = 0; i < 22; i++) { c.fillStyle = INK; c.fillRect(W * (0.06 + i * 0.0045), H * 0.91, W * (h(i) > 0.5 ? 0.003 : 0.0015), H * 0.045); }   // barcode
-  age(c, W, H, 1.2);
-}
 // ---------- inside: the white title page and the inside-cover credits ----------
 export function drawTitle(c, W, H) {
   paper(c, W, H, '#f7f1e2');
