@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}</style></head><body>
+<canvas id="c" width="3200" height="1800"></canvas>
+<script type="module">
+import { CAST, SHADOW, drawFront, drawSide, drawShadow } from './cast.js';
+for (const [n, u] of [['Bangers', '../fonts/bangers.woff2'], ['ComicNeue', '../fonts/comicneue.woff2']]) { const f = new FontFace(n, `url(${u})`); await f.load(); document.fonts.add(f); }
+const c = document.getElementById('c').getContext('2d'), W = 3200, H = 1800, INK = '#241726';
+// newsprint paper
+c.fillStyle = '#f1e6cc'; c.fillRect(0, 0, W, H);
+const h = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+for (let i = 0; i < 4000; i++) { c.fillStyle = h(i) > 0.5 ? 'rgba(120,90,40,0.05)' : 'rgba(255,255,255,0.07)'; c.fillRect(h(i + 1) * W, h(i + 2) * H, 3 + h(i + 3) * 6, 2); }
+const txt = (s, x, y, size, font = 'Bangers', col = INK, align = 'center') => { c.font = `${size}px ${font}`; c.fillStyle = col; c.textAlign = align; c.textBaseline = 'middle'; c.fillText(s, x, y); };
+c.fillStyle = '#d8322b'; c.fillRect(0, 0, W, 130); txt('HOLLOW CREEK TALES  —  CAST SHEET', W / 2, 68, 92, 'Bangers', '#ffe14a');
+// a halftone dot screen over a drawn card: the 1960s print treatment the comic pages use
+function print(k) {
+  const o = Object.assign(document.createElement('canvas'), { width: 600, height: 1000 }), g = o.getContext('2d');
+  g.drawImage(k, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(40,20,60,0.22)';
+  for (let y = 0; y < 1000; y += 9) for (let x = (y / 9) % 2 ? 4.5 : 0; x < 600; x += 9) { const r = 1.2 + 2.2 * (y / 1000); g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill(); }
+  g.globalCompositeOperation = 'multiply'; g.fillStyle = '#f6e7c4'; g.fillRect(0, 0, 600, 1000); return o;
+}
+const put = (k, x, y, s = 0.62) => c.drawImage(k, x - 300 * s, y - 1000 * s, 600 * s, 1000 * s);
+// row 1: the four leads, front view, with name plates
+const leads = [[CAST.milo, drawFront(CAST.milo, { expr: 'smile' })], [SHADOW, drawShadow()], [CAST.june, drawFront(CAST.june, { expr: 'grin', look: 1 })], [CAST.grimsby, drawFront(CAST.grimsby, { expr: 'stern' })]];
+leads.forEach(([ch, k], i) => {
+  const x = 260 + i * 470; c.fillStyle = 'rgba(40,20,60,0.18)'; c.beginPath(); c.ellipse(x, 875, 170, 24, 0, 0, 6.283); c.fill(); put(k, x, 885, 0.82);
+  c.fillStyle = '#ffe36a'; c.fillRect(x - 210, 905, 420, 120); c.lineWidth = 6; c.strokeStyle = INK; c.strokeRect(x - 210, 905, 420, 120);
+  txt(ch.name, x, 945, 54); txt(ch.role, x, 995, 17, 'ComicNeue');
+});
+// Milo turnaround: front, side, and the print version for the comic pages
+c.lineWidth = 8; c.strokeStyle = INK; c.strokeRect(2020, 180, 1120, 860); txt('MILO: FRONT / SIDE / ON THE PAGE', 2580, 230, 52);
+put(drawFront(CAST.milo), 2210, 960, 0.66); put(drawSide(CAST.milo), 2580, 960, 0.66); put(print(drawFront(CAST.milo, { expr: 'shock' })), 2950, 960, 0.66);
+txt('3D scenes: clean card', 2400, 1000, 26, 'ComicNeue'); txt('comic page: halftone + newsprint', 2950, 1000, 26, 'ComicNeue');
+// expression strip: heads cropped from full cards
+c.strokeRect(60, 1090, 3080, 650); txt('MILO: EXPRESSIONS', 1600, 1140, 56);
+const ex = ['neutral', 'smile', 'nervous', 'shock', 'grin', 'stern', 'pained', 'dazed', 'laugh', 'relief'];
+ex.forEach((e, i) => { const k = drawFront(CAST.milo, { expr: e }), x = 210 + i * 305; c.drawImage(k, 150, 250, 300, 420, x - 140, 1180, 280, 392); txt(e.toUpperCase(), x, 1650, 40); });
+window.done = true;
+</script></body></html>
