@@ -155,3 +155,54 @@ export function house2(c, x, gy, w, h, u, wall, roof, side = 1, lit = true, nigh
 // solid black cast shadow under a figure (the silver-age "spot")
 export function spot(c, x, y, rx, ry) { c.fillStyle = INK; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, 6.283); c.fill(); }
 export function speed(c, x0, y0, x1, y1, n, spread, u) { c.strokeStyle = INK; c.lineCap = 'round'; for (let i = 0; i < n; i++) { const o = (i - (n - 1) / 2) * spread * u; c.lineWidth = (1.5 + hh(i) * 2) * u; c.beginPath(); c.moveTo(x0 + hh(i + 3) * 20 * u, y0 + o); c.lineTo(x1, y1 + o); c.stroke(); } }
+
+// ======== 1990s kit: glossy Baxter paper, black gutters, slanted panels, airbrush gradients, glows, rim light, ========
+// ======== dark caption boxes with white italic lettering, chunky gradient SFX with extrusion, cross-hatching ========
+// panel shape = the rect with its 4 corners nudged (page px; scaled by u), clockwise from top-left
+export function panel90(c, x, y, w, h, u, nudge, fn) {
+  const n = nudge || [[0, 0], [0, 0], [0, 0], [0, 0]], q = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]].map(([px, py], i) => [px + n[i][0] * u, py + n[i][1] * u]);
+  const path = () => { c.beginPath(); q.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.closePath(); };
+  c.save(); path(); c.clip(); fn(c, x, y, w, h, u); c.restore();
+  path(); c.lineJoin = 'miter'; c.lineWidth = 9 * u; c.strokeStyle = '#ffffff'; c.stroke(); c.lineWidth = 4 * u; c.strokeStyle = INK; c.stroke();
+}
+export function grad(c, x, y, w, h, stops, horizontal = false) {
+  const g = horizontal ? c.createLinearGradient(x, 0, x + w, 0) : c.createLinearGradient(0, y, 0, y + h); stops.forEach((s, i) => g.addColorStop(i / (stops.length - 1), s)); c.fillStyle = g; c.fillRect(x, y, w, h);
+}
+export function glow(c, x, y, r, col, a = 0.8) {
+  const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, col.replace('A', a)); g.addColorStop(1, col.replace('A', 0)); c.fillStyle = g; c.fillRect(x - r, y - r, r * 2, r * 2);
+}
+export function flare(c, x, y, r, u) {   // 90s lens flare: hot core, 4-point star, a few ghost rings
+  glow(c, x, y, r, 'rgba(255,240,190,A)', 0.95); c.save(); c.globalCompositeOperation = 'lighter';
+  c.fillStyle = 'rgba(255,250,220,0.9)'; for (const a of [0, Math.PI / 2]) { c.save(); c.translate(x, y); c.rotate(a); c.beginPath(); c.moveTo(-r * 1.6, 0); c.lineTo(0, -4 * u); c.lineTo(r * 1.6, 0); c.lineTo(0, 4 * u); c.closePath(); c.fill(); c.restore(); }
+  for (const [k, rr, col] of [[0.6, 0.18, 'rgba(120,200,255,0.25)'], [1.1, 0.1, 'rgba(255,160,220,0.3)'], [1.5, 0.25, 'rgba(160,255,200,0.15)']]) { c.beginPath(); c.arc(x + r * k, y + r * k * 0.6, r * rr, 0, 6.283); c.fillStyle = col; c.fill(); }
+  c.restore();
+}
+// cross-hatching in shadow areas: two crossed hatch layers, clipped to a polygon
+export function xhatch(c, pts, u, gap = 10) {
+  c.save(); c.beginPath(); pts.forEach(([px, py], i) => (i ? c.lineTo(px, py) : c.moveTo(px, py))); c.closePath(); c.clip();
+  const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]), x0 = Math.min(...xs), y0 = Math.min(...ys), w = Math.max(...xs) - x0, h = Math.max(...ys) - y0;
+  hatch(c, x0, y0, w, h, u, -0.7, gap, 1.6); hatch(c, x0, y0, w, h, u, 0.7, gap * 1.4, 1.3); c.restore();
+}
+// a card with a coloured rim light (90s colourists' trick) and an optional hard black cast shadow
+export function card90(c, k, x, footY, tall, flip = false, rim = 'rgba(120,220,255,0.95)', blur = 16) {
+  c.save(); c.shadowColor = rim; c.shadowBlur = blur; card(c, k, x, footY, tall, flip); c.restore(); card(c, k, x, footY, tall, flip);
+}
+// caption box: deep gradient box, coloured keyline, white italic capitals
+export function caption90(c, lines, x, y, w, h, u, corner = 'tl', maxW = 0.62, tone = ['#2a1458', '#0b0618'], key = '#ffd23a') {
+  const size = 27 * u, lh = size * 1.2; c.font = `italic ${size}px ComicNeue`;
+  const bw = Math.min(w * maxW, Math.max(...lines.map((s) => c.measureText(s).width)) + size * 1.2), bh = lines.length * lh + size * 0.6;
+  const bx = corner === 'tl' ? x + 14 * u : x + w - bw - 14 * u, by = corner === 'tl' ? y + 14 * u : y + h - bh - 14 * u;
+  const g = c.createLinearGradient(bx, by, bx + bw, by + bh); g.addColorStop(0, tone[0]); g.addColorStop(1, tone[1]);
+  c.fillStyle = 'rgba(0,0,0,0.5)'; c.fillRect(bx + 6 * u, by + 6 * u, bw, bh); c.fillStyle = g; c.fillRect(bx, by, bw, bh);
+  c.lineWidth = 3 * u; c.strokeStyle = key; c.strokeRect(bx, by, bw, bh);
+  c.fillStyle = '#ffffff'; c.textAlign = 'left'; c.textBaseline = 'middle'; lines.forEach((s, i) => c.fillText(s, bx + size * 0.6, by + size * 0.3 + lh * (i + 0.5)));
+}
+// chunky SFX: black extrusion, gradient face, white keyline
+export function sfx90(c, s, x, y, size, top, bot, rot = -0.15) {
+  c.save(); c.translate(x, y); c.rotate(rot); c.font = `${size}px Bangers`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
+  for (let i = 10; i > 0; i--) { c.fillStyle = INK; c.fillText(s, i * size * 0.008, i * size * 0.01); }
+  c.lineWidth = size * 0.14; c.strokeStyle = INK; c.strokeText(s, 0, 0);
+  const g = c.createLinearGradient(0, -size / 2, 0, size / 2); g.addColorStop(0, top); g.addColorStop(1, bot); c.fillStyle = g; c.fillText(s, 0, 0);
+  c.lineWidth = size * 0.025; c.strokeStyle = 'rgba(255,255,255,0.9)'; c.strokeText(s, -size * 0.01, -size * 0.012); c.restore();
+}
+export function page90(c, W, H) { c.fillStyle = '#0c0a12'; c.fillRect(0, 0, W, H); }   // black gutters
