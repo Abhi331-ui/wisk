@@ -96,3 +96,62 @@ export function pageNumber(c, n, W, H) {
   const s = 64; c.fillStyle = '#fff'; c.fillRect(W - PAGE.m - s, H - PAGE.m - s + 10, s, s); c.lineWidth = 4; c.strokeStyle = INK; c.strokeRect(W - PAGE.m - s, H - PAGE.m - s + 10, s, s);
   c.font = '40px Bangers'; c.fillStyle = INK; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(n), W - PAGE.m - s / 2, H - PAGE.m - s / 2 + 12);
 }
+
+// ======== silver-age inking kit: flat colour, Ben-Day tints, brush texture, spotted blacks (no gradients, no glows) ========
+const patCache = new Map();
+// Ben-Day tint: dots of `col` on `bg`, a fixed screen like a 1960s colour separation
+export function benday(c, col, bg, step = 7, r = 1.6) {
+  const key = col + bg + step + r; if (patCache.has(key)) return patCache.get(key);
+  const t = Object.assign(document.createElement('canvas'), { width: step * 2, height: step * 2 }), g = t.getContext('2d');
+  g.fillStyle = bg; g.fillRect(0, 0, step * 2, step * 2); g.fillStyle = col;
+  for (const [x, y] of [[step / 2, step / 2], [step * 1.5, step * 1.5], [step * 1.5, step / 2 - step], [step / 2, step * 1.5]]) { g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill(); }
+  g.beginPath(); g.arc(step * 1.5, step / 2, r, 0, 6.283); g.fill(); g.beginPath(); g.arc(step / 2, step * 1.5, r, 0, 6.283); g.fill();
+  const p = c.createPattern(t, 'repeat'); patCache.set(key, p); return p;
+}
+export function flat(c, x, y, w, h, col) { c.fillStyle = col; c.fillRect(x, y, w, h); }
+// parallel ink hatching inside a rectangle (shadow sides, skies, dusk)
+export function hatch(c, x, y, w, h, u, ang = -0.6, gap = 12, lw = 2) {
+  c.save(); c.beginPath(); c.rect(x, y, w, h); c.clip(); c.strokeStyle = INK; c.lineWidth = lw * u; c.lineCap = 'round';
+  const d = Math.hypot(w, h), cx = x + w / 2, cy = y + h / 2, ca = Math.cos(ang), sa = Math.sin(ang);
+  for (let k = -d; k < d; k += gap * u) { c.beginPath(); c.moveTo(cx - ca * d - sa * k, cy - sa * d + ca * k); c.lineTo(cx + ca * d - sa * k, cy + sa * d + ca * k); c.stroke(); }
+  c.restore();
+}
+// brush dashes on a ground plane, longer and denser towards the viewer: reads as earth/asphalt with perspective
+export function brushGround(c, x, y0, w, y1, u, seed = 1, col = INK) {
+  c.strokeStyle = col; c.lineCap = 'round';
+  for (let i = 0; i < 90; i++) {
+    const k = hh(seed * 31 + i), yy = y0 + (y1 - y0) * Math.pow(hh(seed * 17 + i), 0.7), near = (yy - y0) / (y1 - y0 + 1e-6);
+    const len = (10 + 40 * near) * u * (0.5 + k), xx = x + hh(seed * 7 + i) * w; c.lineWidth = (1.2 + 2.2 * near) * u;
+    c.beginPath(); c.moveTo(xx, yy); c.quadraticCurveTo(xx + len / 2, yy - 2 * u, xx + len, yy + 1 * u); c.stroke();
+  }
+}
+export function tuft(c, x, y, s, u) { c.strokeStyle = INK; c.lineWidth = 2 * u; c.lineCap = 'round'; for (let i = -2; i <= 2; i++) { c.beginPath(); c.moveTo(x + i * 3 * s * u, y); c.quadraticCurveTo(x + i * 4 * s * u, y - 8 * s * u, x + i * 6 * s * u, y - (12 + 4 * (2 - Math.abs(i))) * s * u); c.stroke(); } }
+// foliage clump: scalloped ink outline, flat fill, inner flicks, a spotted-black underside
+export function bush(c, x, y, r, u, col = '#5f8f3e', seed = 1) {
+  const pts = []; for (let i = 0; i <= 18; i++) { const a = Math.PI + i / 18 * Math.PI, rr = r * (0.82 + 0.25 * hh(seed + i)); pts.push([x + Math.cos(a) * rr * 1.25, y + Math.sin(a) * rr]); }
+  c.beginPath(); c.moveTo(x - r * 1.25, y); for (let i = 1; i < pts.length; i++) { const [px, py] = pts[i - 1], [qx, qy] = pts[i]; c.quadraticCurveTo((px + qx) / 2 + (qy - py) * 0.4, (py + qy) / 2 - (qx - px) * 0.4, qx, qy); } c.closePath();
+  c.fillStyle = col; c.fill(); c.lineWidth = 3.5 * u; c.strokeStyle = INK; c.stroke();
+  c.save(); c.clip(); c.fillStyle = INK; c.beginPath(); c.ellipse(x, y + r * 0.15, r * 1.3, r * 0.38, 0, 0, 6.283); c.fill();
+  c.lineWidth = 2 * u; for (let i = 0; i < 9; i++) { const a = Math.PI * (1.1 + 0.8 * hh(seed + 40 + i)), rr = r * (0.3 + 0.5 * hh(seed + 60 + i)); const px = x + Math.cos(a) * rr * 1.2, py = y + Math.sin(a) * rr; c.beginPath(); c.arc(px, py, 6 * u, 0.2, 2.4); c.stroke(); }
+  c.restore();
+}
+export function tree(c, x, gy, h, u, col = '#5f8f3e', seed = 1, night = false) {
+  c.fillStyle = night ? INK : '#6a4a2a'; c.fillRect(x - 9 * u, gy - h * 0.45, 18 * u, h * 0.45); c.lineWidth = 3 * u; c.strokeStyle = INK; c.strokeRect(x - 9 * u, gy - h * 0.45, 18 * u, h * 0.45);
+  bush(c, x, gy - h * 0.42, h * 0.32, u, night ? INK : col, seed); bush(c, x - h * 0.12, gy - h * 0.62, h * 0.26, u, night ? INK : col, seed + 9); bush(c, x + h * 0.12, gy - h * 0.7, h * 0.22, u, night ? INK : col, seed + 19);
+}
+// a house in 2-point-ish view: lit front face, hatched side face, shingle lines, flat colour windows
+export function house2(c, x, gy, w, h, u, wall, roof, side = 1, lit = true, night = false) {
+  const d = w * 0.38 * side, sw = night ? '#1c2440' : wall;
+  c.lineWidth = 3.5 * u; c.strokeStyle = INK; c.lineJoin = 'round';
+  c.beginPath(); c.moveTo(x + (side > 0 ? w : 0), gy); c.lineTo(x + (side > 0 ? w : 0) + d, gy - h * 0.12); c.lineTo(x + (side > 0 ? w : 0) + d, gy - h * 1.05); c.lineTo(x + (side > 0 ? w : 0), gy - h); c.closePath(); c.fillStyle = night ? '#141a30' : wall; c.fill(); c.stroke();
+  c.save(); c.clip(); hatch(c, x - w, gy - h * 1.2, w * 3, h * 1.3, u, side > 0 ? 0.9 : -0.9, 9, 1.6); c.restore();
+  c.fillStyle = night ? '#2a3458' : wall; c.fillRect(x, gy - h, w, h); c.strokeRect(x, gy - h, w, h);
+  c.beginPath(); c.moveTo(x - w * 0.06, gy - h); c.lineTo(x + w / 2, gy - h * 1.62); c.lineTo(x + w * 1.06, gy - h); c.closePath(); c.fillStyle = night ? '#10152a' : roof; c.fill(); c.stroke();
+  c.beginPath(); c.moveTo(x + w / 2, gy - h * 1.62); c.lineTo(x + w / 2 + d, gy - h * 1.7); c.lineTo(x + (side > 0 ? w * 1.06 : -w * 0.06) + d, gy - h * 1.08); c.lineTo(x + (side > 0 ? w * 1.06 : -w * 0.06), gy - h); c.closePath(); c.fill(); c.stroke();
+  c.save(); c.lineWidth = 1.5 * u; for (let i = 1; i < 5; i++) { const yy = gy - h - h * 0.62 * i / 5; c.beginPath(); c.moveTo(x + w / 2 - (w * 0.56) * (1 - i / 5), yy); c.lineTo(x + w / 2 + (w * 0.56) * (1 - i / 5), yy); c.stroke(); } c.restore();
+  for (const f of [0.14, 0.64]) { c.fillStyle = lit ? '#ffe36a' : night ? '#0c1022' : '#9cc8e0'; c.fillRect(x + w * f, gy - h * 0.74, w * 0.22, h * 0.26); c.strokeRect(x + w * f, gy - h * 0.74, w * 0.22, h * 0.26); c.beginPath(); c.moveTo(x + w * (f + 0.11), gy - h * 0.74); c.lineTo(x + w * (f + 0.11), gy - h * 0.48); c.stroke(); }
+  c.fillStyle = night ? '#0c1022' : '#7a3a26'; c.fillRect(x + w * 0.42, gy - h * 0.44, w * 0.16, h * 0.44); c.strokeRect(x + w * 0.42, gy - h * 0.44, w * 0.16, h * 0.44);
+}
+// solid black cast shadow under a figure (the silver-age "spot")
+export function spot(c, x, y, rx, ry) { c.fillStyle = INK; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, 6.283); c.fill(); }
+export function speed(c, x0, y0, x1, y1, n, spread, u) { c.strokeStyle = INK; c.lineCap = 'round'; for (let i = 0; i < n; i++) { const o = (i - (n - 1) / 2) * spread * u; c.lineWidth = (1.5 + hh(i) * 2) * u; c.beginPath(); c.moveTo(x0 + hh(i + 3) * 20 * u, y0 + o); c.lineTo(x1, y1 + o); c.stroke(); } }
