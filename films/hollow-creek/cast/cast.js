@@ -13,10 +13,12 @@ const VIOLET = '#1c1030';
 const cv = () => Object.assign(document.createElement('canvas'), { width: 600, height: 1000 });
 
 // extras the base library doesn't have: Milo's paper bag, June's glasses and ponytail, Grimsby's bow tie
-function extras(p, c, side) {
+function extras(p, c, side, top = 300) {
+  const sh = top + 232;   // shoulder line: just under the chin of the kid build
   const g = p.g;
   if (c.bag) {   // canvas satchel on the hip, strap across the chest
-    p.stroke([[248, 560], [352, 700]], 9, INK); p.stroke([[248, 560], [352, 700]], 6, '#8a5a34');
+    const s0 = side ? [292, sh] : [262, sh], s1 = side ? [330, 692] : [362, 692];
+    p.stroke([s0, s1], 9, INK); p.stroke([s0, s1], 6, '#8a5a34');
     p.poly([[side ? 300 : 330, 680], [side ? 380 : 410, 680], [side ? 376 : 406, 760], [side ? 304 : 334, 760]], '#c9a36a', 6);
     p.poly([[side ? 300 : 330, 680], [side ? 380 : 410, 680], [side ? 372 : 402, 712], [side ? 308 : 338, 712]], '#a8824e', 5);
     g.save(); g.translate(side ? 318 : 348, 668); g.rotate(-0.15); p.poly([[0, 0], [52, -4], [54, 16], [2, 20]], '#f4f1ea', 4); g.restore();   // a rolled newspaper
@@ -36,15 +38,15 @@ function headOf(canvas) {
 
 export function drawFront(c, opts = {}) {
   const k = cv(), p = new Pen(k.getContext('2d'));
-  bodyFront(p, c.o, { mode: 'stand', ...opts }); extras(p, c, false);
-  const [, top] = headOf(k), g = k.getContext('2d');
+  bodyFront(p, c.o, { mode: 'stand', ...opts });
+  const [, top] = headOf(k), g = k.getContext('2d'); extras(p, c, false, top);
   if (c.pony) { g.globalCompositeOperation = 'destination-over'; p.ell(410, top + 150, 34, 82, c.o.hair, 7, 0, 360, -0.5); p.ell(392, top + 88, 16, 14, '#d8322b', 5); g.globalCompositeOperation = 'source-over'; }
   faceExtras(p, c, 300 + (opts.look || 0) * 12, top + 132, false);
   return k;
 }
 export function drawSide(c, opts = {}) {
   const k = cv(), p = new Pen(k.getContext('2d'));
-  bodySide(p, c.o, { mode: 'stand', ...opts }); extras(p, c, true);
+  bodySide(p, c.o, { mode: 'stand', ...opts }); extras(p, c, true, headOf(k)[1]);
   return k;
 }
 // the Shadow: Milo's silhouette in flat violet-black, white crescent eyes and a grin
