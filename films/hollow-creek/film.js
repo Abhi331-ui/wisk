@@ -32,8 +32,32 @@ const wood = canvas(1024, 1024); { const c = wood.getContext('2d'); c.fillStyle 
     c.beginPath(); c.moveTo(0, y); for (let x = 0; x <= 1024; x += 64) c.lineTo(x, y + 10 * Math.sin(x * 0.006 + i)); c.stroke(); } }
 const woodTex = tex(wood); woodTex.wrapS = woodTex.wrapT = THREE.RepeatWrapping; woodTex.repeat.set(2, 1);
 add(new THREE.BoxGeometry(2.4, 0.05, 1.3), new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.5 }), 0, -0.025, -0.1);
-add(new THREE.PlaneGeometry(10, 5), mat(0x2a2236, 0.95), 0, 1.2, -1.4);                   // far wall
-add(new THREE.PlaneGeometry(10, 8), mat(0x120e14, 0.9), 0, -0.75, 0).rotation.x = -Math.PI / 2;
+// far wall with a window (built from 4 blocks around the hole), blinds in it, Hollow Creek at night outside
+const WALL_Z = -1.0, WIN = { x0: -0.85, x1: 0.35, y0: 0.22, y1: 1.2 }, wallMat = mat(0x3a3046, 0.95);
+add(new THREE.BoxGeometry(10, 3, 0.08), wallMat, 0, WIN.y1 + 1.5, WALL_Z - 0.04);
+add(new THREE.BoxGeometry(10, 1.2, 0.08), wallMat, 0, WIN.y0 - 0.6, WALL_Z - 0.04);
+add(new THREE.BoxGeometry(5, WIN.y1 - WIN.y0, 0.08), wallMat, WIN.x0 - 2.5, (WIN.y0 + WIN.y1) / 2, WALL_Z - 0.04);
+add(new THREE.BoxGeometry(5, WIN.y1 - WIN.y0, 0.08), wallMat, WIN.x1 + 2.5, (WIN.y0 + WIN.y1) / 2, WALL_Z - 0.04);
+const frameMat = mat(0xd9cdb4, 0.6);
+add(new THREE.BoxGeometry(WIN.x1 - WIN.x0 + 0.06, 0.03, 0.1), frameMat, (WIN.x0 + WIN.x1) / 2, WIN.y0 - 0.015, WALL_Z);   // sill
+add(new THREE.BoxGeometry(0.025, WIN.y1 - WIN.y0, 0.04), frameMat, (WIN.x0 + WIN.x1) / 2, (WIN.y0 + WIN.y1) / 2, WALL_Z - 0.05);   // mullion
+for (let i = 0; i < 15; i++) {                                    // blinds: half-open slats, they paint the moonlight in stripes
+  const sl = add(new THREE.BoxGeometry(WIN.x1 - WIN.x0, 0.035, 0.003), mat(0xe8e0d0, 0.7), (WIN.x0 + WIN.x1) / 2, WIN.y1 - 0.04 - i * 0.065, WALL_Z + 0.02);
+  sl.rotation.x = 0.75; sl.receiveShadow = false;
+}
+const out = canvas(2048, 900); { const c = out.getContext('2d');   // the town outside: sky, moon, hills, houses, the water tower
+  const g = c.createLinearGradient(0, 0, 0, 900); g.addColorStop(0, '#070a24'); g.addColorStop(0.65, '#1b2350'); g.addColorStop(1, '#2c2a55'); c.fillStyle = g; c.fillRect(0, 0, 2048, 900);
+  for (let i = 0; i < 260; i++) { c.fillStyle = `rgba(255,255,255,${0.3 + 0.6 * hash(i + 400)})`; c.fillRect(hash(i + 401) * 2048, hash(i + 402) * 520, 2, 2); }
+  const mg = c.createRadialGradient(820, 210, 30, 820, 210, 260); mg.addColorStop(0, 'rgba(220,230,255,0.5)'); mg.addColorStop(1, 'rgba(220,230,255,0)'); c.fillStyle = mg; c.fillRect(0, 0, 2048, 900);
+  c.fillStyle = '#eef0ff'; c.beginPath(); c.arc(820, 210, 52, 0, 6.283); c.fill();
+  c.fillStyle = '#141633'; c.beginPath(); c.moveTo(0, 640); for (let x = 0; x <= 2048; x += 64) c.lineTo(x, 600 + 40 * Math.sin(x * 0.004) + 20 * Math.sin(x * 0.013)); c.lineTo(2048, 900); c.lineTo(0, 900); c.fill();
+  c.fillStyle = '#0d0e24'; c.fillRect(1280, 430, 10, 220); c.fillRect(1360, 430, 10, 220); c.beginPath(); c.roundRect(1250, 360, 150, 85, 14); c.fill();
+  for (let i = 0; i < 26; i++) { const x = i * 80 + 20 * hash(i + 500), w = 60 + 20 * hash(i + 501), hh = 60 + 70 * hash(i + 502), y = 900 - 160 - hh * 0.3;
+    c.fillStyle = '#0b0c1e'; c.fillRect(x, y, w, hh + 200); c.beginPath(); c.moveTo(x - 6, y); c.lineTo(x + w / 2, y - 30); c.lineTo(x + w + 6, y); c.fill();
+    if (hash(i + 503) > 0.35) { c.fillStyle = '#ffcf6a'; c.fillRect(x + w * 0.3, y + 18, w * 0.25, 16); } } }
+const outside = new THREE.Mesh(new THREE.PlaneGeometry(9, 3.95), new THREE.MeshBasicMaterial({ map: tex(out), color: new THREE.Color(0.75, 0.75, 0.8) }));
+outside.position.set(-0.3, 1.0, -5.5); scene.add(outside);   // about 0.8 of the room's brightness: it reads as distance, never steals focus
+add(new THREE.PlaneGeometry(10, 8), mat(0x120e14, 0.9), 0, -0.75, 0).rotation.x = -Math.PI / 2;   // floor
 
 // props that give the table scale: a desk lamp (the key light lives in it), a mug of pencils
 const lampMat = mat(0x2a6a5a, 0.4, 0.3), lamp = new THREE.Group(); lamp.position.set(-0.42, 0, -0.36); scene.add(lamp);
@@ -90,18 +114,24 @@ const coverSheet = sheet(pageTex.cover, pageTex.inCover, 32);
 // ---------- light: one warm lamp key, a cold moonlight fill from the right, a little ambient ----------
 const key = new THREE.SpotLight(0xffd2a0, 2.2, 3, 0.6, 0.7, 1.6); scene.add(key, key.target);
 key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -0.0003; key.shadow.camera.near = 0.05;
-const moon = new THREE.DirectionalLight(0x7f95ff, 1.1); moon.target.position.set(0, 0, 0); scene.add(moon, moon.target);
-moon.castShadow = true; moon.shadow.mapSize.set(1024, 1024); Object.assign(moon.shadow.camera, { left: -0.8, right: 0.8, top: 0.8, bottom: -0.8, near: 0.5, far: 6 }); moon.shadow.bias = -0.0005;
-scene.add(new THREE.AmbientLight(0x2a2440, 0.4));
+const MOON_POS = V(-0.75, 2.3, -3.2);   // moonlight from outside, through the blinds: stripes across the table and the book
+const moon = new THREE.DirectionalLight(0x9fb2ff, 1.6); moon.target.position.set(0.0, 0, 0.05); scene.add(moon, moon.target);
+moon.castShadow = true; moon.shadow.mapSize.set(1024, 1024); moon.shadow.mapSize.set(2048, 2048); Object.assign(moon.shadow.camera, { left: -1, right: 1, top: 1, bottom: -1, near: 0.5, far: 7 }); moon.shadow.bias = -0.0005;
+const sky = new THREE.DirectionalLight(0x8090c0, 0.35); sky.target.position.set(0, 0, 0); scene.add(sky, sky.target);   // soft fill: a new point on the sky every sub-frame
+sky.castShadow = true; sky.shadow.mapSize.set(1024, 1024); Object.assign(sky.shadow.camera, { left: -1, right: 1, top: 1, bottom: -1, near: 0.5, far: 8 }); sky.shadow.bias = -0.0006;
+scene.add(new THREE.AmbientLight(0x2a2440, 0.15));
 const spill = new THREE.PointLight(0xffb070, 0.35, 0, 1.2); scene.add(spill);   // the lamp's spill on the wall and table (no shadow)
 
 // dust in the lamp beam
 const DUST = 220, dustPos = new Float32Array(DUST * 3), dustGeo = new THREE.BufferGeometry(); dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
-scene.add(new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: new THREE.Color(1.6, 1.25, 0.9), size: 0.0012, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false })));
+scene.add(new THREE.Points(dustGeo, new THREE.PointsMaterial({ color: new THREE.Color(1.6, 1.25, 0.9), size: 0.0009, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false })));
 
 // ---------- timeline (seconds) ----------
-const T = { coverOpen: [6.5, 8.5], turn: [10.5, 12.5] };
+const T = { coverOpen: [6.5, 8.5], turn: [10.5, 12.5], lampOn: 0.6 };   // lamp click at 0.6 s = frame 18 (sound cue)
+const lampOn = (t) => { const a = T.lampOn; return t < a ? 0 : t < a + 0.12 ? (Math.floor(t * 60) % 2) * 0.6 : t < a + 0.2 ? 0.15 : smooth(seg(t, a + 0.2, a + 0.35)); };
+const bulbOn = new THREE.Color(6, 4.6, 3), bulbOff = new THREE.Color(0.05, 0.04, 0.03);
 function pose(t) {
+  const on = lampOn(t); key.intensity = 2.2 * on; spill.intensity = 0.35 * on; bulb.material.color.copy(bulbOff).lerp(bulbOn, on);
   const pc = seg(t, ...T.coverOpen), pt = seg(t, ...T.turn);
   bend(coverSheet, pc, 0.12, R_TOP + 0.0016);
   bend(titleSheet, pt, 0.55, lerp(R_TOP + 0.0009, R_TOP + 0.0024, pt));   // its spine lifts so it lands on top of the cover
@@ -109,9 +139,9 @@ function pose(t) {
   leftBlock.scale.y = lh; leftBlock.position.y = lh / 2; leftBlock.visible = pc > 0.55;
   for (let i = 0; i < DUST; i++) {
     const a = hash(i) * 6.28, s = 0.15 + 0.2 * hash(i + 99), dir = hash(i + 5) < 0.33 ? -1 : 1;
-    dustPos[i * 3] = -0.45 + 0.7 * hash(i + 1) + 0.03 * Math.sin(t * s + a);
-    dustPos[i * 3 + 1] = 0.08 + 0.45 * hash(i + 2) + ((dir * t * 0.02 * (0.5 + hash(i + 3))) % 0.25);
-    dustPos[i * 3 + 2] = -0.45 + 0.6 * hash(i + 4) + 0.03 * Math.cos(t * s * 0.8 + a);
+    dustPos[i * 3] = -0.36 + 0.5 * hash(i + 1) + 0.03 * Math.sin(t * s + a);
+    dustPos[i * 3 + 1] = 0.05 + 0.32 * hash(i + 2) + ((dir * t * 0.024 * (0.5 + hash(i + 3))) % 0.2);
+    dustPos[i * 3 + 2] = -0.36 + 0.4 * hash(i + 4) + 0.03 * Math.cos(t * s * 0.8 + a);
   }
   dustGeo.attributes.position.needsUpdate = true;
 }
@@ -123,9 +153,9 @@ const E_A = V(BW / 2, 0.50, 0.17), E_B = V(0, 0.68, 0.23), E_C = V(BW / 2, 0.37,
 const E_D = V(P1C.x, R_TOP + 0.135, P1C.z + 0.038), E_E = V(P1C.x, R_TOP + 0.108, P1C.z + 0.03);
 const bez = (a, b, c, d) => new THREE.CubicBezierCurve3(a, b, c, d);
 const MOVES = [   // [start, end, rail, lookFrom, lookTo, shutter, lens (aperture radius m), easing]
-  [0.0, 5.0, bez(V(0.42, 0.78, 2.3), V(0.36, 0.66, 1.4), V(0.14, 0.56, 0.55), E_A), V(-0.05, 0.08, -0.1), COVER, 0.5, 0.012, easeInOut],   // far approach
+  [0.4, 5.0, bez(V(0.42, 0.78, 2.3), V(0.36, 0.66, 1.4), V(0.14, 0.56, 0.55), E_A), V(-0.12, 0.2, -0.3), COVER, 0.5, 0.008, easeInOut],   // far approach
   [10.3, 12.7, bez(E_A, E_A.clone().lerp(E_B, 0.33).setY(0.6), E_A.clone().lerp(E_B, 0.75).setY(0.68), E_B), COVER, SPREAD, 0.5, 0.004, easeInOut], // eases back during the turn
-  [12.7, 13.9, bez(E_B, E_B.clone().lerp(E_C, 0.4), E_B.clone().lerp(E_C, 0.8), E_C), SPREAD, COVER, 0.5, 0.004, easeInOut],                   // settles on page 1
+  [13.0, 14.2, bez(E_B, E_B.clone().lerp(E_C, 0.4), E_B.clone().lerp(E_C, 0.8), E_C), SPREAD, COVER, 0.5, 0.004, easeInOut],                   // settles on page 1
   [15.0, 15.6, bez(E_C, E_C.clone().lerp(E_D, 0.25), E_C.clone().lerp(E_D, 0.85), E_D), COVER, P1C, 0.8, 0.002, easeInOut],                    // fast push into panel 1
   [15.6, total, bez(E_D, E_D.clone().lerp(E_E, 0.33), E_D.clone().lerp(E_E, 0.66), E_E), P1C, P1C, 0.5, 0.0015, (k) => smooth(k) * 0.6 + k * 0.4], // slow push inside the panel
 ];
@@ -148,7 +178,9 @@ function jitterLights(k, n) {
   const j = n > 1 ? 0.03 : 0;
   bulb.getWorldPosition(key.position); key.position.x += (halton(k + 1, 11) - 0.5) * j; key.position.z += (halton(k + 1, 13) - 0.5) * j;
   key.target.position.set(0.02, 0, 0.0); bulb.getWorldPosition(spill.position); spill.position.y += 0.05;
-  const s = n > 1 ? 0.25 : 0; moon.position.set(2.2 + (halton(k + 1, 17) - 0.5) * s, 2.4 + (halton(k + 1, 19) - 0.5) * s, -0.8);
+  const s = n > 1 ? 0.12 : 0; moon.position.set(MOON_POS.x + (halton(k + 1, 17) - 0.5) * s, MOON_POS.y + (halton(k + 1, 19) - 0.5) * s, MOON_POS.z);
+  const h1 = n > 1 ? halton(k + 1, 23) : 0.5, h2 = n > 1 ? halton(k + 1, 29) : 0.3, phi = h2 * Math.PI * 2;   // cosine-weighted sky sample
+  sky.position.set(Math.cos(phi) * Math.sqrt(1 - h1) * 4, Math.sqrt(h1) * 4 + 0.3, Math.sin(phi) * Math.sqrt(1 - h1) * 4 + 1.0);
 }
 
 // ---------- post: sub-frames -> bloom -> one grade ----------
